@@ -1,31 +1,61 @@
 <section id="trace-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:26px">
-<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">The trace is one row per step, and it is what makes the next run better</h2>
-<div style="display:flex;gap:44px;align-items:start">
-<p style="width:1000px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">trace.write({<br>
-&#160;&#160;&#160;&#160;"run_id":&#160;&#160;&#160;&#160;run_id,&#160;&#160;&#160;&#160;&#160;&#160;"step":&#160;&#160;&#160;&#160;&#160;step,<br>
-&#160;&#160;&#160;&#160;"node":&#160;&#160;&#160;&#160;&#160;&#160;node,&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;"kind":&#160;&#160;&#160;&#160;&#160;kind,<br>
-&#160;&#160;&#160;&#160;"inputs":&#160;&#160;&#160;&#160;redact(before),&#160;"output":&#160;&#160;&#160;redact(after),<br>
-&#160;&#160;&#160;&#160;"tool_calls": calls,<br>
-&#160;&#160;&#160;&#160;"gate":&#160;&#160;&#160;&#160;&#160;&#160;verdict.gate,<span style="color:#7F8FA3">&#160;&#160;# GATE 1, GATE 2 or None</span><br>
-&#160;&#160;&#160;&#160;"rule":&#160;&#160;&#160;&#160;&#160;&#160;verdict.rule_id,<span style="color:#7F8FA3">&#160;# LV-1, LV-3 …</span><br>
-&#160;&#160;&#160;&#160;"result":&#160;&#160;&#160;&#160;verdict.name,<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;# PASS or FAIL</span><br>
-&#160;&#160;&#160;&#160;"model":&#160;&#160;&#160;&#160;&#160;model_id,&#160;&#160;&#160;&#160;"latency_ms": ms,<br>
-})<br>
-<br>
-<span style="color:#7F8FA3">-- which rule rejects most often? that is the next thing to fix</span><br>
-SELECT rule, count(*) AS fails<br>
-&#160;&#160;FROM trace<br>
-&#160;WHERE result = 'FAIL'<br>
-&#160;&#160;AND&#160;&#160;ts &gt; now() - interval '7 days'<br>
-&#160;GROUP BY rule ORDER BY fails DESC;</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to right, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to bottom, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:60px;font-weight:400;line-height:1.1">The trace: one row for each step</h2>
+<div style="display:flex;gap:32px;align-items:start">
+<div style="width:860px;display:flex;flex-direction:column;background:#0A1119;border:1px solid #2E3F52;border-radius:8px;overflow:hidden">
+<div style="display:flex;flex-direction:row;align-items:center;padding:12px 24px;background:#131D29;border-bottom:1px solid #2E3F52">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#E9EEF4">the row</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">written by the runtime</p>
+</div>
+<div style="display:flex;flex-direction:column;padding:24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#C9D6E4">trace.write({<br>
+&#160;&#160;<span style="color:#7FC9A0">"run_id"</span>:&#160;&#160;&#160;&#160;&#160;run_id,<br>
+&#160;&#160;<span style="color:#7FC9A0">"step"</span>:&#160;&#160;&#160;&#160;&#160;&#160;&#160;step,<br>
+&#160;&#160;<span style="color:#7FC9A0">"node"</span>:&#160;&#160;&#160;&#160;&#160;&#160;&#160;node,<br>
+&#160;&#160;<span style="color:#7FC9A0">"kind"</span>:&#160;&#160;&#160;&#160;&#160;&#160;&#160;kind,<br>
+&#160;&#160;<span style="color:#7FC9A0">"inputs"</span>:&#160;&#160;&#160;&#160;&#160;redact(before),<br>
+&#160;&#160;<span style="color:#7FC9A0">"output"</span>:&#160;&#160;&#160;&#160;&#160;redact(after),<br>
+&#160;&#160;<span style="color:#7FC9A0">"tool_calls"</span>:&#160;calls,<br>
+&#160;&#160;<span style="color:#D9A75B">"gate"</span>:&#160;&#160;&#160;&#160;&#160;&#160;&#160;verdict.gate,<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;# GATE 1, GATE 2</span><br>
+&#160;&#160;<span style="color:#D9A75B">"rule"</span>:&#160;&#160;&#160;&#160;&#160;&#160;&#160;verdict.rule_id,<span style="color:#7F8FA3">&#160;&#160;# LV-1, LV-3</span><br>
+&#160;&#160;<span style="color:#D9A75B">"result"</span>:&#160;&#160;&#160;&#160;&#160;verdict.name,<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;# PASS or FAIL</span><br>
+&#160;&#160;<span style="color:#7FC9A0">"model"</span>:&#160;&#160;&#160;&#160;&#160;&#160;model_id,<br>
+&#160;&#160;<span style="color:#7FC9A0">"latency_ms"</span>:&#160;ms,<br>
+})</p>
+</div>
+</div>
 <div style="flex:1;display:flex;flex-direction:column;gap:22px">
-<h3 style="font-size:34px;font-weight:700">Record the gate, not only the answer</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">A trace that holds the rule id turns the intelligence plane into something you can query. Without it, you have logs.</p>
-<h3 style="font-size:34px;font-weight:700">Read it three ways</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">A rule that fires constantly is either a bad rule or a missing fact. A rule that never fires may be dead. A node whose attempts are always two is a prompt worth rewriting.</p>
-<h3 style="font-size:34px;font-weight:700">Redact on the way in</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">The trace holds requests and results. Decide what it may keep before you write the first row, not after the first audit.</p>
+<div style="display:flex;flex-direction:column;background:#0A1119;border:1px solid #2E3F52;border-radius:8px;overflow:hidden">
+<div style="display:flex;flex-direction:row;align-items:center;padding:12px 24px;background:#131D29;border-bottom:1px solid #2E3F52">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#E9EEF4">the query</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">which rule gives FAIL most?</p>
+</div>
+<div style="display:flex;flex-direction:column;padding:20px 24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#C9D6E4"><span style="color:#B9A0E8">SELECT</span> rule, count(*) <span style="color:#B9A0E8">AS</span> fails<br>
+&#160;&#160;<span style="color:#B9A0E8">FROM</span> trace<br>
+&#160;<span style="color:#B9A0E8">WHERE</span> result = <span style="color:#7FC9A0">'FAIL'</span><br>
+&#160;&#160;&#160;<span style="color:#B9A0E8">AND</span> ts &gt; now() - interval <span style="color:#7FC9A0">'7 days'</span><br>
+&#160;<span style="color:#B9A0E8">GROUP BY</span> rule <span style="color:#B9A0E8">ORDER BY</span> fails <span style="color:#B9A0E8">DESC</span>;</p>
 </div>
 </div>
-<aside>This slide is the loop closing: the ontology checks the run, the run writes a trace, and the trace tells you which part of the ontology to change. Without the rule id in the row, none of that is possible and you are back to reading logs by hand.</aside>
+<div style="display:flex;flex-direction:column;gap:6px;padding:0px 0px 0px 24px;border-left:4px solid #D9A75B">
+<h3 style="font-size:32px;font-weight:700">Record the gate and the rule</h3>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4">The three amber fields make the query possible. With no rule id, you have a log that you cannot count.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:0px 0px 0px 24px;border-left:4px solid #7FB2E8">
+<h3 style="font-size:32px;font-weight:700">Remove private data first</h3>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4">Make the decision about what the trace can keep before you write the first row.</p>
+</div>
+</div>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">GE 05 · example code for teaching</p>
+<div style="flex:1"></div>
+<div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:40px;height:7px;background:#7FB2E8"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;color:#7FB2E8;padding:0px 0px 0px 12px">PART 5</p>
+</div>
+<aside>This slide is the loop closing: the ontology checks the run, the run writes a trace, and the trace tells you which part of the ontology to change. A rule that fires constantly is either a bad rule or a missing fact. A rule that never fires may be dead. A node whose attempts are always two is a prompt worth rewriting. Without the rule id in the row, none of that is possible and you are back to reading logs by hand.</aside>
 </section>

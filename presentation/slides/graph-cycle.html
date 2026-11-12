@@ -1,5 +1,7 @@
-<section id="graph-cycle" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
-<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:52px;font-weight:400;line-height:1.1">How the four graphs connect</h2>
+<section id="graph-cycle" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to right, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to bottom, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:72px;font-weight:400;line-height:1.1">How the four graphs connect</h2>
 <div style="position:relative;width:1664px;height:370px">
 <svg aria-label="A cycle of four graphs. The procedural graph points down to the run, which is the execution graph: the run obeys a procedure. The knowledge graph points to the run: the run reads facts. The run points to the context graph: the run writes its steps. The context graph points back up to the procedural graph: good runs become a better procedure." width="1664" height="370" viewBox="0 0 1664 370" xmlns="http://www.w3.org/2000/svg">
 <defs><marker id="ac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1.2L10 5L0 8.8L2.6 5z" fill="#8FA3B8"/></marker></defs>
@@ -30,9 +32,14 @@
 <p style="position:absolute;left:1060px;top:76px;width:350px;font-size:24px;line-height:1.3;color:#C9D6E4">4 · good runs become a better procedure</p>
 </div>
 <div style="display:flex;gap:48px">
-<p style="flex:1;font-size:26px;line-height:1.5;color:#C9D6E4"><b>Read the four steps.</b> The run obeys a procedure. The run reads facts from the knowledge graph. The run writes its steps to the context graph. Good runs become a better procedure.</p>
-<p style="flex:1;font-size:26px;line-height:1.5;color:#C9D6E4"><b>Read the colours.</b> Blue boxes are about control. Amber boxes are about data. A context graph is a graph of traces. It is not the context window of a model.</p>
+<p style="flex:1;font-size:29px;line-height:1.45;color:#C9D6E4"><b>Read the four steps.</b> The run obeys a procedure. The run reads facts from the knowledge graph. The run writes its steps to the context graph. Good runs become a better procedure.</p>
+<p style="flex:1;font-size:29px;line-height:1.45;color:#C9D6E4"><b>Read the colours.</b> Blue boxes are about control. Amber boxes are about data. A context graph is a graph of traces. It is not the context window of a model.</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">GE 03 §2 · the cycle</p>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">GE 03 §2 · the cycle</p>
+<div style="flex:1"></div>
+<div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:40px;height:7px;background:#7FB2E8"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;color:#7FB2E8;padding:0px 0px 0px 12px">PART 3</p>
+</div>
 <aside>The table on the previous slide gives the four definitions. This drawing gives the relationship. The fourth arrow is the important one and the one most teams leave out: if good runs never change the procedure, the system does not learn from its own traces. Part 5 and the trace slide come back to that arrow.</aside>
 </section>

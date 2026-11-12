@@ -1,25 +1,27 @@
-<section id="learn-loop" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:22px">
-<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:52px;font-weight:400;line-height:1.1">How one run makes the next run better</h2>
-<p style="font-size:27px;line-height:1.45;color:#94A3B4;width:1600px">The intelligence plane is a loop. Each run goes around it one time.</p>
+<section id="learn-loop" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to right, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to bottom, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:72px;font-weight:400;line-height:1.1">How one run makes the next run better</h2>
+<p style="font-size:30px;line-height:1.45;color:#94A3B4;width:1600px">The intelligence plane is a loop. Each run goes around it one time.</p>
 <div style="display:flex;gap:16px;align-items:stretch">
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding:30px;background:#16202C;border:1px solid #7FB2E8;border-radius:4px">
 <p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#7FB2E8">1 · Ontology</p>
-<p style="font-size:25px;line-height:1.4;color:#C9D6E4">Types, values and rules. Each rule has an id.</p>
+<p style="font-size:29px;line-height:1.35;color:#C9D6E4">Types, values and rules. Each rule has an id.</p>
 </div>
 <x-connector style="width:56px" head="end"></x-connector>
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding:30px;background:#16202C;border:1px solid #2E3F52;border-radius:4px">
 <p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#94A3B4">2 · Gate</p>
-<p style="font-size:25px;line-height:1.4;color:#C9D6E4">Each result of the run gets a check against the rules.</p>
+<p style="font-size:29px;line-height:1.35;color:#C9D6E4">Each result of the run gets a check against the rules.</p>
 </div>
 <x-connector style="width:56px" head="end"></x-connector>
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding:30px;background:#16202C;border:1px solid #2E3F52;border-radius:4px">
 <p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#94A3B4">3 · Trace</p>
-<p style="font-size:25px;line-height:1.4;color:#C9D6E4">One row for each step: the node, the rule id, PASS or FAIL.</p>
+<p style="font-size:29px;line-height:1.35;color:#C9D6E4">One row for each step: the node, the rule id, PASS or FAIL.</p>
 </div>
 <x-connector style="width:56px" head="end"></x-connector>
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding:30px;background:#16202C;border:1px solid #2E3F52;border-radius:4px">
 <p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#94A3B4">4 · Query</p>
-<p style="font-size:25px;line-height:1.4;color:#C9D6E4">Which rule gives FAIL most? Which fact was absent?</p>
+<p style="font-size:29px;line-height:1.35;color:#C9D6E4">Which rule gives FAIL most? Which fact was absent?</p>
 </div>
 </div>
 <svg aria-label="A return arrow from the fourth box, Query, back to the first box, Ontology." width="1664" height="76" viewBox="0 0 1664 76" xmlns="http://www.w3.org/2000/svg">
@@ -28,9 +30,14 @@
 </svg>
 <p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;text-align:center;color:#D9A75B">5 · correct the rule, or add the fact that was absent</p>
 <div style="display:flex;gap:48px">
-<p style="flex:1;font-size:26px;line-height:1.5;color:#C9D6E4"><b>The amber arrow is the important one.</b> If the trace does not go back into the ontology, the system makes the same error in the next run.</p>
-<p style="flex:1;font-size:26px;line-height:1.5;color:#C9D6E4"><b>The rule id carries the lesson.</b> A trace with no rule id is a log. You can read it, but you cannot count it. The next slide gives the row and the query.</p>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#C9D6E4"><b>The amber arrow is the important one.</b> If the trace does not go back into the ontology, the system makes the same error in the next run.</p>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#C9D6E4"><b>The rule id carries the lesson.</b> A trace with no rule id is a log. You can read it, but you cannot count it. The next slide gives the row and the query.</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">GE 05 · how one run makes the next run better</p>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">GE 05</p>
+<div style="flex:1"></div>
+<div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:40px;height:7px;background:#7FB2E8"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;color:#7FB2E8;padding:0px 0px 0px 12px">PART 5</p>
+</div>
 <aside>Walk the loop once with the refund example: rule LV-1 is in the ontology; gate 2 checks a refund against it; the trace row records GATE 2, LV-1, FAIL; a weekly query shows that LV-1 fails more than any other rule; you learn that the model was never told that an order was already refunded, so you add that fact to what the plan step retrieves. The next run needs one attempt, not two.</aside>
 </section>

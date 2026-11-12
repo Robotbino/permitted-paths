@@ -326,4 +326,6 @@ A full visual pass on the branch `redesign/journal-and-bench`. The content, the 
 
 `presentation/` holds the source of a slide deck that teaches the course in 33 slides: `deck.json` (the index) and one HTML fragment for each slide. The site does not load these files. The prose comes from `index.html`. The code on the slides is an example for teaching; no test runs it. `presentation/README.md` gives the format.
 
-Not checked: the slides were written as source and most were not examined after rendering. Slide 10 (the solved decision ledger) was redrawn after one rendered check and was not examined again.
+Appearance pass (2026-11-12): a new cover and a new last slide (the same graph, first with three nodes lit, then fully lit), larger type, code in panels with syntax colour, a faint grid on the dark slides, and a nine-mark part indicator at the bottom right of each slide.
+
+Checked: each of the 33 slides was examined in a local render (headless Chrome, with a small page that loads `deck.json` and the slide files). That render is an approximation of the deck page. Not checked: the slides in the deck page itself, and the export to PDF or PowerPoint.

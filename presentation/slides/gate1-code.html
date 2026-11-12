@@ -1,32 +1,52 @@
-<section id="gate1-code" data-transition="fade" style="background:#16202C;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:row;gap:48px;align-items:start">
-<div style="width:1060px;display:flex;flex-direction:column;gap:22px">
-<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">Gate 1: is the shape of the call correct?</h2>
-<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">class RefundCall(BaseModel):<br>
-&#160;&#160;&#160;&#160;model_config = ConfigDict(extra="forbid")<br>
+<section id="gate1-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to right, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to bottom, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:60px;font-weight:400;line-height:1.1">Gate 1: is the shape of the call correct?</h2>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="width:1060px;display:flex;flex-direction:column;background:#0A1119;border:1px solid #2E3F52;border-radius:8px;overflow:hidden">
+<div style="display:flex;flex-direction:row;align-items:center;padding:12px 24px;background:#131D29;border-bottom:1px solid #7FB2E8">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7FB2E8">gate 1</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">before the tool operates · reads only the call</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:18px;padding:22px 24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.42;color:#C9D6E4"><span style="color:#B9A0E8">class</span> <span style="color:#7FB2E8">RefundCall</span>(BaseModel):<br>
+&#160;&#160;&#160;&#160;model_config = ConfigDict(extra=<span style="color:#7FC9A0">"forbid"</span>)<br>
 &#160;&#160;&#160;&#160;order_id:&#160;&#160;&#160;&#160;&#160;int<br>
 &#160;&#160;&#160;&#160;amount_cents: PositiveInt<br>
-&#160;&#160;&#160;&#160;reason:&#160;&#160;&#160;&#160;&#160;&#160;&#160;Literal["duplicate", "faulty", "goodwill"]<br>
-&#160;&#160;&#160;&#160;currency:&#160;&#160;&#160;&#160;&#160;Literal["EUR", "GBP", "USD"] = "EUR"<br>
-<br>
-TOOL_SCHEMAS = {"refund": RefundCall, "search_notes": SearchCall}<br>
-<br>
-def gate_1(name: str, args: dict) -&gt; Result:<br>
+&#160;&#160;&#160;&#160;reason:&#160;&#160;&#160;&#160;&#160;&#160;&#160;Literal[<span style="color:#7FC9A0">"duplicate"</span>, <span style="color:#7FC9A0">"faulty"</span>, <span style="color:#7FC9A0">"goodwill"</span>]<br>
+&#160;&#160;&#160;&#160;currency:&#160;&#160;&#160;&#160;&#160;Literal[<span style="color:#7FC9A0">"EUR"</span>, <span style="color:#7FC9A0">"GBP"</span>, <span style="color:#7FC9A0">"USD"</span>] = <span style="color:#7FC9A0">"EUR"</span></p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.42;color:#C9D6E4">TOOL_SCHEMAS = {<span style="color:#7FC9A0">"refund"</span>: RefundCall, <span style="color:#7FC9A0">"search_notes"</span>: SearchCall}</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.42;color:#C9D6E4"><span style="color:#B9A0E8">def</span> <span style="color:#7FB2E8">gate_1</span>(name: str, args: dict) -&gt; Result:<br>
 &#160;&#160;&#160;&#160;schema = TOOL_SCHEMAS.get(name)<br>
-&#160;&#160;&#160;&#160;if schema is None:<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return Reject("GATE 1", f"no tool named {name!r}")<br>
-&#160;&#160;&#160;&#160;try:<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return Accept(schema.model_validate(args))<br>
-&#160;&#160;&#160;&#160;except ValidationError as e:<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return Reject("GATE 1", readable(e))<span style="color:#7F8FA3">&#160;&#160;# goes back to the model</span></p>
+&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">if</span> schema <span style="color:#B9A0E8">is</span> <span style="color:#D9A75B">None</span>:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">return</span> Reject(<span style="color:#7FC9A0">"GATE 1"</span>, <span style="color:#7FC9A0">f"no tool has the name {name!r}"</span>)<br>
+&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">try</span>:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">return</span> Accept(schema.model_validate(args))<br>
+&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">except</span> ValidationError <span style="color:#B9A0E8">as</span> e:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">return</span> Reject(<span style="color:#7FC9A0">"GATE 1"</span>, readable(e))</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:24px">
-<h3 style="font-size:34px;font-weight:700">Before the tool operates</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">Gate 1 reads only the call. It is cheap, it needs no database, and it catches the largest group of failures: a well-written call to a tool that does not exist, or with an argument that was invented.</p>
-<h3 style="font-size:34px;font-weight:700">Forbid extra fields</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">One line. Without it, a model that adds <b>force=true</b> gets silently ignored today and silently honoured after someone adds that parameter next year.</p>
-<h3 style="font-size:34px;font-weight:700">Write the rejection for a reader</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">The text goes back into the model's context. “amount_cents must be greater than 0” repairs the next attempt; a stack trace does not.</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">Control 3, first half · the same schema generates the tool definition the model sees</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:6px;padding:0px 0px 0px 24px;border-left:4px solid #7FB2E8">
+<h3 style="font-size:32px;font-weight:700">Low cost, large effect</h3>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4">No database is necessary. The gate stops a call to a tool that does not exist, and an argument that the model invented.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:0px 0px 0px 24px;border-left:4px solid #7FB2E8">
+<h3 style="font-size:32px;font-weight:700">Do not permit extra fields</h3>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4">One line. Without it, the system ignores <b>force=true</b> today, and obeys it after a person adds that parameter.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:0px 0px 0px 24px;border-left:4px solid #7FB2E8">
+<h3 style="font-size:32px;font-weight:700">Write the cause for a reader</h3>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4">The text goes back to the model. “amount_cents must be more than 0” corrects the next attempt.</p>
+</div>
+</div>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Control 3, first half · example code for teaching</p>
+<div style="flex:1"></div>
+<div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:40px;height:7px;background:#7FB2E8"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;color:#7FB2E8;padding:0px 0px 0px 12px">PART 4</p>
+</div>
 <aside>Two practical notes. One: generate the tool definition the model is given from this same class, so the schema and the documentation can never drift apart. Two: a Gate 1 rejection is not an error to log and forget — it is a message to the model, so spend a minute on its wording.</aside>
 </section>

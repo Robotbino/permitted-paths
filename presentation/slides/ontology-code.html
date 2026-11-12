@@ -1,30 +1,51 @@
-<section id="ontology-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:row;gap:48px;align-items:start">
-<div style="width:1060px;display:flex;flex-direction:column;gap:22px">
-<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">An ontology you can run</h2>
-<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">class OrderStatus(str, Enum):<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;# the permitted answers, not prose</span><br>
-&#160;&#160;&#160;&#160;PENDING&#160;&#160;&#160;= "PENDING"<br>
-&#160;&#160;&#160;&#160;PAID&#160;&#160;&#160;&#160;&#160;&#160;= "PAID"<br>
-&#160;&#160;&#160;&#160;FULFILLED = "FULFILLED"<br>
-&#160;&#160;&#160;&#160;REFUNDED&#160;&#160;= "REFUNDED"<br>
-&#160;&#160;&#160;&#160;CANCELLED = "CANCELLED"<br>
-<br>
-<span style="color:#7F8FA3">RULES = [&#160;&#160;# data, so a person can read them and a test can run them</span><br>
-&#160;&#160;Rule("LV-1", "an order has at most one refund",<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;lambda f, r: count(f, "refund", order_id=r.order_id) &lt;= 1),<br>
-&#160;&#160;Rule("LV-2", "a refund pays the customer of its order",<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;lambda f, r: r.customer_id == order(f, r.order_id).customer_id),<br>
-&#160;&#160;Rule("LV-3", "only a PAID or FULFILLED order can be refunded",<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;lambda f, r: order(f, r.order_id).status in REFUNDABLE),<br>
+<section id="ontology-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:26px">
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to right, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to bottom, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:64px;font-weight:400;line-height:1.1">An ontology that code can use</h2>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="width:1060px;display:flex;flex-direction:column;background:#0A1119;border:1px solid #2E3F52;border-radius:8px;overflow:hidden">
+<div style="display:flex;flex-direction:row;align-items:center;padding:12px 24px;background:#131D29;border-bottom:1px solid #2E3F52">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#E9EEF4">ontology</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">the permitted results</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px;padding:24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4"><span style="color:#B9A0E8">class</span> <span style="color:#7FB2E8">OrderStatus</span>(str, Enum):<br>
+&#160;&#160;&#160;&#160;PENDING&#160;&#160;&#160;= <span style="color:#7FC9A0">"PENDING"</span><br>
+&#160;&#160;&#160;&#160;PAID&#160;&#160;&#160;&#160;&#160;&#160;= <span style="color:#7FC9A0">"PAID"</span><br>
+&#160;&#160;&#160;&#160;FULFILLED = <span style="color:#7FC9A0">"FULFILLED"</span><br>
+&#160;&#160;&#160;&#160;REFUNDED&#160;&#160;= <span style="color:#7FC9A0">"REFUNDED"</span><br>
+&#160;&#160;&#160;&#160;CANCELLED = <span style="color:#7FC9A0">"CANCELLED"</span></p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">RULES = [<br>
+&#160;&#160;Rule(<span style="color:#D9A75B">"LV-1"</span>, <span style="color:#7FC9A0">"an order has at most one refund"</span>,<br>
+&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">lambda</span> f, r: count(f, <span style="color:#7FC9A0">"refund"</span>, order_id=r.order_id) &lt;= <span style="color:#D9A75B">1</span>),<br>
+&#160;&#160;Rule(<span style="color:#D9A75B">"LV-2"</span>, <span style="color:#7FC9A0">"a refund pays the customer of its order"</span>,<br>
+&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">lambda</span> f, r: r.customer_id == order(f, r.order_id).customer_id),<br>
+&#160;&#160;Rule(<span style="color:#D9A75B">"LV-3"</span>, <span style="color:#7FC9A0">"only a PAID or FULFILLED order can be refunded"</span>,<br>
+&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">lambda</span> f, r: order(f, r.order_id).status <span style="color:#B9A0E8">in</span> REFUNDABLE),<br>
 ]</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:24px">
-<h3 style="font-size:34px;font-weight:700">What changed</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">The prompt sentence “never refund an order twice” became <b>LV-1</b>. A sentence is advice. A rule with an id is something a gate runs, a test asserts and a trace can name when it fails.</p>
-<h3 style="font-size:34px;font-weight:700">Start with the enumeration</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">Five permitted values end the argument about order status from part 1. Four of those five answers are now not merely unlikely — they do not exist.</p>
-<h3 style="font-size:34px;font-weight:700">Give every rule an id</h3>
-<p style="font-size:25px;line-height:1.45;color:#94A3B4">The id is what the rejection carries, what the trace records and what you count later to find the rule that fires most.</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">Control 2 · GE 04</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:8px;padding:0px 0px 0px 24px;border-left:4px solid #7FC9A0">
+<h3 style="font-size:33px;font-weight:700">Start with the enumeration</h3>
+<p style="font-size:27px;line-height:1.4;color:#94A3B4">Five permitted values. Four of the five answers of part 1 are now not possible.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;padding:0px 0px 0px 24px;border-left:4px solid #D9A75B">
+<h3 style="font-size:33px;font-weight:700">Give each rule an id</h3>
+<p style="font-size:27px;line-height:1.4;color:#94A3B4">The prompt sentence “do not refund an order two times” became LV-1. A gate uses the id, and a trace records it.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;padding:0px 0px 0px 24px;border-left:4px solid #7FB2E8">
+<h3 style="font-size:33px;font-weight:700">Keep the rules as data</h3>
+<p style="font-size:27px;line-height:1.4;color:#94A3B4">A person can read the list. A test can run the list. You can count the list in the trace.</p>
+</div>
+</div>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Control 2 · GE 04 · example code for teaching</p>
+<div style="flex:1"></div>
+<div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:40px;height:7px;background:#7FB2E8"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;color:#7FB2E8;padding:0px 0px 0px 12px">PART 4</p>
+</div>
 <aside>Keep the rules as data rather than scattered if-statements. Data can be listed in a review, diffed in a pull request, and counted in the trace table. That is what lets the ontology improve from evidence instead of from opinion.</aside>
 </section>

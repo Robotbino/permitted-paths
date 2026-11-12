@@ -1,22 +1,52 @@
-<section id="runtime-code" data-transition="fade" style="background:#16202C;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
-<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">The runtime is about twenty lines</h2>
-<p style="font-size:26px;line-height:1.4;color:#94A3B4;width:1600px">You do not need a framework to start. You need a walker that obeys the edges, counts the attempts, and writes a trace for every step.</p>
-<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4;width:1664px">def run(state: RunState, start: str = "classify", max_steps: int = 24) -&gt; RunState:<br>
+<section id="runtime-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:26px">
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to right, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to bottom, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:64px;font-weight:400;line-height:1.1">The runtime is fourteen lines</h2>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="width:1100px;display:flex;flex-direction:column;background:#0A1119;border:1px solid #2E3F52;border-radius:8px;overflow:hidden">
+<div style="display:flex;flex-direction:row;align-items:center;padding:12px 24px;background:#131D29;border-bottom:1px solid #2E3F52">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#E9EEF4">run</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">obeys the edges · counts · writes the trace</p>
+</div>
+<div style="display:flex;flex-direction:column;padding:24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#C9D6E4"><span style="color:#B9A0E8">def</span> <span style="color:#7FB2E8">run</span>(state, start=<span style="color:#7FC9A0">"classify"</span>, max_steps=<span style="color:#D9A75B">24</span>):<br>
 &#160;&#160;&#160;&#160;node = start<br>
-&#160;&#160;&#160;&#160;for step in range(max_steps):<br>
+&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">for</span> step <span style="color:#B9A0E8">in</span> range(max_steps):<br>
 &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;kind, fn = NODES[node]<br>
 &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;began = time.monotonic()<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;state = fn(state)<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;# the only place a model can run</span><br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;state = fn(state)<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;# 1 · a model can operate only here</span><br>
 &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;trace.write(state.run_id, step, node, kind, state, began)<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">if</span> node <span style="color:#B9A0E8">in</span> TERMINAL:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">return</span> state<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">if</span> node == <span style="color:#7FC9A0">"verify"</span> <span style="color:#B9A0E8">and not</span> state.tests_pass:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;state = state.with_(attempts=state.attempts + <span style="color:#D9A75B">1</span>)<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;node = EDGES[node](state)<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;# 2 · code selects the path</span><br>
 <br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;if node in TERMINAL:<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return state<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;if node == "verify" and not state.tests_pass:<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;state = state.with_(attempts=state.attempts + 1)<br>
-<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;node = EDGES[node](state)<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;# code picks the path, every time</span><br>
-<br>
-&#160;&#160;&#160;&#160;return hand_to_person(state)<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;# a run that will not end is a person's problem</span></p>
-<p style="font-size:26px;line-height:1.4;color:#C9D6E4;width:1600px">Three limits in fourteen lines: a maximum number of attempts on the retry edge, a maximum number of steps in the whole run, and a person at the end of both.</p>
-<aside>Point at the fallthrough on the last line. Most agent incidents are not a wrong answer; they are a run that never stopped. A hard step limit with a person at the end of it costs one line and removes that whole class of failure.</aside>
+&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">return</span> hand_to_person(state)<span style="color:#7F8FA3">&#160;&#160;# 3 · no end: a person gets the run</span></p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:28px;line-height:1.4;color:#94A3B4">A framework is not necessary at the start. The runtime obeys the edges, counts the attempts, and writes a trace for each step.</p>
+<div style="display:flex;flex-direction:column;gap:6px;padding:0px 0px 0px 24px;border-left:4px solid #D9A75B">
+<h3 style="font-size:31px;font-weight:700">1 · One place for the model</h3>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4">The model operates in a node. It operates in no other line.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:0px 0px 0px 24px;border-left:4px solid #7FB2E8">
+<h3 style="font-size:31px;font-weight:700">2 · Code selects the path</h3>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4">The edge reads the state and gives the next node. The attempt limit is in the edge.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:0px 0px 0px 24px;border-left:4px solid #7FC9A0">
+<h3 style="font-size:31px;font-weight:700">3 · A person at the end</h3>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4">After the maximum number of steps, a person gets the run.</p>
+</div>
+</div>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Example code for teaching</p>
+<div style="flex:1"></div>
+<div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:40px;height:7px;background:#7FB2E8"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;color:#7FB2E8;padding:0px 0px 0px 12px">PART 2</p>
+</div>
+<aside>Point at the last line. Most agent incidents are not a wrong answer; they are a run that never stopped. A hard step limit with a person at the end of it costs one line and removes that whole class of failure. The three numbered comments match the three notes on the right: one place for the model, code selects the path, a person at the end.</aside>
 </section>

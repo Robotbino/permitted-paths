@@ -1,24 +1,58 @@
-<section id="graph-code" data-transition="fade" style="background:#16202C;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
-<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">The same graph, as code</h2>
-<p style="font-size:26px;line-height:1.4;color:#94A3B4;width:1600px">Two dictionaries. The nodes say what runs; the edges say what comes next. No model appears in the edges — that is the whole of control 1.</p>
-<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4;width:1664px">NODES = {<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;# what runs, and what kind of thing it is</span><br>
-&#160;&#160;&#160;&#160;"classify":&#160;&#160;(MODEL,&#160;&#160;classify_request),<br>
-&#160;&#160;&#160;&#160;"answer":&#160;&#160;&#160;&#160;(CODE,&#160;&#160;&#160;answer_from_graph),<br>
-&#160;&#160;&#160;&#160;"plan":&#160;&#160;&#160;&#160;&#160;&#160;(AGENT,&#160;&#160;make_plan),<br>
-&#160;&#160;&#160;&#160;"approve":&#160;&#160;&#160;(PERSON,&#160;ask_approval),<br>
-&#160;&#160;&#160;&#160;"change":&#160;&#160;&#160;&#160;(AGENT,&#160;&#160;write_change),<br>
-&#160;&#160;&#160;&#160;"verify":&#160;&#160;&#160;&#160;(CODE,&#160;&#160;&#160;run_tests),<br>
-&#160;&#160;&#160;&#160;"summarise":&#160;(MODEL,&#160;&#160;write_summary),<br>
-&#160;&#160;&#160;&#160;"escalate":&#160;&#160;(PERSON,&#160;hand_to_person),<br>
+<section id="graph-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:26px">
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to right, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:repeating-linear-gradient(to bottom, #15202D 0px, #15202D 1px, transparent 1px, transparent 64px)"></div>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:64px;font-weight:400;line-height:1.1">The same graph, as code</h2>
+<div style="display:flex;gap:30px;align-items:stretch">
+<div style="width:620px;display:flex;flex-direction:column;background:#0A1119;border:1px solid #2E3F52;border-radius:8px;overflow:hidden">
+<div style="display:flex;flex-direction:row;align-items:center;padding:12px 24px;background:#131D29;border-bottom:1px solid #2E3F52">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#E9EEF4">nodes</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">what operates</p>
+</div>
+<div style="display:flex;flex-direction:column;padding:24px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">NODES = {<br>
+&#160;&#160;"classify":&#160;&#160;(<span style="color:#D9A75B">MODEL</span>,&#160;&#160;classify),<br>
+&#160;&#160;"answer":&#160;&#160;&#160;&#160;(<span style="color:#7FB2E8">CODE</span>,&#160;&#160;&#160;answer),<br>
+&#160;&#160;"plan":&#160;&#160;&#160;&#160;&#160;&#160;(<span style="color:#B9A0E8">AGENT</span>,&#160;&#160;make_plan),<br>
+&#160;&#160;"approve":&#160;&#160;&#160;(<span style="color:#7FC9A0">PERSON</span>,&#160;ask_approval),<br>
+&#160;&#160;"change":&#160;&#160;&#160;&#160;(<span style="color:#B9A0E8">AGENT</span>,&#160;&#160;write_change),<br>
+&#160;&#160;"verify":&#160;&#160;&#160;&#160;(<span style="color:#7FB2E8">CODE</span>,&#160;&#160;&#160;run_tests),<br>
+&#160;&#160;"summarise":&#160;(<span style="color:#D9A75B">MODEL</span>,&#160;&#160;write_summary),<br>
+&#160;&#160;"escalate":&#160;&#160;(<span style="color:#7FC9A0">PERSON</span>,&#160;hand_to_person),<br>
+}</p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;background:#0A1119;border:1px solid #2E3F52;border-radius:8px;overflow:hidden">
+<div style="display:flex;flex-direction:row;align-items:center;padding:12px 24px;background:#131D29;border-bottom:1px solid #2E3F52">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#E9EEF4">edges</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">what comes next · no model here</p>
+</div>
+<div style="display:flex;flex-direction:column;padding:24px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">EDGES = {<br>
+&#160;&#160;"classify":&#160;<span style="color:#B9A0E8">lambda</span> s: <span style="color:#7FC9A0">"plan"</span> <span style="color:#B9A0E8">if</span> s.kind == <span style="color:#7FC9A0">"change"</span> <span style="color:#B9A0E8">else</span> <span style="color:#7FC9A0">"answer"</span>,<br>
+&#160;&#160;"plan":&#160;&#160;&#160;&#160;&#160;<span style="color:#B9A0E8">lambda</span> s: <span style="color:#7FC9A0">"approve"</span>,<br>
+&#160;&#160;"approve":&#160;&#160;<span style="color:#B9A0E8">lambda</span> s: <span style="color:#7FC9A0">"change"</span> <span style="color:#B9A0E8">if</span> s.approved <span style="color:#B9A0E8">else</span> <span style="color:#7FC9A0">"escalate"</span>,<br>
+&#160;&#160;"change":&#160;&#160;&#160;<span style="color:#B9A0E8">lambda</span> s: <span style="color:#7FC9A0">"verify"</span>,<br>
+&#160;&#160;"verify":&#160;&#160;&#160;<span style="color:#B9A0E8">lambda</span> s: (<br>
+&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#7FC9A0">"summarise"</span> <span style="color:#B9A0E8">if</span> s.tests_pass <span style="color:#B9A0E8">else</span><br>
+&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#7FC9A0">"change"</span> <span style="color:#B9A0E8">if</span> s.attempts &lt; <span style="color:#D9A75B">MAX_ATTEMPTS</span> <span style="color:#B9A0E8">else</span><br>
+&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#7FC9A0">"escalate"</span>),<br>
 }<br>
-EDGES = {<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;# who comes next: pure functions of the state</span><br>
-&#160;&#160;&#160;&#160;"classify":&#160;lambda s: "answer" if s.kind == "question" else "plan",<br>
-&#160;&#160;&#160;&#160;"plan":&#160;&#160;&#160;&#160;&#160;lambda s: "approve",<br>
-&#160;&#160;&#160;&#160;"approve":&#160;&#160;lambda s: "change" if s.approved else "escalate",<br>
-&#160;&#160;&#160;&#160;"change":&#160;&#160;&#160;lambda s: "verify",<br>
-&#160;&#160;&#160;&#160;"verify":&#160;&#160;&#160;lambda s: ("summarise" if s.tests_pass<br>
-&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;else "change" if s.attempts &lt; MAX_ATTEMPTS else "escalate"),<br>
-}<br>
-TERMINAL = {"answer", "summarise", "escalate"}</p>
-<aside>Read the verify edge out loud: tests pass means summarise; tests fail means change again, unless we are at the attempt limit, in which case a person takes it. That sentence is now a line of code instead of a line in a prompt. You can unit-test it with no model and no network: feed it a state, assert the next node.</aside>
+TERMINAL = {<span style="color:#7FC9A0">"answer"</span>, <span style="color:#7FC9A0">"summarise"</span>, <span style="color:#7FC9A0">"escalate"</span>}</p>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:40px">
+<p style="flex:1;font-size:28px;line-height:1.4;color:#C9D6E4"><b>The kind is in the contract.</b> The colours are the colours of the drawing: model, code, agent, person.</p>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#C9D6E4"><b>An edge is a function of the state.</b> No model selects the next node. That is control 1.</p>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#C9D6E4"><b>You can test an edge with no model.</b> Give it a state. Examine the name of the next node.</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Example code for teaching</p>
+<div style="flex:1"></div>
+<div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:24px;height:3px;background:#6E7F92"></div><div style="width:40px;height:7px;background:#7FB2E8"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div><div style="width:24px;height:3px;background:#2E3F52"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;color:#7FB2E8;padding:0px 0px 0px 12px">PART 2</p>
+</div>
+<aside>Read the verify edge out loud: tests pass means summarise; tests fail means change again, unless we are at the attempt limit, in which case a person takes it. That sentence is now a line of code instead of a line in a prompt. You can unit-test it with no model and no network: feed it a state, assert the next node. The kinds in the left panel use the same colours as the drawing on the previous slide.</aside>
 </section>
