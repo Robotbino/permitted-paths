@@ -1,0 +1,24 @@
+{
+  "port": 8787,
+  "claudePath": "C:/Users/YOU/AppData/Roaming/npm/node_modules/@anthropic-ai/claude-code/bin/claude.exe",
+  "callbackBase": "http://127.0.0.1:5678/",
+  "users": ["123456789"],
+  "timeoutMinutes": 20,
+  "maxTurns": 40,
+  "maxTasksPerHour": 6,
+  "maxQueued": 3,
+  "repos": {
+    "vault": {
+      "path": "C:/Users/YOU/Documents/Obsidian-vault",
+      "modes": ["ask"]
+    },
+    "employee-manager": {
+      "path": "C:/Users/YOU/dev/employee-manager",
+      "modes": ["investigate", "change"],
+      "baseBranch": "main",
+      "addDirs": ["C:/Users/YOU/Documents/Obsidian-vault"],
+      "test": { "command": "C:/Program Files/nodejs/node.exe", "args": ["--test"], "minutes": 10 },
+      "agentTools": []
+    }
+  }
+}

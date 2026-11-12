@@ -1,0 +1,1079 @@
+{
+  "name": "Phone to Claude Code (Permitted Paths, part L)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "userIds": "REPLACE_WITH_YOUR_TELEGRAM_USER_ID"
+        }
+      },
+      "id": "9dbd72f0-4ef3-4545-8e1d-8d0318ec231b",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "5a143366-1201-4b60-b640-23343bc68a20"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": true,
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8b4f4384-6762-4102-8f12-986902b9b1cb",
+              "name": "allowedUserId",
+              "value": "REPLACE_WITH_YOUR_TELEGRAM_USER_ID",
+              "type": "string"
+            },
+            {
+              "id": "104a0415-2674-479c-8c0c-a1060caed291",
+              "name": "bridgeUrl",
+              "value": "http://127.0.0.1:8787",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "121cec04-31ce-4f5c-982a-fb3090d017b7",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "6e359d98-a051-455b-9f5e-5f14de53b700",
+              "leftValue": "={{ String($json.message.from.id) }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "={{ $json.allowedUserId }}"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4b5580a-95be-4457-a255-5dca93e9e328",
+      "name": "Sender allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Makes one task from one Telegram message. Code selects the repository and the mode. No model is used.\n// REPOS: a name that can be in a message -> the key of the repository in the config of the bridge.\nconst REPOS = { 'employee manager': 'employee-manager', 'employee-manager': 'employee-manager' };\nconst msg = $input.first().json.message;\nconst text = (msg.text || '').trim();\nlet mode = 'investigate', repo = '', prompt = text;\nif (/^\\/ask\\b/i.test(text)) { mode = 'ask'; repo = 'vault'; prompt = text.replace(/^\\/ask\\s*/i, ''); }\nelse { const lower = text.toLowerCase(); for (const name of Object.keys(REPOS)) { if (lower.includes(name)) { repo = REPOS[name]; break; } } }\nconst id = 't-' + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6);\nreturn [{ json: { task_id: id, user_id: String(msg.from.id), chat_id: msg.chat.id, repo, mode, prompt } }];"
+      },
+      "id": "f009dd86-de80-4fe5-9377-b6e13215ad3e",
+      "name": "Make task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "1f3de11b-5d35-44ce-a7e4-eac0b45de7be",
+              "leftValue": "={{ $json.repo }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "560ee41a-1d8d-4edb-b5e5-2128285db987",
+              "leftValue": "={{ $json.prompt }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1442338a-169a-4db5-a11d-fc7b2f9bdeb1",
+      "name": "Task understood?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        880,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "text": "I do not know which repository you mean. Put its name in the message, or start with /ask for a question about your notes.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c353a8ed-f8ac-42e4-acfb-95540bf02c77",
+      "name": "Ask which repository",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        60
+      ],
+      "webhookId": "5510056a-7375-4822-a039-2d2953778352"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Settings').first().json.bridgeUrl }}/tasks",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ task_id: $('Make task').first().json.task_id, user_id: $('Make task').first().json.user_id, repo: $('Make task').first().json.repo, mode: $('Make task').first().json.mode, prompt: $('Make task').first().json.prompt }) }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b7155ae7-f7c6-4f9b-84d6-8870f91e6fb5",
+      "name": "Send task to bridge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1100,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "b054eeed-e596-4e28-a457-8b40f55441b9",
+              "leftValue": "={{ $json.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "queued"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5c297190-6131-4830-b375-0ba4529c13cc",
+      "name": "Bridge accepted?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1320,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "text": "=The bridge did not accept the task. Check that failed: {{ $json.check || 'the bridge did not answer' }}. {{ $json.error || '' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "512104ec-c10d-403c-abbd-cbd9711ab92b",
+      "name": "Tell: rejected",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        -40
+      ],
+      "webhookId": "04b40cc7-1067-486c-a107-979ce640df8b"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "text": "=Task {{ $('Make task').first().json.task_id }}\nRepository: {{ $('Make task').first().json.repo }}\nMode: {{ $('Make task').first().json.mode }} (read-only)",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "1c302a15-27df-47e6-8e25-7dbc9a5b5057",
+      "name": "Tell: accepted",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        -300
+      ],
+      "webhookId": "e129ce53-6c10-4daa-a99b-2070304a482b"
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "id": "a5ed38ed-70c7-4a24-bac0-e00297e414ea",
+      "name": "Wait 20 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        -300
+      ],
+      "webhookId": "9e3b1522-c072-4848-a1f7-4e20728fcb25"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Settings').first().json.bridgeUrl }}/tasks/{{ $('Make task').first().json.task_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "30e235b6-58a6-49fe-8c3c-4d7968e9a897",
+      "name": "Get status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "2e26da41-c27f-4369-87be-f23078e7fc7a",
+              "leftValue": "={{ $json.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "done"
+            },
+            {
+              "id": "252ffb1a-baba-4d0a-90f3-136db5ce848e",
+              "leftValue": "={{ $json.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "failed"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "7f9d9e3d-9a20-47f4-ac5a-fb58f4522d47",
+      "name": "Finished?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        2200,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "dd94377f-5dec-4304-87b5-ef9d514c757f",
+              "leftValue": "={{ $('Make task').first().json.mode }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "ask"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "46f9f438-e6ab-43a8-b866-681de35539f1",
+      "name": "Is it a question?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        2420,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "text": "={{ ($('Get status').first().json.report || 'The task failed. Read the job file of ' + $('Make task').first().json.task_id + ' on the computer.').slice(0, 3900) }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "8325d589-d039-46da-b1b0-2dc479f493f3",
+      "name": "Send answer",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        -520
+      ],
+      "webhookId": "bea7247c-e280-44f3-a0dd-ff38b08cd002"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "message": "=Task {{ $('Make task').first().json.task_id }} · investigation {{ $('Get status').first().json.status }}\n\n{{ ($('Get status').first().json.report || 'No report.').slice(0, 3500) }}",
+        "responseType": "approval",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve the fix",
+            "disapproveLabel": "Reject"
+          }
+        },
+        "chatApproval": true,
+        "approverIds": "={{ $('Settings').first().json.allowedUserId }}",
+        "postDecisionBehavior": "showOutcome",
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "appendAttribution": false
+        }
+      },
+      "id": "40fe6b32-cb3f-4298-a615-59338bfc6383",
+      "name": "Approve the fix?",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        -300
+      ],
+      "webhookId": "2ca316d1-576b-4c03-87fa-292fd02fd370"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "0e3fbe99-d25f-477a-b0fe-fb6f3046d294",
+              "leftValue": "={{ $json.data.approved }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "51d6b93c-a763-42fd-935c-a8048e711e9e",
+      "name": "Fix approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        2860,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "text": "=Task {{ $('Make task').first().json.task_id }} closed. Nothing was changed.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d6cdea20-d4e9-4a25-a1f6-20f5241cbebf",
+      "name": "Tell: closed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3080,
+        -140
+      ],
+      "webhookId": "d47c593d-3f03-4c3e-9370-80f7cc40bae9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Settings').first().json.bridgeUrl }}/tasks",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ task_id: $('Make task').first().json.task_id + '-fix', user_id: $('Make task').first().json.user_id, repo: $('Make task').first().json.repo, mode: 'change', approved: true, prompt: ('Implement the fix that this investigation proposed. Add or change a test that fails before the fix. Commit the result.\\n\\nOriginal request:\\n' + $('Make task').first().json.prompt + '\\n\\nInvestigation report:\\n' + ($('Get status').first().json.report || '')).slice(0, 3900) }) }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "daf4d73b-448a-4927-a49b-14ad659ce4b2",
+      "name": "Send change to bridge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3080,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "638188a1-ea18-4146-891a-0d26777b30a6",
+              "leftValue": "={{ $json.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "queued"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6a5044fc-a1b3-4b5b-916a-ed3201054ab8",
+      "name": "Change accepted?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        3300,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "id": "3116d715-9c44-4425-82c3-d0e42a70e010",
+      "name": "Wait 20 s (change)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3520,
+        -500
+      ],
+      "webhookId": "5fc8750c-81e0-41d3-ace8-612813bb2fe3"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Settings').first().json.bridgeUrl }}/tasks/{{ $('Make task').first().json.task_id }}-fix",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "94d80dd3-38d5-4fa3-b7d1-781a937a7be5",
+      "name": "Get change status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3740,
+        -500
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "c6324302-1c3f-465c-9a26-e019d3a03448",
+              "leftValue": "={{ $json.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "done"
+            },
+            {
+              "id": "a1ca433c-cb98-470e-a58f-d5f11e793204",
+              "leftValue": "={{ $json.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "failed"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "c5aaa3bf-a9aa-495f-bf17-f302c6a72523",
+      "name": "Change finished?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        3960,
+        -500
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "message": "=Task {{ $('Get change status').first().json.task_id }} · change {{ $('Get change status').first().json.status }}\nTests (run by the bridge): {{ $('Get change status').first().json.tests ? $('Get change status').first().json.tests.result : 'NOT RUN' }}\nBranch: {{ $('Get change status').first().json.branch || 'none' }} (not pushed)\n\n{{ $('Get change status').first().json.diff_stat || 'No diff.' }}\n\n{{ ($('Get change status').first().json.report || '').slice(0, 2500) }}",
+        "responseType": "approval",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Push the branch",
+            "disapproveLabel": "Discard"
+          }
+        },
+        "chatApproval": true,
+        "approverIds": "={{ $('Settings').first().json.allowedUserId }}",
+        "postDecisionBehavior": "showOutcome",
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "appendAttribution": false
+        }
+      },
+      "id": "c94c44d1-8541-498c-8cf8-35a256b67422",
+      "name": "Push the branch?",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4180,
+        -600
+      ],
+      "webhookId": "4a058858-a594-460b-8114-ed3f44ebea61"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "c554aafa-95e1-4dac-8906-a4daa3d06b1e",
+              "leftValue": "={{ $json.data.approved }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8183aaab-6e92-449f-9efb-e83160456bf7",
+      "name": "Push approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        4400,
+        -600
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Settings').first().json.bridgeUrl }}/tasks/{{ $('Make task').first().json.task_id }}-fix/publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ user_id: $('Make task').first().json.user_id, approved: true }) }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "60a3d4a2-f7a9-41e7-97b5-79a11f86c0c8",
+      "name": "Publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        4620,
+        -700
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "text": "={{ $json.pushed ? 'Pushed ' + $json.branch + '. Open the pull request on GitHub to read the diff and merge.' : 'Not pushed: ' + ($json.error || $json.detail || 'the bridge gave no reason') }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "61619e73-e593-4303-8e57-98c1ef95eb16",
+      "name": "Tell: push result",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4840,
+        -700
+      ],
+      "webhookId": "d4153010-df0e-4e44-a126-898a07c4dc48"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Make task').first().json.chat_id }}",
+        "text": "=Not pushed. The branch {{ $('Get change status').first().json.branch }} stays on the computer.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "74a76928-9f82-41ae-8bcb-5a8729b6000d",
+      "name": "Tell: not pushed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4620,
+        -480
+      ],
+      "webhookId": "b4d23621-e043-4562-a291-fb754b49419b"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Sender allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sender allowed?": {
+      "main": [
+        [
+          {
+            "node": "Make task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make task": {
+      "main": [
+        [
+          {
+            "node": "Task understood?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task understood?": {
+      "main": [
+        [
+          {
+            "node": "Send task to bridge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask which repository",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send task to bridge": {
+      "main": [
+        [
+          {
+            "node": "Bridge accepted?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge accepted?": {
+      "main": [
+        [
+          {
+            "node": "Tell: accepted",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell: rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell: accepted": {
+      "main": [
+        [
+          {
+            "node": "Wait 20 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20 s": {
+      "main": [
+        [
+          {
+            "node": "Get status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get status": {
+      "main": [
+        [
+          {
+            "node": "Finished?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finished?": {
+      "main": [
+        [
+          {
+            "node": "Is it a question?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 20 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is it a question?": {
+      "main": [
+        [
+          {
+            "node": "Send answer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approve the fix?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve the fix?": {
+      "main": [
+        [
+          {
+            "node": "Fix approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix approved?": {
+      "main": [
+        [
+          {
+            "node": "Send change to bridge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell: closed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send change to bridge": {
+      "main": [
+        [
+          {
+            "node": "Change accepted?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Change accepted?": {
+      "main": [
+        [
+          {
+            "node": "Wait 20 s (change)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell: rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20 s (change)": {
+      "main": [
+        [
+          {
+            "node": "Get change status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get change status": {
+      "main": [
+        [
+          {
+            "node": "Change finished?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Change finished?": {
+      "main": [
+        [
+          {
+            "node": "Push the branch?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 20 s (change)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push the branch?": {
+      "main": [
+        [
+          {
+            "node": "Push approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push approved?": {
+      "main": [
+        [
+          {
+            "node": "Publish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell: not pushed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish": {
+      "main": [
+        [
+          {
+            "node": "Tell: push result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

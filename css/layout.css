@@ -1,0 +1,111 @@
+/* layout.css: page frame (top bar, path rail), chapter structure, reading column and bench. */
+
+.skip { position: absolute; left: var(--s4); top: -4rem; background: var(--ink); color: var(--paper); padding: var(--s2) var(--s4); z-index: 50; }
+.skip:focus { top: var(--s2); }
+
+/* Top bar */
+.top {
+  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: var(--s4); height: var(--top);
+  padding: 0 var(--gutter); padding-left: calc(var(--rail) + var(--gutter));
+  background: var(--paper); border-bottom: 1px solid var(--rule);
+}
+.wordmark { font-family: var(--font-display); font-weight: 600; font-size: var(--t-base); text-decoration: none; white-space: nowrap; }
+.top-where { font-size: var(--t-sm); color: var(--ink-3); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.top-tools { display: flex; gap: var(--s2); margin-left: auto; }
+
+/* Path rail: the course drawn as an execution graph. It is the navigation. */
+.rail { --rail-open: 22rem; position: fixed; z-index: 40; inset: 0 auto 0 0; width: var(--rail); background: var(--paper-2); border-right: 1px solid var(--rule); overflow: hidden auto; scrollbar-width: thin; transition: width var(--d-state) var(--ease-out); }
+.rail:hover, .rail:focus-within { width: var(--rail-open); box-shadow: 8px 0 24px -18px var(--ink); }
+.rail ol { list-style: none; margin: 0; padding: var(--s5) 0; display: flex; flex-direction: column; height: 100%; justify-content: space-between; max-height: 46rem; position: relative; }
+.rail ol::before { content: ""; position: absolute; left: calc(var(--rail) / 2 - 0.5px); top: var(--s6); bottom: var(--s6); border-left: 1.5px solid var(--rule-2); }
+.rail li { margin: 0; position: relative; }
+.rail a { display: flex; align-items: center; gap: var(--s3); text-decoration: none; min-height: 2.75rem; width: var(--rail-open); padding-right: var(--s5); }
+.rail-node {
+  flex: none; width: 2rem; height: 2rem; margin-left: calc((var(--rail) - 2rem) / 2);
+  display: grid; place-items: center; background: var(--paper); border: 1.5px solid var(--rule-2); border-radius: var(--radius);
+  font-family: var(--font-mono); font-size: var(--t-xs); font-weight: 600; font-variant-numeric: tabular-nums; position: relative;
+  transition: background var(--d-state) var(--ease-out), color var(--d-state) var(--ease-out), border-color var(--d-state) var(--ease-out);
+}
+.rail-label { font-size: var(--t-sm); line-height: 1.25; color: var(--ink-2); white-space: nowrap; opacity: 0; transition: opacity var(--d-state) var(--ease-out); }
+.rail:hover .rail-label, .rail:focus-within .rail-label { opacity: 1; }
+.rail a:hover .rail-node { border-color: var(--ink); }
+.rail li.visited .rail-node { border-color: var(--ink); }
+.rail li.current .rail-node { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.rail li.current .rail-label { color: var(--ink); font-weight: 700; }
+/* Gate mark: a small hexagon on the node once the gate of the chapter has a result. */
+.rail li[data-gate]::after { content: ""; position: absolute; left: calc(var(--rail) / 2 + 0.55rem); top: 0.2rem; width: 0.7rem; height: 0.7rem; clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); background: var(--ink); }
+.rail li[data-gate="ESCALATED"]::after { background: var(--fail); }
+
+main { padding-left: var(--rail); }
+
+/* Chapter */
+.chapter { padding: var(--s8) var(--gutter) var(--s9); max-width: calc(var(--bench) + 2 * var(--gutter)); margin: 0 auto; }
+.js .chapter:not(.is-current) { display: none; }
+.chapter > * { max-width: var(--measure); }
+.chapter > .wide, .chapter > .bench, .chapter > .ch-head, .chapter > .gate, .chapter > .ch-next { max-width: none; }
+
+.ch-head { display: grid; grid-template-columns: auto 1fr; column-gap: var(--s5); align-items: start; margin-bottom: var(--s7); padding-bottom: var(--s6); border-bottom: 1.5px solid var(--ink); }
+.ch-num { font-family: var(--font-display); font-weight: 600; font-size: clamp(4rem, 2rem + 9vw, 8.5rem); line-height: 0.8; margin: 0; color: var(--ink); font-variant-numeric: tabular-nums; grid-row: span 3; }
+.ch-head h1 { max-width: 15ch; }
+.ch-q { font-size: var(--t-md); line-height: 1.35; color: var(--ink-2); margin: var(--s4) 0 var(--s3); max-width: 38ch; }
+.ch-meta { font-size: var(--t-sm); color: var(--ink-3); margin: 0; display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); align-items: center; }
+
+.lede { font-size: var(--t-md); line-height: 1.45; }
+
+/* Bench: the wide working surface for an instrument. */
+.bench { margin: var(--s6) 0 var(--s7); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); background: var(--paper-2); padding: var(--s5); }
+.bench > figcaption, .bench-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2) var(--s4); margin-bottom: var(--s4); }
+.bench-title { font-family: var(--font-display); font-weight: 500; font-size: var(--t-md); margin: 0; }
+.bench-task { flex-basis: 100%; margin: 0; font-size: var(--t-sm); color: var(--ink-2); max-width: var(--measure); }
+.bench figure { margin: 0; }
+/* A bench with a large drawing and a side panel uses the full width of a wide window. */
+@media (min-width: 90rem) {
+  .bench.bench-xl { --xl: min(100vw - var(--rail) - 2 * var(--gutter) - 1rem, 96rem); width: var(--xl); margin-inline: calc((100% - var(--xl)) / 2); }
+}
+
+.ch-next { display: flex; justify-content: space-between; gap: var(--s4); margin-top: var(--s8); padding-top: var(--s5); border-top: 1px solid var(--rule); font-size: var(--t-sm); }
+.ch-next a { text-decoration: none; display: block; padding: var(--s2) 0; }
+.ch-next a span { display: block; font-family: var(--font-display); font-size: var(--t-md); }
+.ch-next a:hover span { text-decoration: underline; text-decoration-thickness: from-font; }
+.ch-next .next { text-align: end; margin-left: auto; }
+
+.cols { display: grid; gap: var(--s5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+
+@media (max-width: 56rem) {
+  :root { --rail: 0rem; }
+  .rail { position: sticky; inset: var(--top) auto auto auto; width: auto; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); overflow-x: auto; z-index: 29; box-shadow: none !important; }
+  .rail:hover, .rail:focus-within { width: auto; }
+  .rail { scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail ol { flex-direction: row; height: auto; padding: var(--s2) var(--gutter); gap: var(--s2); justify-content: flex-start; }
+  .rail ol::before { left: var(--gutter); right: var(--gutter); top: 50%; bottom: auto; border-left: 0; border-top: 1.5px solid var(--rule-2); }
+  .rail a { width: auto; padding: 0; min-height: 2.75rem; min-width: 2.75rem; justify-content: center; }
+  .rail-node { margin: 0; }
+  .rail-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .rail li[data-gate]::after { left: 1.9rem; top: 0; }
+  .top { padding-left: var(--gutter); }
+  .top-where, .top-tools a { display: none; }
+  .ch-head { grid-template-columns: 1fr; }
+  .ch-num { grid-row: auto; margin-bottom: var(--s3); font-size: 4.5rem; }
+  .bench { margin-inline: calc(-1 * var(--gutter)); padding: var(--s4) var(--gutter); }
+  html { scroll-padding-top: 7.5rem; }
+}
+
+@media print {
+  :root, :root[data-theme] { color-scheme: light !important; }
+  .rail, .top, .ch-next, .controls, .skip { display: none !important; }
+  main { padding: 0; }
+  .js .chapter:not(.is-current) { display: block; }
+  .chapter { padding: 0 0 2rem; break-before: page; }
+  .factory-head, .factory-side { position: static !important; max-height: none !important; }
+  .log, .note-yaml { max-height: none !important; }
+  .gv-wrap, .table-wrap, pre { overflow: visible !important; }
+  .gv { min-width: 0 !important; }
+}
+
+/* A very narrow screen: the top bar keeps its two buttons in view. */
+@media (max-width: 23rem) {
+  .top { gap: var(--s2); padding-inline: var(--s3); }
+  .wordmark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-sm); }
+  .top .btn.small { padding: 0 var(--s2); }
+}

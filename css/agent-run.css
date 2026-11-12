@@ -1,0 +1,99 @@
+/* agent-run.css: "Watch one run" (part 2). Uses only the tokens of tokens.css. */
+
+.ar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s5); margin-bottom: var(--s4); }
+.ar-buttons { display: flex; gap: var(--s2); }
+.ar-play { min-width: 6.5rem; }
+.ar-progress { display: flex; align-items: center; gap: var(--s2); flex: 1 1 12rem; }
+.ar-scrub { flex: 1; accent-color: var(--ink); min-width: 8rem; }
+.ar-count { color: var(--ink-3); min-width: 4.5ch; text-align: end; }
+.ar-speed { display: flex; align-items: center; gap: var(--s2); }
+.ar-maplabel { display: inline-flex; align-items: center; gap: 0.4em; color: var(--ink-2); }
+
+.ar-layout { display: grid; gap: var(--s4); }
+@media (min-width: 78rem) { .ar-layout { grid-template-columns: minmax(0, 1fr) 19rem; align-items: start; } .ar-side { position: sticky; top: 4.5rem; } }
+.ar-key { font-size: var(--t-xs); }
+
+.ar-caption { border-left: 3px solid var(--ink); padding: var(--s2) var(--s3); background: var(--paper); min-height: 9rem; }
+.ar-head { margin: 0 0 var(--s2); display: grid; gap: var(--s1); }
+.ar-event { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.ar-data { font-size: 0.8rem; color: var(--ink); white-space: normal; overflow-wrap: anywhere; }
+.ar-text { margin: 0; font-size: var(--t-sm); }
+.ar-idea { margin-top: var(--s3); padding-top: var(--s2); border-top: 1px dashed var(--rule-2); font-size: var(--t-sm); }
+.ar-inspect { margin-top: var(--s3); padding: var(--s2) var(--s3); border: 1px solid var(--rule); background: var(--paper); }
+.ar-inspect h4 { margin: 0 0 var(--s2); font-size: var(--t-sm); }
+.ar-dl { margin: 0; display: grid; gap: 2px var(--s3); font-size: var(--t-xs); }
+.ar-dl dt { font-weight: 700; color: var(--ink-2); margin-top: var(--s1); }
+.ar-dl dd { margin: 0; }
+
+/* ---- The graph ---- */
+/* Not reached yet: hidden. With "Show the full map": a quiet outline, so the shape of the run is visible. */
+.gv.ar .gv-node, .gv.ar .gv-edge { transition: opacity 360ms var(--ease-out); }
+.gv.ar .gv-node:not(.ar-seen), .gv.ar .gv-edge:not(.ar-seen) { opacity: 0; pointer-events: none; }
+.gv.ar.ar-map .gv-node:not(.ar-seen) { opacity: 0.3; pointer-events: auto; }
+.gv.ar.ar-map .gv-edge:not(.ar-seen) { opacity: 0.28; pointer-events: auto; }
+.gv.ar .gv-edge text { opacity: 0; transition: opacity 300ms var(--ease-out); }
+.gv.ar .gv-edge.ar-labelled text, .gv.ar.ar-map .gv-edge text { opacity: 1; }
+.gv.ar .gv-edge.used:not(.ar-current) path { stroke: var(--ink-2); stroke-width: 1.6; }
+.gv.ar .gv-edge.used:not(.ar-current) text { fill: var(--ink-2); font-weight: 400; }
+.gv.ar .gv-edge.ar-current path { stroke: var(--ink); stroke-width: 2.4; }
+.gv.ar .gv-edge.ar-current text { fill: var(--ink); font-weight: 700; }
+.gv.ar .ar-hit { fill: none; stroke: transparent; stroke-width: 16; pointer-events: stroke; cursor: pointer; }
+.gv.ar .gv-edge[tabindex]:focus-visible { outline: none; }
+.gv.ar .gv-edge[tabindex]:focus-visible path:not(.ar-hit) { stroke: var(--focus); stroke-width: 3; }
+.gv.ar .gv-edge.ar-selected path:not(.ar-hit) { stroke: var(--focus); stroke-width: 2.6; }
+.gv.ar .gv-node.ar-selected .shape { stroke: var(--focus); stroke-width: 3; }
+
+/* The current step: a thick outline (shape, not only colour) and a slow breath. */
+.gv.ar .gv-node.done .shape { stroke-width: 1.8; }
+.gv.ar .gv-node.active .shape { stroke: var(--ink); stroke-width: 3.2; animation: ar-breathe 2.4s ease-in-out infinite; }
+.gv.ar .gv-node.ar-fail .shape { stroke: var(--fail); fill: var(--fail-tint); }
+.gv.ar .gv-node .sub { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; fill: var(--ink-3); }
+.gv.ar .gv-token { r: 5; }
+@keyframes ar-breathe { 50% { stroke-width: 2.2; } }
+
+/* ---- The log ---- */
+.ar-log { margin: 0; padding-left: 1.6em; font-size: var(--t-sm); }
+.ar-log li { margin: 0 0 2px; }
+.ar-log-btn { background: none; border: 0; padding: 2px 4px; text-align: start; font: inherit; color: inherit; cursor: pointer; border-radius: var(--radius); }
+.ar-log-btn:hover { background: var(--paper); }
+.ar-log li[aria-current] .ar-log-btn { outline: 1.5px solid var(--ink); font-weight: 700; }
+.ar-log li[aria-current]::marker { content: "▶ "; }
+.ar-log-ev { font-size: 0.72rem; text-transform: uppercase; color: var(--ink-2); }
+.ar-log code { overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gv.ar .gv-node.active .shape { animation: none; }
+  .gv.ar .gv-node, .gv.ar .gv-edge, .gv.ar .gv-edge text { transition: none; }
+}
+.gv.ar text { font-size: 13.5px; }
+.gv.ar .gv-edge text { font-size: 12px; }
+@media (min-width: 78rem) { .ar-layout { grid-template-columns: minmax(0, 1fr) 17.5rem; } }
+@media (max-width: 77.99rem) { .ar-side { order: -1; } .ar-caption { min-height: 0; } }
+
+/* ---- Smoothness pass ---- */
+/* The token rides the tip of the line; it fades in and out instead of blinking. */
+.gv.ar .ar-token { fill: var(--ink); stroke: var(--paper-2); stroke-width: 2; opacity: 0; transition: opacity 240ms var(--ease-out); pointer-events: none; }
+.gv.ar .ar-token.ar-on { opacity: 1; }
+/* A node grows in gently from its centre (the shape and text scale; the group keeps its position). */
+.gv.ar .gv-node.ar-enter > * { transform-box: fill-box; transform-origin: center; animation: ar-enter 520ms var(--ease-out) both; }
+@keyframes ar-enter { from { opacity: 0; scale: 0.9; } to { opacity: 1; scale: 1; } }
+.gv.ar .gv-node .shape { transition: stroke-width 420ms var(--ease-out), stroke 420ms var(--ease-out), fill 420ms var(--ease-out); }
+.gv.ar .gv-edge path { transition: stroke 420ms var(--ease-out), stroke-width 420ms var(--ease-out); }
+.gv.ar .gv-edge text { transition: opacity 420ms var(--ease-out), fill 420ms var(--ease-out); }
+.gv.ar .gv-node.active .shape { animation: ar-breathe 2.8s ease-in-out 520ms infinite; }
+.ar-caption.ar-swap > * { animation: ar-fade 380ms var(--ease-out) both; }
+@keyframes ar-fade { from { opacity: 0; translate: 0 3px; } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .gv.ar .gv-node.ar-enter > *, .ar-caption.ar-swap > *, .gv.ar .gv-node.active .shape { animation: none; }
+  .gv.ar .ar-token { display: none; }
+}
+
+/* ---- Prediction and state ---- */
+.ar-ask { margin-top: var(--s3); padding: var(--s2) var(--s3); border: 1.5px solid var(--focus); background: var(--paper-2); font-size: var(--t-sm); }
+.ar-ask p { margin: 0 0 var(--s2); }
+.ar-verdict { margin: var(--s2) 0 0; font-size: var(--t-sm); font-weight: 700; }
+.ar-state { margin-top: var(--s3); padding: var(--s2) var(--s3); border: 1px solid var(--rule); background: var(--paper); }
+.ar-state h4 { margin: 0 0 var(--s1); font-size: var(--t-sm); }
+.ar-state-dl { grid-template-columns: auto 1fr; align-items: baseline; }
+.ar-state-dl dt { margin-top: 0; font-weight: 400; }
+.ar-state-dl dd { overflow-wrap: anywhere; }
