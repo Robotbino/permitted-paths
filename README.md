@@ -1,19 +1,37 @@
-# Permitted Paths
+# Permitted Paths: Graph Engineering for Agents
 
-An interactive course in Graph Engineering, built from the nine `GE 00–08` notes in the Obsidian vault. It is a presentation layer: the notes are the source of truth and this project does not change them.
+An interactive course on taking decisions away from the model: nodes, edges, state and gates. Nine parts, a practical lab, and about twenty hands-on instruments, all in plain HTML, CSS and JavaScript.
 
-Part L, "Operate it from your phone", is different: it is a practical laboratory added by this edition, researched from official documents on 2026-11-12. It is not from the notes. See "Part L" below.
+## Start here
 
-## Open it
+**Open [`index.html`](index.html) in a browser.** That's the whole site. There is no build step, no install, no server and no network request.
 
-Double-click `index.html`. There is no build step, no server and no network request. Everything is plain HTML, CSS and JavaScript.
+```bash
+git clone git@github.com:Robotbino/permitted-paths.git
+cd permitted-paths
+start index.html        # Windows; use `open` on macOS or `xdg-open` on Linux
+```
 
-- `index.html` — the course (parts 0–8, the laboratory part L, and the reference shelf). Part L has links to official documents; the page itself still makes no network request.
-- `tests.html` — open it in a browser to run the assertions for the engines and the data against the notes.
+Double-clicking `index.html` works too. To run the self-checks, open [`tests.html`](tests.html) the same way.
+
+## What's in the repository
+
+| Path | What it is |
+|---|---|
+| **`index.html`** | **The course. Start here.** |
+| `tests.html` | Browser-run assertions for the engines and the data |
+| `css/`, `js/`, `assets/` | What `index.html` loads (styles, scripts, fonts) |
+| `lab/` | Working files for part L, "Operate it from your phone" (see [`lab/README.md`](lab/README.md)) |
+| `docs/` | [`REPORT.md`](docs/REPORT.md) (how it was built), [`SOURCES.md`](docs/SOURCES.md) (section-by-section mapping to the notes), [`EVIDENCE.md`](docs/EVIDENCE.md) (status of each factual claim) |
+| `backups/` | Earlier versions of edited files, at their original paths. The site never loads them. |
+
+## About the content
+
+The course is built from the nine `GE 00–08` notes in the author's Obsidian vault. It is a presentation layer: the notes are the source of truth and this project does not change them. Part L is different: a practical lab added by this edition, researched from official documents on 2026-11-12, not from the notes.
 
 Progress, gate results, the trace and the text you put into "Your own prompt" are kept in the browser's `localStorage` (key `permitted-paths.v1`) and go nowhere else. **New run** in the top bar removes them. The page still works when storage is blocked or holds damaged data; it then starts a new run. Two open tabs share the same progress.
 
-Source chips such as `GE 04 §5` open the note in Obsidian through an `obsidian://` link. If the vault or the folder is renamed, change `vault` and `noteFolder` in `js/data/sources.js`.
+Source chips such as `GE 04 §5` open the note in Obsidian through an `obsidian://` link, so they only work on a machine with the vault. If the vault or the folder is renamed, change `vault` and `noteFolder` in `js/data/sources.js`.
 
 ## How it is organised
 
@@ -85,7 +103,7 @@ Scripts are classic `<script>` files under one `GE` namespace, not ES modules, b
 - Every simulation is labelled as one. None calls a real model; outcomes come from fixed data and a seeded random number.
 - The images in the notes are not copied here. Seven of the ten need the owner's permission before publication, so every figure is a new SVG drawing of the same content.
 
-See `SOURCES.md` for the section-by-section mapping to the notes.
+See [`docs/SOURCES.md`](docs/SOURCES.md) for the section-by-section mapping to the notes.
 
 ## Part L: the practical laboratory
 

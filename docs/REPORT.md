@@ -224,7 +224,7 @@ The plane sort (part 5), the node-type task (part 2) and the capstone (part 8) w
 - One claim was corrected: GE 1968.
 - One claim is flagged as not confirmed: the Feng formula.
 - The p^n table is labelled as a teaching model.
-- Full table: `EVIDENCE.md`.
+- Full table: `EVIDENCE.md` (in this folder).
 
 **Tests**
 
@@ -243,7 +243,7 @@ The plane sort (part 5), the node-type task (part 2) and the capstone (part 8) w
 
 **Backups**
 
-Backups are the `*.bak-20261113` files.
+Backups are the `*.bak-20261113` files in `backups/`.
 
 ## 2026-11-13: "Watch one run" (part 2)
 
