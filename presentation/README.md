@@ -12,6 +12,15 @@ The site does not load these files. They are not part of the course page.
 
 A slide file is a fragment. It has no `<html>` or `<head>`, and a browser does not show it correctly if you open it alone. The deck was made with the Slides type of Claude artifacts, which reads these files.
 
+## Exported copies
+
+Four files are exports of the deck from the deck page, made on 2026-11-12 after the appearance pass. They are copies. If you change a slide, they do not change; export the deck again.
+
+- `Permitted Paths — Graph Engineering for Agents.html`: the deck as one web page.
+- `slides/Permitted Paths — Graph Engineering for Agents.pdf`: the deck as a PDF.
+- `slides/Permitted Paths — Graph Engineering for Agents.pptx`: the deck for PowerPoint.
+- `slides/Permitted Paths — Graph Engineering for Agents(Editable).pptx`: the deck for PowerPoint, as an editable version.
+
 ## Content
 
 - The prose comes from `index.html`: the claim, the tables and the key ideas.
