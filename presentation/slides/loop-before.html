@@ -1,0 +1,35 @@
+<section id="loop-before" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:28px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:52px;font-weight:400;line-height:1.1">Before: one loop, and five sentences in a prompt</h2>
+<div style="display:flex;gap:72px;align-items:start">
+<div style="width:520px;display:flex;flex-direction:column;gap:16px">
+<div style="position:relative;width:520px;height:460px">
+<svg aria-label="An agent loop. A model at the top sends a tool call down to the tools. The tools send a result back up to the model. The loop repeats." width="520" height="460" viewBox="0 0 520 460" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="al" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1.2L10 5L0 8.8L2.6 5z" fill="#8FA3B8"/></marker></defs>
+<circle cx="260" cy="120" r="100" fill="#2A2114" stroke="#D9A75B" stroke-width="2"/>
+<rect x="160" y="372" width="200" height="72" rx="6" fill="#132536" stroke="#7FB2E8" stroke-width="1.5"/>
+<g fill="none" stroke="#8FA3B8" stroke-width="1.8" marker-end="url(#al)">
+<path d="M176 176 C 96 240, 100 330, 174 378"/>
+<path d="M346 378 C 420 330, 424 240, 346 178"/>
+</g>
+</svg>
+<p style="position:absolute;left:160px;top:78px;width:200px;text-align:center;font-size:32px;font-weight:700;color:#E9EEF4">Model</p>
+<p style="position:absolute;left:160px;top:124px;width:200px;text-align:center;font-size:24px;line-height:1.2;color:#D9A75B">makes each decision</p>
+<p style="position:absolute;left:160px;top:390px;width:200px;text-align:center;font-size:28px;color:#E9EEF4">Tools</p>
+<p style="position:absolute;left:0px;top:258px;width:96px;text-align:right;font-size:24px;line-height:1.2;color:#94A3B4">tool call</p>
+<p style="position:absolute;left:428px;top:258px;width:92px;font-size:24px;color:#94A3B4">result</p>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#94A3B4">The loop continues until the model says that the task is complete.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#D9A75B">Five decisions, all in the model</p>
+<p style="font-size:26px;line-height:1.35;color:#E9EEF4;padding:16px 24px;border:2px dashed #D9A75B;border-radius:6px">“Decide which step comes next.”</p>
+<p style="font-size:26px;line-height:1.35;color:#E9EEF4;padding:16px 24px;border:2px dashed #D9A75B;border-radius:6px">“Get approval from a person before you change the code.”</p>
+<p style="font-size:26px;line-height:1.35;color:#E9EEF4;padding:16px 24px;border:2px dashed #D9A75B;border-radius:6px">“Do the tests after each change.”</p>
+<p style="font-size:26px;line-height:1.35;color:#E9EEF4;padding:16px 24px;border:2px dashed #D9A75B;border-radius:6px">“Stop after three attempts.”</p>
+<p style="font-size:26px;line-height:1.35;color:#E9EEF4;padding:16px 24px;border:2px dashed #D9A75B;border-radius:6px">“Write the plan and the code.”</p>
+<p style="font-size:25px;line-height:1.45;color:#C9D6E4">A dashed outline is a sentence in the prompt. The model can obey it or not. On the next slide, four of the five go to the structure.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">GE 02 · the start position of the decision ledger</p>
+<aside>This is the start position of the decision ledger in the course. Everything the task needs is here, and all of it is advice. Ask the room which of the five sentences they would trust the model to obey ten times out of ten. Then go to the next slide: the same task with four of these moved into the structure.</aside>
+</section>

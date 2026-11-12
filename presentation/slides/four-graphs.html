@@ -1,0 +1,18 @@
+<section id="four-graphs" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#7FB2E8">Part 3 · which graph do you mean?</p>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:68px;font-weight:400;line-height:1.1">Four things carry the name “graph”</h2>
+<table style="font-family:'Atkinson Hyperlegible', Verdana, sans-serif;font-size:25px;color:#E9EEF4;padding:16px 20px">
+<tr style="background:#16202C"><th style="width:24%;text-align:left">Type</th><th style="width:24%;text-align:left">Question</th><th style="width:26%;text-align:left">Nodes are</th><th style="width:26%;text-align:left">Life</th></tr>
+<tr><td>Execution graph</td><td>What comes next?</td><td>Units of work</td><td>The design is permanent. Each run is one pass.</td></tr>
+<tr><td>Knowledge graph</td><td>What is in the domain?</td><td>Entities — a customer, a file</td><td>Continues across runs</td></tr>
+<tr><td>Context graph</td><td>What occurred in this run?</td><td>Steps, tool calls, records used</td><td>Permanent. Each run adds a trace.</td></tr>
+<tr><td>Procedural graph</td><td>Which paths are permitted?</td><td>Steps of a procedure</td><td>Permanent. Many runs use it again.</td></tr>
+</table>
+<div style="display:flex;gap:32px">
+<p style="flex:1;font-size:26px;line-height:1.5;color:#C9D6E4">The execution graph and the procedural graph are about <b>control</b>. The knowledge graph and the context graph are about <b>data</b>.</p>
+<p style="flex:1;font-size:26px;line-height:1.5;color:#C9D6E4">A procedural graph is data that a harness loads. An execution graph is code that the runtime enforces.</p>
+<p style="flex:1;font-size:26px;line-height:1.5;color:#C9D6E4">Two causes of confusion: GraphRAG is about data, not control. And a context graph is a graph of traces — it is not the context window of a model.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">GE 03 · the course puts one loan decision under all four lenses</p>
+<aside>Most disagreements about “graphs for agents” are two people meaning different rows of this table. Fix the vocabulary here and the rest of the conversation gets easier. The cycle: the run obeys a procedure, reads facts from the knowledge graph, writes its steps to the context graph, and good runs become a better procedure.</aside>
+</section>

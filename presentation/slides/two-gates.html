@@ -1,0 +1,26 @@
+<section id="two-gates" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#7FB2E8">Part 4 · control 3</p>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:68px;font-weight:400;line-height:1.1">Two gates around every tool call</h2>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:36px;background:#16202C;border:1px solid #2E3F52;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:25px;line-height:1.6;color:#C9D6E4">while the task is not complete:<br>&#160;&#160;&#160;&#160;proposal = the model suggests a tool call<br>&#160;&#160;&#160;&#160;<span style="color:#7FB2E8"># GATE 1: is the shape of the call correct?</span><br>&#160;&#160;&#160;&#160;result = the tool makes a result, with no change to data<br>&#160;&#160;&#160;&#160;<span style="color:#7FB2E8"># GATE 2: does the result obey the ontology?</span><br>&#160;&#160;&#160;&#160;record the change, or send the cause back to the model</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:32px;font-weight:700">Gate 1 — input, before the tool operates</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">The shape of the call: types, ranges, necessary fields. It reads only the call.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:32px;font-weight:700">Gate 2 — output, after the tool operates</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">The sense of the result: cardinality, roles, agreement with the state of the world. It reads the call, the result, the ontology and the current facts.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:32px;font-weight:700">The rule — a pure agent</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">The agent calculates and gives a result. It does not change the world during the loop.</p>
+</div>
+</div>
+</div>
+<p style="font-size:27px;line-height:1.5;color:#C9D6E4;width:1600px">The third row is the important one. If the agent changes no data during the loop, you can reject a result and lose nothing. Do the Gate 2 check and the commit in one transaction, and add a unique constraint in the database for each cardinality rule.</p>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">GE 04 · from a source: Frank Coyle</p>
+<aside>A unique constraint on “an order has at most one refund” would have stopped the bug on slide two, at the database, with no model involved at all. That is the whole argument in one line.</aside>
+</section>

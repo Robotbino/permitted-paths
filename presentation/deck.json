@@ -1,0 +1,63 @@
+{
+  "v": 4,
+  "createdOnFiles": { "v": 1, "at": "2026-11-12T19:10:00Z" },
+  "lists": "css",
+  "title": "Permitted Paths — Graph Engineering for Agents",
+  "order": [
+    "cover",
+    "refund",
+    "claim",
+    "variation",
+    "compounding",
+    "controls",
+    "funnel",
+    "loop-graph",
+    "loop-before",
+    "ledger",
+    "graph-code",
+    "state-code",
+    "runtime-code",
+    "node-types",
+    "when-graph",
+    "four-graphs",
+    "graph-cycle",
+    "ontology",
+    "ontology-code",
+    "two-gates",
+    "gate1-code",
+    "gate2-code",
+    "refund-fixed",
+    "planes",
+    "learn-loop",
+    "trace-code",
+    "factory",
+    "factory-line",
+    "probabilistic",
+    "real-one",
+    "give-back",
+    "build-order",
+    "close"
+  ],
+  "sections": {
+    "s1": { "description": "Why the output of an agent changes, and what that costs.", "start": "cover" },
+    "s2": { "description": "Control 1: take decisions away from the model.", "start": "loop-graph" },
+    "s3": { "description": "Controls 2 and 3: say what is permitted, then check each result in code.", "start": "four-graphs" },
+    "s4": { "description": "Where the knowledge lives, and the whole design in one factory.", "start": "planes" },
+    "s5": { "description": "Give the ideas back, and the order to build it in.", "start": "give-back" }
+  },
+  "faces": {
+    "instrument-serif": {
+      "family": "Instrument Serif",
+      "href": "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+    },
+    "atkinson-hyperlegible": {
+      "family": "Atkinson Hyperlegible",
+      "href": "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap"
+    },
+    "jetbrains-mono": {
+      "family": "JetBrains Mono",
+      "href": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
+    }
+  },
+  "designSystems": []
+}

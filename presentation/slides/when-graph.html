@@ -1,0 +1,16 @@
+<section id="when-graph" data-transition="fade" style="background:#FAF7F0;color:#191714;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:68px;font-weight:400;line-height:1.1">The default is one loop with a strict verifier</h2>
+<p style="font-size:28px;line-height:1.5;color:#585448;width:1560px">Add a graph when a specific problem occurs. One clear “yes” in the right column is sufficient.</p>
+<table style="font-family:'Atkinson Hyperlegible', Verdana, sans-serif;font-size:25px;padding:16px 18px">
+<tr style="background:#EFEADD"><th style="width:32%;text-align:left">Question about the task</th><th style="width:30%;text-align:left">One loop is sufficient</th><th style="width:38%;text-align:left">Use a graph</th></tr>
+<tr><td>Can you write the task as one instruction?</td><td>Yes</td><td>No. The task goes from one role to a different role.</td></tr>
+<tr><td>Does each step use the same model and tools?</td><td>Yes</td><td>No. Some steps use a small model, some a large one.</td></tr>
+<tr><td>Are some steps independent?</td><td>No</td><td>Yes, and they can operate at the same time</td></tr>
+<tr><td>Who decides the result is good?</td><td>A check in the loop, for example the tests</td><td>A node that did not write the result</td></tr>
+<tr><td>What must occur after a failure of one step?</td><td>Try again</td><td>Isolate the failure. The other work continues.</td></tr>
+<tr><td>Who must read the record of the path?</td><td>Only your team</td><td>A person outside the team must see which step occurred, and why</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.5;color:#585448;width:1560px">Three good causes for a new node: <b>specialization</b>, <b>parallel work</b>, and <b>independent verification</b>. Do not use a graph when the task is open and you cannot give its steps before the run — use an agent harness. If all the steps are code, a script is sufficient.</p>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#8A8268;width:1500px">GE 02</p>
+<aside>This slide is the brake. The course is about graphs, so it has to say plainly when not to build one. Reaching for a graph on an open-ended research task makes the system worse, not better.</aside>
+</section>

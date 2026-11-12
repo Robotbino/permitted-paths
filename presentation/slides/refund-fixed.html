@@ -1,0 +1,33 @@
+<section id="refund-fixed" data-transition="fade" style="background:#16202C;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:52px;font-weight:400;line-height:1.1">The second refund, and the three places it now dies</h2>
+<div style="display:flex;gap:16px;align-items:stretch">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:32px;background:#0E1620;border:1px solid #2E3F52;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:23px;letter-spacing:2px;text-transform:uppercase;color:#94A3B4">The model proposes</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:23px;line-height:1.4;color:#C9D6E4">refund(<br>&#160;&#160;order_id=1042,<br>&#160;&#160;amount_cents=4999,<br>&#160;&#160;reason="duplicate")</p>
+</div>
+<x-connector style="width:56px" head="end"></x-connector>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:32px;background:#0E1620;border:1px solid #7FB2E8;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:23px;letter-spacing:2px;text-transform:uppercase;color:#7FB2E8">Gate 1 — shape</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D6E4">PASS. The call is well formed, and the reason is one of the three permitted words.</p>
+<p style="font-size:24px;line-height:1.4;color:#94A3B4">An invented argument would have stopped here.</p>
+</div>
+<x-connector style="width:56px" head="end"></x-connector>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:32px;background:#0E1620;border:1px solid #2E3F52;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:23px;letter-spacing:2px;text-transform:uppercase;color:#94A3B4">The tool computes</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D6E4">A refund record is built and returned. Nothing is written: the agent is pure during the loop.</p>
+</div>
+<x-connector style="width:56px" head="end"></x-connector>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:32px;background:#0E1620;border:1px solid #E06C6C;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:23px;letter-spacing:2px;text-transform:uppercase;color:#E06C6C">Gate 2 — FAIL</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D6E4">Rule LV-1: this order already has a refund. The transaction rolls back and the cause goes to the model.</p>
+</div>
+<x-connector style="width:56px" head="end"></x-connector>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:32px;background:#0E1620;border:1px solid #7FB2E8;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:23px;letter-spacing:2px;text-transform:uppercase;color:#7FB2E8">The database</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D6E4">And if gate 2 ever has a bug, the unique constraint refuses the insert anyway.</p>
+</div>
+</div>
+<p style="font-size:30px;line-height:1.5;color:#C9D6E4;width:1600px">One rule, said three times, in three places that the model cannot talk its way past. The prompt sentence said it once, in the one place that the model was free to ignore.</p>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">The bug from slide 2, with controls 2 and 3 in place</p>
+<aside>Close the loop that the deck opened with. Notice the cost: one Pydantic class, one rule in a list, one ALTER TABLE. No new model, no new platform, no prompt engineering. Notice also that the model is not punished — it gets a readable reason and a second attempt, which is usually enough.</aside>
+</section>

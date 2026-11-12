@@ -1,0 +1,31 @@
+<section id="state-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:row;gap:48px;align-items:start">
+<div style="width:980px;display:flex;flex-direction:column;gap:22px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">The state contract</h2>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">@dataclass(frozen=True)<br>
+class RunState:<br>
+&#160;&#160;&#160;&#160;run_id:&#160;&#160;&#160;&#160;&#160;str<br>
+&#160;&#160;&#160;&#160;request:&#160;&#160;&#160;&#160;str<br>
+&#160;&#160;&#160;&#160;kind:&#160;&#160;&#160;&#160;&#160;&#160;&#160;Literal["question", "change"] | None = None<br>
+&#160;&#160;&#160;&#160;plan:&#160;&#160;&#160;&#160;&#160;&#160;&#160;str | None = None<br>
+&#160;&#160;&#160;&#160;approved:&#160;&#160;&#160;bool = False<br>
+&#160;&#160;&#160;&#160;attempts:&#160;&#160;&#160;int = 0<br>
+&#160;&#160;&#160;&#160;tests_pass:&#160;bool = False<br>
+&#160;&#160;&#160;&#160;facts:&#160;&#160;&#160;&#160;&#160;&#160;tuple[Fact, ...] = ()<br>
+<br>
+<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;# a node never mutates. It returns the next state.</span><br>
+&#160;&#160;&#160;&#160;def with_(self, **kw) -&gt; "RunState":<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return replace(self, **kw)<br>
+<br>
+Node = Callable[[RunState], RunState]</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:26px">
+<h3 style="font-size:34px;font-weight:700">Why frozen</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">Every node has the same signature: a state in, a new state out. Nothing else crosses a node boundary — no globals, no hidden writes to the database.</p>
+<h3 style="font-size:34px;font-weight:700">Why it is small</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">If a field is not on this class, no edge can branch on it. Keeping the state small keeps the set of possible paths small, which is the point.</p>
+<h3 style="font-size:34px;font-weight:700">What you get for free</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">Each state is a value you can store, compare and replay. A failed run becomes a test: load the state before the bad step and run that one node.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">attempts lives on the state so the edge, not the model, can count</p>
+<aside>The frozen dataclass is doing real work here. Because a node cannot reach around the state to change the world, you can throw a step away after a gate rejects it. That is what makes the pure-agent rule on the gates slide affordable.</aside>
+</section>

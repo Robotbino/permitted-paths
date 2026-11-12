@@ -321,3 +321,9 @@ A full visual pass on the branch `redesign/journal-and-bench`. The content, the 
 - A small role mark in the corner of each node (planned) was not added. The shape and the line already carry the role without colour.
 - The gate did not get progress marks; it keeps the text "Question 1 of 4".
 - 768 px, 1024 px and 320 px were not looked at as pictures. Print, `file://`, reduced motion, Firefox, Safari and screen readers were not checked after the redesign. Contrast of the new neutrals was set by lightness, not measured pair by pair.
+
+## Presentation deck (2026-11-12)
+
+`presentation/` holds the source of a slide deck that teaches the course in 33 slides: `deck.json` (the index) and one HTML fragment for each slide. The site does not load these files. The prose comes from `index.html`. The code on the slides is an example for teaching; no test runs it. `presentation/README.md` gives the format.
+
+Not checked: the slides were written as source and most were not examined after rendering. Slide 10 (the solved decision ledger) was redrawn after one rendered check and was not examined again.

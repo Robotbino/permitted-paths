@@ -1,0 +1,19 @@
+<section id="node-types" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#7FB2E8">Part 2 · the four parts: nodes, edges, state, control</p>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:68px;font-weight:400;line-height:1.1">A node is not always a model call</h2>
+<table style="font-family:'Atkinson Hyperlegible', Verdana, sans-serif;font-size:26px;color:#E9EEF4;padding:18px 20px">
+<tr style="background:#16202C"><th style="width:26%;text-align:left">Type of node</th><th style="width:44%;text-align:left">What it contains</th><th style="width:30%;text-align:left">Predictable?</th></tr>
+<tr><td style="color:#7FB2E8">Fixed step — code</td><td>Code. No model.</td><td>Fully</td></tr>
+<tr><td style="color:#D9A75B">Model step</td><td>One model call with no tools</td><td>Not fully</td></tr>
+<tr><td style="color:#B9A0E8">Agent step</td><td>A model that uses tools in a loop</td><td>Less than a model step</td></tr>
+<tr><td style="color:#7FB2E8">Verifier — code</td><td>A check of the work of a different node</td><td>Fully, if it is code</td></tr>
+<tr><td style="color:#7FC9A0">Person step</td><td>A person gives approval or rejects</td><td>Fully, as a point in the path</td></tr>
+</table>
+<div style="display:flex;gap:32px">
+<p style="flex:1;font-size:25px;line-height:1.45;color:#C9D6E4"><b>A test for a node.</b> Write what the node does in one sentence with no “and”. If you cannot do this, divide the node.</p>
+<p style="flex:1;font-size:25px;line-height:1.45;color:#C9D6E4"><b>Edges.</b> A fixed edge: node B always comes after node A. A conditional edge by code: a function reads the state and names the next node. The model chooses only where you let it.</p>
+<p style="flex:1;font-size:25px;line-height:1.45;color:#C9D6E4"><b>State and control.</b> The state is what passes between nodes. The control is the runtime that enforces the edges, counts the attempts and decides what “complete” means.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">GE 02 · in the course, you give a type to each node yourself</p>
+<aside>Most people arrive thinking a node means a prompt. Half the nodes in a good design contain no model at all. The colours here match the course: blue is code, yellow a model call, purple an agent, green a person — and each row says the kind in words as well.</aside>
+</section>

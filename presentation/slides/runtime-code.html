@@ -1,0 +1,22 @@
+<section id="runtime-code" data-transition="fade" style="background:#16202C;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">The runtime is about twenty lines</h2>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4;width:1600px">You do not need a framework to start. You need a walker that obeys the edges, counts the attempts, and writes a trace for every step.</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4;width:1664px">def run(state: RunState, start: str = "classify", max_steps: int = 24) -&gt; RunState:<br>
+&#160;&#160;&#160;&#160;node = start<br>
+&#160;&#160;&#160;&#160;for step in range(max_steps):<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;kind, fn = NODES[node]<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;began = time.monotonic()<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;state = fn(state)<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;# the only place a model can run</span><br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;trace.write(state.run_id, step, node, kind, state, began)<br>
+<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;if node in TERMINAL:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return state<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;if node == "verify" and not state.tests_pass:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;state = state.with_(attempts=state.attempts + 1)<br>
+<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;node = EDGES[node](state)<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;# code picks the path, every time</span><br>
+<br>
+&#160;&#160;&#160;&#160;return hand_to_person(state)<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;# a run that will not end is a person's problem</span></p>
+<p style="font-size:26px;line-height:1.4;color:#C9D6E4;width:1600px">Three limits in fourteen lines: a maximum number of attempts on the retry edge, a maximum number of steps in the whole run, and a person at the end of both.</p>
+<aside>Point at the fallthrough on the last line. Most agent incidents are not a wrong answer; they are a run that never stopped. A hard step limit with a person at the end of it costs one line and removes that whole class of failure.</aside>
+</section>

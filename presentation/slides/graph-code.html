@@ -1,0 +1,24 @@
+<section id="graph-code" data-transition="fade" style="background:#16202C;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">The same graph, as code</h2>
+<p style="font-size:26px;line-height:1.4;color:#94A3B4;width:1600px">Two dictionaries. The nodes say what runs; the edges say what comes next. No model appears in the edges — that is the whole of control 1.</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4;width:1664px">NODES = {<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;# what runs, and what kind of thing it is</span><br>
+&#160;&#160;&#160;&#160;"classify":&#160;&#160;(MODEL,&#160;&#160;classify_request),<br>
+&#160;&#160;&#160;&#160;"answer":&#160;&#160;&#160;&#160;(CODE,&#160;&#160;&#160;answer_from_graph),<br>
+&#160;&#160;&#160;&#160;"plan":&#160;&#160;&#160;&#160;&#160;&#160;(AGENT,&#160;&#160;make_plan),<br>
+&#160;&#160;&#160;&#160;"approve":&#160;&#160;&#160;(PERSON,&#160;ask_approval),<br>
+&#160;&#160;&#160;&#160;"change":&#160;&#160;&#160;&#160;(AGENT,&#160;&#160;write_change),<br>
+&#160;&#160;&#160;&#160;"verify":&#160;&#160;&#160;&#160;(CODE,&#160;&#160;&#160;run_tests),<br>
+&#160;&#160;&#160;&#160;"summarise":&#160;(MODEL,&#160;&#160;write_summary),<br>
+&#160;&#160;&#160;&#160;"escalate":&#160;&#160;(PERSON,&#160;hand_to_person),<br>
+}<br>
+EDGES = {<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;# who comes next: pure functions of the state</span><br>
+&#160;&#160;&#160;&#160;"classify":&#160;lambda s: "answer" if s.kind == "question" else "plan",<br>
+&#160;&#160;&#160;&#160;"plan":&#160;&#160;&#160;&#160;&#160;lambda s: "approve",<br>
+&#160;&#160;&#160;&#160;"approve":&#160;&#160;lambda s: "change" if s.approved else "escalate",<br>
+&#160;&#160;&#160;&#160;"change":&#160;&#160;&#160;lambda s: "verify",<br>
+&#160;&#160;&#160;&#160;"verify":&#160;&#160;&#160;lambda s: ("summarise" if s.tests_pass<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;else "change" if s.attempts &lt; MAX_ATTEMPTS else "escalate"),<br>
+}<br>
+TERMINAL = {"answer", "summarise", "escalate"}</p>
+<aside>Read the verify edge out loud: tests pass means summarise; tests fail means change again, unless we are at the attempt limit, in which case a person takes it. That sentence is now a line of code instead of a line in a prompt. You can unit-test it with no model and no network: feed it a state, assert the next node.</aside>
+</section>

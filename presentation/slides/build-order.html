@@ -1,0 +1,16 @@
+<section id="build-order" data-transition="fade" style="background:#FAF7F0;color:#191714;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:60px;font-weight:400;line-height:1.1">The order to build it in</h2>
+<p style="font-size:28px;line-height:1.5;color:#585448;width:1600px">Each step is useful on its own, and each one pays for the next. Do not start with the graph.</p>
+<table style="font-family:'Atkinson Hyperlegible', Verdana, sans-serif;font-size:25px;padding:16px 20px">
+<tr style="background:#EFEADD"><th style="width:14%;text-align:left">When</th><th style="width:40%;text-align:left">What you build</th><th style="width:46%;text-align:left">How you know it worked</th></tr>
+<tr><td>Hour 1</td><td>Find one rule in one prompt. Make it an enumeration and a validator.</td><td>Measure the variation before and after with the five-runs procedure from part 1.</td></tr>
+<tr><td>Day 1</td><td>Gate 1 on every tool: a schema per call, extra fields forbidden, readable rejections.</td><td>Malformed calls stop reaching your tools. Count them for a week.</td></tr>
+<tr><td>Week 1</td><td>Make the agent pure, then add Gate 2 and the matching database constraints.</td><td>A rejected result costs a rollback and nothing else.</td></tr>
+<tr><td>Week 2</td><td>Write the trace: one row per step, with the node, the gate, the rule id and PASS or FAIL.</td><td>You can answer “which rule fails most?” with a query, not a guess.</td></tr>
+<tr><td>Week 3</td><td>Only now, the execution graph: pull the sequence out of the loop into NODES and EDGES.</td><td>The edge functions have unit tests that run with no model.</td></tr>
+<tr><td>Month 2</td><td>Feed the trace back: fix the rules that fire most, add the facts that were missing.</td><td>The same task needs fewer attempts than it did last month.</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.5;color:#585448;width:1600px">If you only ever do hour one, you have still moved one decision from the model to the system. That is the course.</p>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#8A8268;width:1500px">Controls 2 and 3 first; control 1 last</p>
+<aside>Say the ordering out loud, because it is the opposite of what people expect. Gates and ontologies are cheap, local and useful on day one. The graph is the biggest change and the one most likely to be rebuilt, so it comes after you have traces that show where the run actually goes.</aside>
+</section>

@@ -1,0 +1,38 @@
+<section id="planes" data-transition="fade" style="background:#FAF7F0;color:#191714;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:26px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#8A6A2E">Part 5 · what the system knows</p>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:52px;font-weight:400;line-height:1.1;width:1600px">All teams can buy the same models. The model is not the difference.</h2>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="width:940px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px;padding:22px 32px;background:#EFEADD;border:1px solid #D8D0BF;border-radius:4px">
+<h3 style="font-size:32px;font-weight:700">Control plane</h3>
+<p style="font-size:24px;line-height:1.4;color:#585448">Which steps are permitted, and in which sequence.</p>
+</div>
+<div style="display:flex;gap:16px;align-items:center;padding:0px 32px">
+<x-shape kind="arrow-down" style="width:24px;height:44px;background:#8A6A2E"></x-shape>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#8A6A2E">the permitted next step</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:22px 32px;background:#EFEADD;border:1px solid #D8D0BF;border-radius:4px">
+<h3 style="font-size:32px;font-weight:700">Data plane</h3>
+<p style="font-size:24px;line-height:1.4;color:#585448">The agent runtime: models, tools and the calls they make.</p>
+</div>
+<div style="display:flex;gap:16px;align-items:center;padding:0px 32px">
+<x-shape kind="arrow-down" style="width:24px;height:44px;background:#8A6A2E"></x-shape>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#8A6A2E">a trace of each step</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#2E6A9E">facts, types and rules</p>
+<x-shape kind="arrow-up" style="width:24px;height:44px;background:#2E6A9E"></x-shape>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:22px 32px;background:#191714;border-radius:4px">
+<h3 style="font-size:32px;font-weight:700;color:#FAF7F0">Intelligence plane</h3>
+<p style="font-size:24px;line-height:1.4;color:#D8D0BF">The ontology, the knowledge graph and the traces.</p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<p style="font-size:27px;line-height:1.5;color:#191714">The difference between two agent systems is what each system knows about its own domain. That knowledge lives in a layer of its own.</p>
+<p style="font-size:25px;line-height:1.45;color:#585448"><b>Read the arrows.</b> The control plane gives the path. The data plane does the work and writes a trace. The intelligence plane keeps the traces and gives back the facts, the types and the rules that the three controls use.</p>
+<p style="font-size:24px;line-height:1.45;color:#585448">Teaching model. The word “plane” comes from network engineering. The three planes are a way to sort the parts of a design. They are not a standard. The talk gives two planes; the notes add the data plane as a name for the agent runtime.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#8A8268;width:1500px">GE 05 §2</p>
+<aside>This is the slide that answers “so what is our moat?”. It is not the model, and it is not the prompt. It is the recorded knowledge of your own domain, and the fact that every run adds to it. Follow the two arrows at the bottom with your finger: traces go down, facts and rules come up. That exchange is the whole of part 5.</aside>
+</section>

@@ -1,0 +1,44 @@
+<section id="variation" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:30px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#7FB2E8">Part 1 · the same question, five answers</p>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:60px;font-weight:400;line-height:1.1;width:1560px">Ask one model the same question five times</h2>
+<p style="font-size:28px;line-height:1.5;color:#C9D6E4;width:1600px">Order 1042 has an accepted payment. The email with the game key is in the send queue. “What is the status of order 1042?” Five new chats give five answers.</p>
+<div style="display:flex;gap:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:28px;background:#16202C;border:1px solid #2E3F52;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Chat 1</p>
+<p style="font-size:30px;line-height:1.3;color:#E9EEF4">The order has been paid.</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.35;color:#E06C6C">FAIL: not a status value</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:28px;background:#16202C;border:1px solid #2E3F52;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Chat 2</p>
+<p style="font-size:30px;line-height:1.3;color:#E9EEF4">Status: PROCESSING</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.35;color:#E06C6C">FAIL: not a permitted value</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:28px;background:#16202C;border:1px solid #2E3F52;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Chat 3</p>
+<p style="font-size:30px;line-height:1.3;color:#E9EEF4">Awaiting fulfilment. The key email is queued.</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.35;color:#E06C6C">FAIL: not a status value</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:28px;background:#16202C;border:1px solid #2E3F52;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Chat 4</p>
+<p style="font-size:30px;line-height:1.3;color:#E9EEF4">Payment accepted, delivery pending.</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.35;color:#E06C6C">FAIL: not a status value</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:28px;background:#16202C;border:1px solid #7FC9A0;border-radius:4px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">Chat 5</p>
+<p style="font-size:30px;line-height:1.3;color:#E9EEF4">PAID</p>
+<div style="flex:1"></div>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.35;color:#7FC9A0">PASS: code can use it</p>
+</div>
+</div>
+<div style="display:flex;gap:32px">
+<p style="flex:1;font-size:25px;line-height:1.45;color:#94A3B4"><b>Each answer is defensible.</b> A model gives a probability, not a lookup. All five are likely continuations of the same prompt.</p>
+<p style="flex:1;font-size:25px;line-height:1.45;color:#94A3B4"><b>Only one is usable.</b> A system cannot act on an answer if it cannot predict the shape of the answer.</p>
+<p style="flex:1;font-size:25px;line-height:1.45;color:#94A3B4"><b>An agent does this in each turn.</b> Which tool, which argument, when to stop: each decision is a point where the result can change.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">GE 01 · five example answers. Use the instrument in the course to get your own.</p>
+<aside>Do the experiment live if you can. The five answers on the slide are examples, not a recording. The point is not that the model is bad; each of the five is reasonable. The point is that code downstream can use only one of them, and you cannot know in advance which chat gives it. Part 4 comes back to this: the correct status is PAID.</aside>
+</section>

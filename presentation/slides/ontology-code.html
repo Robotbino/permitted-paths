@@ -1,0 +1,30 @@
+<section id="ontology-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:row;gap:48px;align-items:start">
+<div style="width:1060px;display:flex;flex-direction:column;gap:22px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">An ontology you can run</h2>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">class OrderStatus(str, Enum):<span style="color:#7F8FA3">&#160;&#160;&#160;&#160;&#160;&#160;# the permitted answers, not prose</span><br>
+&#160;&#160;&#160;&#160;PENDING&#160;&#160;&#160;= "PENDING"<br>
+&#160;&#160;&#160;&#160;PAID&#160;&#160;&#160;&#160;&#160;&#160;= "PAID"<br>
+&#160;&#160;&#160;&#160;FULFILLED = "FULFILLED"<br>
+&#160;&#160;&#160;&#160;REFUNDED&#160;&#160;= "REFUNDED"<br>
+&#160;&#160;&#160;&#160;CANCELLED = "CANCELLED"<br>
+<br>
+<span style="color:#7F8FA3">RULES = [&#160;&#160;# data, so a person can read them and a test can run them</span><br>
+&#160;&#160;Rule("LV-1", "an order has at most one refund",<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;lambda f, r: count(f, "refund", order_id=r.order_id) &lt;= 1),<br>
+&#160;&#160;Rule("LV-2", "a refund pays the customer of its order",<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;lambda f, r: r.customer_id == order(f, r.order_id).customer_id),<br>
+&#160;&#160;Rule("LV-3", "only a PAID or FULFILLED order can be refunded",<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;lambda f, r: order(f, r.order_id).status in REFUNDABLE),<br>
+]</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<h3 style="font-size:34px;font-weight:700">What changed</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">The prompt sentence “never refund an order twice” became <b>LV-1</b>. A sentence is advice. A rule with an id is something a gate runs, a test asserts and a trace can name when it fails.</p>
+<h3 style="font-size:34px;font-weight:700">Start with the enumeration</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">Five permitted values end the argument about order status from part 1. Four of those five answers are now not merely unlikely — they do not exist.</p>
+<h3 style="font-size:34px;font-weight:700">Give every rule an id</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">The id is what the rejection carries, what the trace records and what you count later to find the rule that fires most.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">Control 2 · GE 04</p>
+<aside>Keep the rules as data rather than scattered if-statements. Data can be listed in a review, diffed in a pull request, and counted in the trace table. That is what lets the ontology improve from evidence instead of from opinion.</aside>
+</section>

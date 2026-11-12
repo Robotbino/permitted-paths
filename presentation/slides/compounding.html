@@ -1,0 +1,52 @@
+<section id="compounding" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:row;gap:64px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;letter-spacing:3px;text-transform:uppercase;color:#7FB2E8">Part 1 · compounding</p>
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:68px;font-weight:400;line-height:1.1">The effect of small errors increases</h2>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:34px;line-height:1.4;color:#E9EEF4">p steps correct → p to the power n</p>
+<p style="font-size:26px;line-height:1.5;color:#C9D6E4">A long sequence of model decisions is not reliable, although each decision is good.</p>
+<p style="font-size:26px;line-height:1.5;color:#C9D6E4">If you remove decisions from the sequence, the full task becomes more reliable.</p>
+<p style="font-size:24px;line-height:1.45;color:#94A3B4">Teaching model. The calculation holds only if the steps are independent and each has the same rate. In a real agent one wrong fact can cause many wrong steps, and a verifier can correct a wrong step. Use the chart for the direction of the effect, not for a number.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:18px">
+<div style="position:relative;width:800px;height:384px">
+<svg aria-label="Line chart. The chance that all steps are correct, against the number of steps from 0 to 20. At 99 percent per step the line falls slowly to 82 percent. At 95 percent per step it falls to 36 percent. At 90 percent per step it falls quickly to 12 percent." width="800" height="384" viewBox="0 0 800 384" xmlns="http://www.w3.org/2000/svg">
+<g stroke="#2E3F52" stroke-width="1">
+<line x1="60" y1="20" x2="740" y2="20"/>
+<line x1="60" y1="180" x2="740" y2="180"/>
+<line x1="60" y1="340" x2="740" y2="340"/>
+<line x1="230" y1="340" x2="230" y2="348"/>
+<line x1="400" y1="340" x2="400" y2="348"/>
+<line x1="740" y1="340" x2="740" y2="348"/>
+</g>
+<g fill="none" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+<polyline stroke="#E9EEF4" points="60,20 94,23.2 128,26.4 162,29.6 196,32.5 230,35.7 264,38.9 298,41.8 332,44.6 366,47.5 400,50.7 434,53.6 468,56.5 502,59 536,61.9 570,64.8 604,67.7 638,70.2 672,72.8 706,75.7 740,78.2"/>
+<polyline stroke="#7FB2E8" points="60,20 94,36 128,51.2 162,65.8 196,79.2 230,92.3 264,104.8 298,116.6 332,127.8 366,138.4 400,148.3 434,157.9 468,167.2 502,175.8 536,183.8 570,191.8 604,199.2 638,206.2 672,213 706,219.4 740,225.4"/>
+<polyline stroke="#D9A75B" points="60,20 94,52 128,80.8 162,106.7 196,130.1 230,151.2 264,170.1 298,187 332,202.4 366,216.2 400,228.3 434,239.5 468,249.8 502,258.7 536,266.7 570,274.1 604,280.8 638,286.6 672,292 706,296.8 740,301"/>
+</g>
+<g>
+<circle cx="740" cy="78.2" r="5" fill="#E9EEF4"/>
+<circle cx="740" cy="225.4" r="5" fill="#7FB2E8"/>
+<circle cx="740" cy="301" r="5" fill="#D9A75B"/>
+</g>
+</svg>
+<p style="position:absolute;left:0px;top:3px;width:52px;text-align:right;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">100</p>
+<p style="position:absolute;left:0px;top:163px;width:52px;text-align:right;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">50</p>
+<p style="position:absolute;left:0px;top:323px;width:52px;text-align:right;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">0%</p>
+<p style="position:absolute;left:210px;top:348px;width:40px;text-align:center;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">5</p>
+<p style="position:absolute;left:380px;top:348px;width:40px;text-align:center;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">10</p>
+<p style="position:absolute;left:640px;top:348px;width:120px;text-align:right;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92">20 steps</p>
+<p style="position:absolute;left:750px;top:61px;width:50px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#E9EEF4">82%</p>
+<p style="position:absolute;left:750px;top:208px;width:50px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7FB2E8">36%</p>
+<p style="position:absolute;left:750px;top:284px;width:50px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#D9A75B">12%</p>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#94A3B4">The chance that all steps are correct. <span style="color:#E9EEF4">White: 99% for each step.</span> <span style="color:#7FB2E8">Blue: 95%.</span> <span style="color:#D9A75B">Amber: 90%.</span></p>
+<table style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:25px;color:#E9EEF4;padding:14px 18px">
+<tr style="background:#16202C"><th style="width:34%;text-align:left">One step</th><th style="width:22%;text-align:right">5 steps</th><th style="width:22%;text-align:right">10 steps</th><th style="width:22%;text-align:right">20 steps</th></tr>
+<tr><td>99%</td><td style="text-align:right">95%</td><td style="text-align:right">90%</td><td style="text-align:right">82%</td></tr>
+<tr><td>95%</td><td style="text-align:right">77%</td><td style="text-align:right">60%</td><td style="text-align:right">36%</td></tr>
+<tr><td>90%</td><td style="text-align:right">59%</td><td style="text-align:right">35%</td><td style="text-align:right">12%</td></tr>
+</table>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#6E7F92;width:1500px">GE 01 §3</p>
+<aside>Ask the room to guess the 90 per cent, 20 step number before you show it. Almost everyone guesses too high. A wrong guess is useful: it makes the result easier to remember. Then point at the amber line: a twenty-step task where each step is right nine times out of ten finishes correctly about one time in eight.</aside>
+</section>

@@ -1,0 +1,27 @@
+<section id="gate2-code" data-transition="fade" style="background:#0E1620;color:#E9EEF4;font-family:'Atkinson Hyperlegible', Verdana, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:26px">
+<h2 style="font-family:'Instrument Serif', Georgia, serif;font-size:48px;font-weight:400;line-height:1.1">Gate 2: does the result obey the ontology?</h2>
+<div style="display:flex;gap:44px;align-items:start">
+<p style="width:1040px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#C9D6E4">def gate_2(call, result, facts) -&gt; Result:<br>
+&#160;&#160;&#160;&#160;for rule in RULES:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;if not rule.holds(facts, result):<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return Reject("GATE 2", rule.id, rule.text)<br>
+&#160;&#160;&#160;&#160;return Accept(result)<br>
+<br>
+<span style="color:#7F8FA3"># the check and the commit are one transaction, or they are nothing</span><br>
+with db.transaction() as tx:<br>
+&#160;&#160;&#160;&#160;facts&#160;&#160;&#160;= tx.facts_for(call.order_id)<br>
+&#160;&#160;&#160;&#160;verdict = gate_2(call, result, facts)<br>
+&#160;&#160;&#160;&#160;if verdict.rejected:<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;tx.rollback()<br>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;return back_to_model(verdict.text)<span style="color:#7F8FA3">&#160;&#160;# nothing was lost</span><br>
+&#160;&#160;&#160;&#160;tx.apply(result)</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<h3 style="font-size:34px;font-weight:700">It reads the world</h3>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">Gate 1 could not know that order 1042 was already refunded. Gate 2 can, because it reads the call, the result, the ontology and the current facts together.</p>
+<h3 style="font-size:34px;font-weight:700">Then say it once more, lower down</h3>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:23px;line-height:1.45;color:#C9D6E4"><span style="color:#7F8FA3">-- LV-1, where it cannot be argued with</span><br>ALTER TABLE refund<br>&#160;&#160;ADD CONSTRAINT one_refund_per_order<br>&#160;&#160;UNIQUE (order_id);</p>
+<p style="font-size:25px;line-height:1.45;color:#94A3B4">A cardinality rule in the ontology should also be a constraint in the database. Then the rule survives a bug in your gate.</p>
+</div>
+</div>
+<aside>The pure-agent rule pays for itself here: because the agent changed nothing during the loop, a rejection costs one rollback and a retry. Say the last part plainly — every cardinality rule gets a unique constraint. The gate is the fast, explainable check; the constraint is the one that holds when the gate has a bug.</aside>
+</section>
