@@ -1,41 +1,83 @@
-/* agent-run.css: "Watch one run" (part 2). Uses only the tokens of tokens.css. */
+/* agent-run.css: "Watch one run" (part 2). Uses only the tokens of tokens.css.
+   One instrument: the stage, a transport bar that stays at the bottom of the window while the
+   stage is in view, and a recorder (event, state of the run, inspector) beside the stage. */
 
-.ar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s5); margin-bottom: var(--s4); }
-.ar-buttons { display: flex; gap: var(--s2); }
+.ar-layout { display: grid; gap: var(--s5); }
+.ar-layout > * { min-width: 0; }
+@media (min-width: 78rem) {
+  .ar-layout { grid-template-columns: minmax(0, 1fr) 19rem; align-items: start; }
+  .ar-side { position: sticky; top: calc(var(--top) + var(--s4)); max-height: calc(100vh - var(--top) - var(--s6)); overflow-y: auto; scrollbar-width: thin; }
+}
+@media (max-width: 77.99rem) { .ar-side { order: -1; } .ar-caption { min-height: 0; } }
+
+/* ---- Transport bar ---- */
+.ar-controls {
+  position: sticky; bottom: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s5);
+  padding: var(--s3) var(--s4); background: var(--paper); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule);
+  box-shadow: 0 -1rem 1.5rem -1.25rem light-dark(oklch(0.2 0.02 265 / 0.35), oklch(0 0 0 / 0.7));
+}
+.ar-buttons { display: flex; gap: var(--s1); }
+.ar-controls .ar-buttons .btn.ghost { border-color: transparent; }
+.ar-controls .ar-buttons .btn.ghost:hover:not(:disabled) { border-color: var(--rule-2); }
+.ar-controls .ar-buttons .btn.ghost:disabled { border-color: transparent; }
 .ar-play { min-width: 6.5rem; }
-.ar-progress { display: flex; align-items: center; gap: var(--s2); flex: 1 1 12rem; }
-.ar-scrub { flex: 1; accent-color: var(--ink); min-width: 8rem; }
-.ar-count { color: var(--ink-3); min-width: 4.5ch; text-align: end; }
+.ar-play::before { content: ""; width: 0; height: 0; border-block: 0.32rem solid transparent; border-left: 0.5rem solid currentColor; }
+.ar-play[aria-label^="Pause"]::before { width: 0.5rem; height: 0.64rem; border: 0; border-inline: 0.17rem solid currentColor; }
+.ar-progress { display: flex; align-items: center; gap: var(--s3); flex: 1 1 14rem; }
+.ar-track { position: relative; flex: 1; display: block; min-width: 8rem; padding-bottom: 0.5rem; }
+.ar-scrub { display: block; width: 100%; accent-color: var(--ink); }
+/* One mark for each step. A check has a taller mark: ink for PASS, the FAIL colour (and a square foot) for FAIL. */
+.ar-ticks { position: absolute; inset: auto 0 0 0; height: 0.6rem; pointer-events: none; }
+.ar-ticks i { position: absolute; bottom: 0; width: 1px; height: 0.3rem; margin-left: -0.5px; background: var(--rule-2); transition: background var(--d-state) var(--ease-out); }
+.ar-ticks i.ar-past { background: var(--ink); }
+.ar-ticks i.is-pass, .ar-ticks i.is-fail { width: 2px; height: 0.6rem; margin-left: -1px; background: var(--ink); }
+.ar-ticks i.is-fail { background: var(--fail); box-shadow: -2px 0 0 var(--fail), 2px 0 0 var(--fail); height: 0.25rem; }
+.ar-count { color: var(--ink-2); min-width: 6ch; text-align: end; font-variant-numeric: tabular-nums; }
 .ar-speed { display: flex; align-items: center; gap: var(--s2); }
-.ar-maplabel { display: inline-flex; align-items: center; gap: 0.4em; color: var(--ink-2); }
+.ar-speed .seg .btn { min-height: 2rem; font-family: var(--font-mono); font-size: var(--t-xs); }
+.ar-maplabel { display: inline-flex; align-items: center; gap: 0.5em; color: var(--ink-2); cursor: pointer; }
+@media (max-width: 40rem) {
+  .ar-controls { margin-inline: calc(-1 * var(--gutter)); padding: var(--s2) var(--gutter); gap: var(--s1) var(--s4); }
+  .ar-speed > span { display: none; }
+  .ar-progress { flex-basis: 100%; order: -1; }
+}
+@media (pointer: coarse) { .ar-speed .seg .btn { min-height: 2.75rem; } }
 
-.ar-layout { display: grid; gap: var(--s4); }
-@media (min-width: 78rem) { .ar-layout { grid-template-columns: minmax(0, 1fr) 19rem; align-items: start; } .ar-side { position: sticky; top: 4.5rem; } }
-.ar-key { font-size: var(--t-xs); }
+.ar-key { font-size: var(--t-xs); border-top: 0; padding-top: 0; }
 
-.ar-caption { border-left: 3px solid var(--ink); padding: var(--s2) var(--s3); background: var(--paper); min-height: 9rem; }
-.ar-head { margin: 0 0 var(--s2); display: grid; gap: var(--s1); }
-.ar-event { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
-.ar-data { font-size: 0.8rem; color: var(--ink); white-space: normal; overflow-wrap: anywhere; }
-.ar-text { margin: 0; font-size: var(--t-sm); }
-.ar-idea { margin-top: var(--s3); padding-top: var(--s2); border-top: 1px dashed var(--rule-2); font-size: var(--t-sm); }
-.ar-inspect { margin-top: var(--s3); padding: var(--s2) var(--s3); border: 1px solid var(--rule); background: var(--paper); }
-.ar-inspect h4 { margin: 0 0 var(--s2); font-size: var(--t-sm); }
-.ar-dl { margin: 0; display: grid; gap: 2px var(--s3); font-size: var(--t-xs); }
-.ar-dl dt { font-weight: 700; color: var(--ink-2); margin-top: var(--s1); }
+/* ---- The recorder ---- */
+.ar-caption { background: var(--paper); border-top: 1.5px solid var(--ink); padding: var(--s3) var(--s4) var(--s4); min-height: 10rem; }
+.ar-head { margin: 0 0 var(--s3); display: grid; gap: var(--s2); }
+.ar-event { font-size: var(--t-2xs); font-weight: 700; letter-spacing: var(--caps); text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: var(--s2); }
+.ar-event::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--ink); flex: none; }
+.ar-data { display: block; font-size: 0.78rem; line-height: 1.5; color: var(--ink); white-space: normal; overflow-wrap: anywhere; padding: var(--s2) var(--s3); background: var(--paper-2); }
+.ar-text { margin: 0; font-size: var(--t-sm); line-height: 1.5; }
+.ar-idea { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px dashed var(--rule-2); font-size: var(--t-sm); line-height: 1.5; }
+.ar-state, .ar-inspect { margin-top: var(--s2); padding: var(--s3) var(--s4); border: 0; background: var(--paper); }
+.ar-state h4, .ar-inspect h4 { margin: 0 0 var(--s2); font-family: var(--font-mono); font-size: var(--t-2xs); font-weight: 600; letter-spacing: var(--caps); text-transform: uppercase; color: var(--ink-2); }
+.ar-inspect h4 { font-family: var(--font-display); font-weight: 500; font-size: var(--t-base); letter-spacing: 0; text-transform: none; color: var(--ink); }
+.ar-dl { margin: 0; display: grid; gap: 2px var(--s3); font-size: var(--t-xs); line-height: 1.45; }
+.ar-dl dt { font-family: var(--font-mono); font-size: var(--t-2xs); letter-spacing: 0.04em; color: var(--ink-3); margin-top: var(--s2); }
 .ar-dl dd { margin: 0; }
+.ar-state-dl { grid-template-columns: auto 1fr; align-items: baseline; gap: 0 var(--s4); }
+.ar-state-dl dt, .ar-state-dl dd { margin-top: 0; padding: var(--s1) 0; border-top: 1px solid var(--rule); }
+.ar-state-dl dd { overflow-wrap: anywhere; text-align: end; }
 
 /* ---- The graph ---- */
-/* Not reached yet: hidden. With "Show the full map": a quiet outline, so the shape of the run is visible. */
+/* Not reached yet: a ghost. A faint outline with no words, so the stage is a full drawing at rest,
+   and the run still shows each word and colour when it gets there. "Show the full map" shows the words. */
 .gv.ar .gv-node, .gv.ar .gv-edge { transition: opacity 360ms var(--ease-out); }
-.gv.ar .gv-node:not(.ar-seen), .gv.ar .gv-edge:not(.ar-seen) { opacity: 0; pointer-events: none; }
-.gv.ar.ar-map .gv-node:not(.ar-seen) { opacity: 0.3; pointer-events: auto; }
-.gv.ar.ar-map .gv-edge:not(.ar-seen) { opacity: 0.28; pointer-events: auto; }
+.gv.ar .gv-node:not(.ar-seen), .gv.ar .gv-edge:not(.ar-seen) { pointer-events: none; }
+.gv.ar:not(.ar-map) .gv-node:not(.ar-seen) .shape { fill: color-mix(in oklch, var(--paper-2) 50%, transparent); stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 4; stroke-linecap: round; filter: none; opacity: 0.75; }
+.gv.ar:not(.ar-map) .gv-node:not(.ar-seen) .shape2, .gv.ar:not(.ar-map) .gv-node:not(.ar-seen) text { opacity: 0; }
+.gv.ar:not(.ar-map) .gv-edge:not(.ar-seen) path:not(.ar-hit) { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 1 5; stroke-linecap: round; marker-end: none; opacity: 0.6; }
+.gv.ar.ar-map .gv-node:not(.ar-seen) { opacity: 0.42; pointer-events: auto; }
+.gv.ar.ar-map .gv-edge:not(.ar-seen) { opacity: 0.38; pointer-events: auto; }
 .gv.ar .gv-edge text { opacity: 0; transition: opacity 300ms var(--ease-out); }
 .gv.ar .gv-edge.ar-labelled text, .gv.ar.ar-map .gv-edge text { opacity: 1; }
-.gv.ar .gv-edge.used:not(.ar-current) path { stroke: var(--ink-2); stroke-width: 1.6; }
+.gv.ar .gv-edge.used:not(.ar-current) path { stroke: var(--ink-2); stroke-width: 1.5; }
 .gv.ar .gv-edge.used:not(.ar-current) text { fill: var(--ink-2); font-weight: 400; }
-.gv.ar .gv-edge.ar-current path { stroke: var(--ink); stroke-width: 2.4; }
+.gv.ar .gv-edge.ar-current path { stroke: var(--ink); stroke-width: 2.25; }
 .gv.ar .gv-edge.ar-current text { fill: var(--ink); font-weight: 700; }
 .gv.ar .ar-hit { fill: none; stroke: transparent; stroke-width: 16; pointer-events: stroke; cursor: pointer; }
 .gv.ar .gv-edge[tabindex]:focus-visible { outline: none; }
@@ -44,56 +86,49 @@
 .gv.ar .gv-node.ar-selected .shape { stroke: var(--focus); stroke-width: 3; }
 
 /* The current step: a thick outline (shape, not only colour) and a slow breath. */
-.gv.ar .gv-node.done .shape { stroke-width: 1.8; }
-.gv.ar .gv-node.active .shape { stroke: var(--ink); stroke-width: 3.2; animation: ar-breathe 2.4s ease-in-out infinite; }
-.gv.ar .gv-node.ar-fail .shape { stroke: var(--fail); fill: var(--fail-tint); }
-.gv.ar .gv-node .sub { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; fill: var(--ink-3); }
+.gv.ar .gv-node.done .shape { stroke-width: 1.75; }
+.gv.ar .gv-node.active .shape { stroke: var(--ink); stroke-width: 3; animation: ar-breathe 2.8s ease-in-out 520ms infinite; }
+.gv.ar .gv-node.ar-fail .shape { stroke: var(--fail); fill: var(--fail-tint); stroke-dasharray: 7 3; }
+.gv.ar .gv-node .sub { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; fill: var(--ink-3); }
 .gv.ar .gv-token { r: 5; }
-@keyframes ar-breathe { 50% { stroke-width: 2.2; } }
-
-/* ---- The log ---- */
-.ar-log { margin: 0; padding-left: 1.6em; font-size: var(--t-sm); }
-.ar-log li { margin: 0 0 2px; }
-.ar-log-btn { background: none; border: 0; padding: 2px 4px; text-align: start; font: inherit; color: inherit; cursor: pointer; border-radius: var(--radius); }
-.ar-log-btn:hover { background: var(--paper); }
-.ar-log li[aria-current] .ar-log-btn { outline: 1.5px solid var(--ink); font-weight: 700; }
-.ar-log li[aria-current]::marker { content: "▶ "; }
-.ar-log-ev { font-size: 0.72rem; text-transform: uppercase; color: var(--ink-2); }
-.ar-log code { overflow-wrap: anywhere; }
-
-@media (prefers-reduced-motion: reduce) {
-  .gv.ar .gv-node.active .shape { animation: none; }
-  .gv.ar .gv-node, .gv.ar .gv-edge, .gv.ar .gv-edge text { transition: none; }
-}
+@keyframes ar-breathe { 50% { stroke-width: 2; } }
 .gv.ar text { font-size: 13.5px; }
-.gv.ar .gv-edge text { font-size: 12px; }
-@media (min-width: 78rem) { .ar-layout { grid-template-columns: minmax(0, 1fr) 17.5rem; } }
-@media (max-width: 77.99rem) { .ar-side { order: -1; } .ar-caption { min-height: 0; } }
+.gv.ar .gv-edge text { font-size: 11px; }
 
-/* ---- Smoothness pass ---- */
 /* The token rides the tip of the line; it fades in and out instead of blinking. */
-.gv.ar .ar-token { fill: var(--ink); stroke: var(--paper-2); stroke-width: 2; opacity: 0; transition: opacity 240ms var(--ease-out); pointer-events: none; }
+.gv.ar .ar-token { fill: var(--ink); stroke: var(--paper); stroke-width: 2.5; opacity: 0; transition: opacity 240ms var(--ease-out); pointer-events: none; }
 .gv.ar .ar-token.ar-on { opacity: 1; }
 /* A node grows in gently from its centre (the shape and text scale; the group keeps its position). */
 .gv.ar .gv-node.ar-enter > * { transform-box: fill-box; transform-origin: center; animation: ar-enter 520ms var(--ease-out) both; }
-@keyframes ar-enter { from { opacity: 0; scale: 0.9; } to { opacity: 1; scale: 1; } }
+@keyframes ar-enter { from { opacity: 0; scale: 0.92; } to { opacity: 1; scale: 1; } }
 .gv.ar .gv-node .shape { transition: stroke-width 420ms var(--ease-out), stroke 420ms var(--ease-out), fill 420ms var(--ease-out); }
 .gv.ar .gv-edge path { transition: stroke 420ms var(--ease-out), stroke-width 420ms var(--ease-out); }
 .gv.ar .gv-edge text { transition: opacity 420ms var(--ease-out), fill 420ms var(--ease-out); }
-.gv.ar .gv-node.active .shape { animation: ar-breathe 2.8s ease-in-out 520ms infinite; }
 .ar-caption.ar-swap > * { animation: ar-fade 380ms var(--ease-out) both; }
 @keyframes ar-fade { from { opacity: 0; translate: 0 3px; } to { opacity: 1; translate: 0 0; } }
+
+/* ---- The log ---- */
+.ar-logwrap { margin-top: var(--s4); }
+.ar-log { margin: 0; padding-left: 2.2em; font-size: var(--t-sm); }
+.ar-log li { margin: 0 0 2px; }
+.ar-log li::marker { font-family: var(--font-mono); font-size: var(--t-xs); }
+.ar-log-btn { background: none; border: 0; padding: 3px 6px; text-align: start; font: inherit; color: inherit; cursor: pointer; border-radius: var(--radius); }
+.ar-log-btn:hover { background: var(--paper); }
+.ar-log li.ar-past .ar-log-btn { color: var(--ink-2); }
+.ar-log li[aria-current] .ar-log-btn { background: var(--paper); box-shadow: inset 2px 0 0 var(--ink); font-weight: 700; color: var(--ink); }
+.ar-log li[aria-current]::marker { content: "\25B6  "; color: var(--ink); }
+.ar-log-ev { font-size: var(--t-2xs); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2); }
+.ar-log code { overflow-wrap: anywhere; }
+
+/* ---- Prediction ---- */
+.ar-ask { margin-top: var(--s3); padding: var(--s3); border: 1.5px solid var(--ink); background: var(--paper-2); font-size: var(--t-sm); }
+.ar-ask p { margin: 0 0 var(--s2); }
+.ar-ask .ar-buttons { gap: var(--s2); flex-wrap: wrap; }
+.ar-verdict { margin: var(--s3) 0 0; padding-top: var(--s2); border-top: 1px solid var(--rule); font-size: var(--t-sm); font-weight: 700; }
+
 @media (prefers-reduced-motion: reduce) {
-  .gv.ar .gv-node.ar-enter > *, .ar-caption.ar-swap > *, .gv.ar .gv-node.active .shape { animation: none; }
+  .gv.ar .gv-node.active .shape, .gv.ar .gv-node.ar-enter > *, .ar-caption.ar-swap > * { animation: none; }
+  .gv.ar .gv-node, .gv.ar .gv-edge, .gv.ar .gv-edge text { transition: none; }
   .gv.ar .ar-token { display: none; }
 }
-
-/* ---- Prediction and state ---- */
-.ar-ask { margin-top: var(--s3); padding: var(--s2) var(--s3); border: 1.5px solid var(--focus); background: var(--paper-2); font-size: var(--t-sm); }
-.ar-ask p { margin: 0 0 var(--s2); }
-.ar-verdict { margin: var(--s2) 0 0; font-size: var(--t-sm); font-weight: 700; }
-.ar-state { margin-top: var(--s3); padding: var(--s2) var(--s3); border: 1px solid var(--rule); background: var(--paper); }
-.ar-state h4 { margin: 0 0 var(--s1); font-size: var(--t-sm); }
-.ar-state-dl { grid-template-columns: auto 1fr; align-items: baseline; }
-.ar-state-dl dt { margin-top: 0; font-weight: 400; }
-.ar-state-dl dd { overflow-wrap: anywhere; }
+@media print { .ar-controls { position: static; box-shadow: none; } }

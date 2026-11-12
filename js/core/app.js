@@ -88,7 +88,13 @@
     });
     var title = section.querySelector('h1').textContent;
     document.title = title + ' · Permitted Paths: Graph Engineering for Agents';
-    if (where) where.textContent = (/^\d$/.test(key) && key !== '0' ? 'Part ' + key + ' of 8 — ' : '') + title;
+    if (where) {
+      // The locator: a small number ("02 / 08", "Lab", "Shelf") and the title of the part.
+      var no = /^\d$/.test(key) ? '0' + key + ' / 08' : key === 'lab' ? 'Lab' : 'Shelf';
+      GE.clear(where);
+      where.appendChild(GE.h('span', { class: 'top-no' }, no));
+      where.appendChild(GE.h('span', { class: 'top-title' }, title));
+    }
     startLabs(section);
     if (key !== '0') GE.store.set('last', key);
     GE.trace.add('visit', key);
@@ -131,9 +137,27 @@
     head.parentNode.insertBefore(note, head.nextSibling);
   }
 
+  /* The opener of each part: where the part is on the path (a row of nine marks), and the number
+     that the figures of the part use ("Fig. 2.3"). The text of the kicker is a CSS string, so the
+     search index and a screen reader do not read it two times. */
+  function dressChapters() {
+    chapters.forEach(function (c) {
+      var key = c.dataset.chapter, head = c.querySelector('.ch-head'), h1 = head && head.querySelector('h1');
+      c.style.setProperty('--ch-dot', '"' + (/^\d$/.test(key) ? key : key === 'lab' ? 'L' : 'R') + '."');
+      if (!h1 || !/^\d$/.test(key) || head.querySelector('.ch-kicker')) return;
+      var path = GE.h('span', { class: 'ch-path' });
+      for (var k = 0; k <= 8; k++) path.appendChild(GE.h('i', { class: k < +key ? 'on' : k === +key ? 'now' : null }));
+      head.insertBefore(GE.h('p', { class: 'ch-kicker', 'aria-hidden': 'true', 'data-k': key === '0' ? 'A course in nine parts' : 'Part ' + key + ' of 8' }, path), h1);
+    });
+  }
+
   function paintRail() {
-    var visited = {};
+    var visited = {}, furthest = 0;
     GE.trace.all().forEach(function (e) { if (e.type === 'visit') visited[e.ch] = true; });
+    // The ink part of the path line: to the last part that the learner opened.
+    railItems.forEach(function (li, k) { if (visited[li.dataset.ch] || li.classList.contains('current')) furthest = k; });
+    var rail = document.querySelector('.rail');
+    if (rail && railItems.length > 1) rail.style.setProperty('--progress', String(furthest / (railItems.length - 1)));
     railItems.forEach(function (li) {
       li.classList.toggle('visited', !!visited[li.dataset.ch]);
       var g = GE.store.gate(li.dataset.ch);
@@ -183,6 +207,7 @@
 
   /* ---- Start ---- */
   root.classList.add('js');
+  try { dressChapters(); } catch (err) { console.error('The openers of the parts did not start.', err); }
   try { linkCitations(document); } catch (err) { console.error('The citations did not start.', err); }
   try { linkSources(document); } catch (err) { console.error('The source links did not start.', err); }
   initTheme();

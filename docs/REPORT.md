@@ -4,7 +4,7 @@ Built 2026-11-12 from the nine `GE 00–08` notes. The notes were not changed.
 
 ## What was built
 
-A no-build, no-network interactive course: `index.html` plus five stylesheets, 24 scripts and six font files. Nine parts and a reference shelf, 19 instruments with a result the page can examine, 7 further drawings that are read in steps or by lens, 7 part gates, a capstone gate and a four-story failure gate, a browser test page with 66 assertions, `README.md` and `SOURCES.md`. (The first version of this report counted 25 "instruments"; an adversarial review rightly objected that several were figures.)
+A no-build, no-network interactive course: `index.html` plus seven stylesheets, 29 scripts and eight font files. Nine parts and a reference shelf, 19 instruments with a result the page can examine, 7 further drawings that are read in steps or by lens, 7 part gates, a capstone gate and a four-story failure gate, a browser test page with 66 assertions, `README.md` and `SOURCES.md`. (The first version of this report counted 25 "instruments"; an adversarial review rightly objected that several were figures.)
 
 ## The learning journey
 
@@ -286,3 +286,38 @@ Backups are the `*.bak-20261113` files in `backups/`.
 - No console errors.
 
 **Not checked:** screen readers, Firefox, Safari, and light theme screenshots.
+
+## Redesign: "the journal and the bench" (2026-11-12)
+
+A full visual pass on the branch `redesign/journal-and-bench`. The content, the ids, the mounts, the engines and the stored data did not change.
+
+**Direction.** A technical journal that contains a laboratory. Two voices:
+
+| Voice | Where | Type |
+|---|---|---|
+| Journal | titles of parts, questions, ledes, section headings, large numerals, key ideas | Instrument Serif (new, SIL OFL, in `assets/fonts/`) |
+| Bench | titles of instruments, controls, read-outs, the wordmark | Nohemi |
+| Body | prose, tables, feedback | Atkinson Hyperlegible |
+| Data | figure numbers, labels of arrows, state, code, source chips | JetBrains Mono |
+
+- **Colour.** No new colour. Ink, the four role colours and the FAIL colour, each with one meaning. Paper is now a warm ivory sheet; Blueprint is a navy drafting sheet. Each theme has its own values in `tokens.css`.
+- **Marks.** The gate hexagon (wordmark, rail, gate head) and the path line of the rail. The ink part of the line grows to the last part that the learner opened.
+- **Depth.** Shadows only on layers that float: the search dialog, the open rail, the transport bar of the run, the phone.
+
+**What changed.**
+
+- `css/tokens.css`: the serif face, a larger display scale, new neutrals for each theme, `--grid-dot`, `--shadow-float`, `--hex`, `--caps`. From 90rem the rail is wide (`--rail: 15.5rem`).
+- `css/layout.css`: top bar (mark, locator "02 / 08", a quiet search field, three text tools); rail under the top bar with titles on a wide window, a narrow rail that opens between 56rem and 90rem, one row on a phone; openers of the parts (part 0 is a cover); numbered sections; the bench as a plate with a figure number ("Fig. 2.3"); the end-of-part links; notes in the margin from 82rem.
+- `css/base.css`, `css/components.css`: tables, code, buttons, segmented groups, chips and their states, stamps, callouts, drawers, the gate (letters on the options), search, and one drawing language (stage with a dot grid and four registration marks, mono labels on arrows, thinner arrowheads, a softer wavering line).
+- `css/agent-run.css`, `js/labs/agent-run.js`: "Watch one run" is one instrument. The stage, a transport bar that stays at the bottom of the window while the stage is in view, a scrubber with one mark for each step (a check has a taller mark), and the recorder (event, state, inspector) beside the stage. A node that the run did not reach is a ghost: an outline with no words. Only the assembly of the DOM changed; the steps, the timing, the keys and the prediction are the same.
+- `js/core/app.js`: the locator in the top bar, the kicker with the nine path marks in each opener, `--ch-dot` for the figure numbers, `--progress` for the rail.
+- `js/core/graph-view.js`: the shape of the two arrowheads. `index.html`: the scale of the `ge-wobble` filter (3.4 to 2.4).
+- `css/labs.css`, `css/phone-lab.css`: the instruments and part L use the new surfaces and voices.
+
+**Checked.** `tests.html`: 92 PASS, 0 FAIL. No console errors. Chromium at 1440 px and 375 px, both themes: parts 0, 2, 4, 6, L and the shelf. No page-level horizontal scroll at 375 px on any part. Navigation by rail and by address, a deep link to a gate, a citation, search, the theme toggle, and the run (play, pause, scrubber, back, inspector).
+
+**Not done, or not checked.**
+
+- A small role mark in the corner of each node (planned) was not added. The shape and the line already carry the role without colour.
+- The gate did not get progress marks; it keeps the text "Question 1 of 4".
+- 768 px, 1024 px and 320 px were not looked at as pictures. Print, `file://`, reduced motion, Firefox, Safari and screen readers were not checked after the redesign. Contrast of the new neutrals was set by lightness, not measured pair by pair.

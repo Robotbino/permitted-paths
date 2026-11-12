@@ -96,8 +96,8 @@
     svg.style.minWidth = Math.min(def.w, Math.round(def.w * (opts.minScale || 0.85))) + 'px';
     svg.style.maxWidth = Math.round(def.w * 1.12) + 'px';
     svg.appendChild(s('defs', null,
-      s('marker', { id: id + '-a', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, s('path', { class: 'gv-arrow', d: 'M0 0L10 5L0 10z' })),
-      s('marker', { id: id + '-b', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 9, markerHeight: 9, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, s('path', { class: 'gv-arrow-on', d: 'M0 0L10 5L0 10z' }))
+      s('marker', { id: id + '-a', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 8, markerHeight: 8, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, s('path', { class: 'gv-arrow', d: 'M0 1.2L10 5L0 8.8L2.6 5z' })),
+      s('marker', { id: id + '-b', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 10, markerHeight: 10, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, s('path', { class: 'gv-arrow-on', d: 'M0 1.2L10 5L0 8.8L2.6 5z' }))
     ));
     var gGroups = s('g'), gEdges = s('g'), gNodes = s('g'), gTop = s('g');
     svg.appendChild(gGroups); svg.appendChild(gEdges); svg.appendChild(gNodes); svg.appendChild(gTop);

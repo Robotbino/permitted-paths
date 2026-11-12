@@ -63,7 +63,7 @@ js/data/
   reference.js        glossary, incorrect ideas, checklist, ladder, sources, recall questions
 js/labs/              one file per group of instruments; each registers GE.labs.<name>
                       (own.js holds "Your own prompt", the four failure stories and the one-page takeaway)
-assets/fonts/         Nohemi, Atkinson Hyperlegible, JetBrains Mono (copied from your other projects)
+assets/fonts/         Instrument Serif (titles; SIL OFL, licence beside it), Nohemi, Atkinson Hyperlegible, JetBrains Mono
 ```
 
 Scripts are classic `<script>` files under one `GE` namespace, not ES modules, because modules and `fetch` do not work from `file://`.
@@ -96,7 +96,7 @@ Scripts are classic `<script>` files under one `GE` namespace, not ES modules, b
 
 **Add a part.** Add a `<section class="chapter" data-chapter="9">` with an `<h1>`, a rail item in the `<nav class="rail">`, and an entry in `GE.data.chapters`.
 
-**Colours and type.** Change them only in `css/tokens.css`. The four role colours (`--code`, `--model`, `--agent`, `--person`) carry meaning and are not used for decoration or for actions.
+**Colours and type.** Change them only in `css/tokens.css`. Type has four voices: `--font-serif` for titles, questions and ledes; `--font-display` for instruments and controls; `--font-text` for prose; `--font-mono` for data. The four role colours (`--code`, `--model`, `--agent`, `--person`) carry meaning and are not used for decoration or for actions.
 
 ## Content rules that the course follows
 

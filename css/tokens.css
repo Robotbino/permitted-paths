@@ -1,6 +1,14 @@
 /* tokens.css: every colour, font and duration is declared here and nowhere else.
-   Colour pairs are light-dark(); the theme toggle only switches color-scheme. */
+   Colour pairs are light-dark(); the theme toggle only switches color-scheme.
 
+   Identity: "the journal and the bench".
+   - Journal voice (titles, questions, ledes, big numerals): Instrument Serif.
+   - Bench voice (instrument titles, controls, read-outs, wordmark): Nohemi.
+   - Body: Atkinson Hyperlegible. Data: JetBrains Mono.
+   - Paper theme: warm ivory stock, near-black ink. Blueprint theme: navy drafting sheet, pale ink. */
+
+@font-face { font-family: "Instrument Serif"; font-weight: 400; font-display: swap; src: url("../assets/fonts/instrument-serif-400-latin.woff2") format("woff2"); }
+@font-face { font-family: "Instrument Serif"; font-weight: 400; font-style: italic; font-display: swap; src: url("../assets/fonts/instrument-serif-400i-latin.woff2") format("woff2"); }
 @font-face { font-family: "Nohemi"; font-weight: 500; font-display: swap; src: url("../assets/fonts/Nohemi-Medium.woff2") format("woff2"); }
 @font-face { font-family: "Nohemi"; font-weight: 600; font-display: swap; src: url("../assets/fonts/Nohemi-SemiBold.woff2") format("woff2"); }
 @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; font-display: swap; src: url("../assets/fonts/atkinson-hyperlegible-400-latin.woff2") format("woff2"); }
@@ -12,50 +20,60 @@
   color-scheme: light dark;
 
   /* Type */
+  --font-serif: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --font-display: "Nohemi", "Atkinson Hyperlegible", system-ui, sans-serif;
   --font-text: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --t-2xs: 0.6875rem;
   --t-xs: 0.8125rem;
   --t-sm: 0.9375rem;
   --t-base: 1.125rem;
   --t-md: 1.3125rem;
   --t-lg: 1.625rem;
   --t-xl: 2.0625rem;
-  --t-display: clamp(2.375rem, 1.2rem + 4.6vw, 4.25rem);
+  --t-2xl: clamp(2.125rem, 1.6rem + 1.9vw, 2.875rem);
+  --t-display: clamp(2.75rem, 1.3rem + 5.6vw, 5.5rem);
+  --t-hero: clamp(3.5rem, 1.2rem + 9.5vw, 8.5rem);
+  --caps: 0.09em; /* letter-spacing of small mono capitals */
 
   /* Space: 4px base */
   --s1: 0.25rem; --s2: 0.5rem; --s3: 0.75rem; --s4: 1rem; --s5: 1.5rem;
   --s6: 2rem; --s7: 3rem; --s8: 4.5rem; --s9: 7rem;
-  --measure: 66ch;
+  --measure: 64ch;
   --bench: 68rem;
   --rail: 4.25rem;
-  --top: 3.4rem;
+  --top: 3.5rem;
   --gutter: clamp(1rem, 4vw, 3rem);
 
-  /* Neutrals: cool drafting paper, tinted toward the code blue */
-  --paper:   light-dark(oklch(0.985 0.004 250), oklch(0.185 0.022 255));
-  --paper-2: light-dark(oklch(0.962 0.007 250), oklch(0.225 0.024 255));
-  --paper-3: light-dark(oklch(0.935 0.010 250), oklch(0.265 0.026 255));
-  --ink:     light-dark(oklch(0.215 0.022 255), oklch(0.935 0.010 250));
-  --ink-2:   light-dark(oklch(0.385 0.022 255), oklch(0.800 0.014 250));
-  --ink-3:   light-dark(oklch(0.475 0.020 255), oklch(0.700 0.016 250)); /* 4.5:1 or more on paper and paper-2 */
-  --rule:    light-dark(oklch(0.865 0.010 250), oklch(0.335 0.024 255));
-  --rule-2:  light-dark(oklch(0.640 0.016 250), oklch(0.520 0.022 255)); /* 3:1 on paper: control edges */
+  /* Neutrals. Paper: warm ivory. Blueprint: navy sheet. */
+  --paper:   light-dark(oklch(0.978 0.008 88),  oklch(0.190 0.034 258));
+  --paper-2: light-dark(oklch(0.955 0.011 88),  oklch(0.225 0.038 258));
+  --paper-3: light-dark(oklch(0.925 0.014 88),  oklch(0.270 0.042 258));
+  --ink:     light-dark(oklch(0.200 0.016 265), oklch(0.945 0.012 235));
+  --ink-2:   light-dark(oklch(0.365 0.016 265), oklch(0.815 0.020 240));
+  --ink-3:   light-dark(oklch(0.455 0.015 265), oklch(0.715 0.026 245)); /* 4.5:1 or more on paper and paper-2 */
+  --rule:    light-dark(oklch(0.868 0.014 88),  oklch(0.330 0.042 258));
+  --rule-2:  light-dark(oklch(0.625 0.016 88),  oklch(0.535 0.040 255)); /* 3:1 on paper: control edges */
+  --hair:    var(--rule);
+  --grid-dot: light-dark(oklch(0.835 0.016 88), oklch(0.345 0.046 258)); /* the dot grid of a drawing stage */
 
   /* The four roles of the notes. Colour for meaning only. */
-  --code:        light-dark(oklch(0.455 0.135 255), oklch(0.780 0.105 250));
-  --code-tint:   light-dark(oklch(0.945 0.028 250), oklch(0.300 0.055 255));
-  --model:       light-dark(oklch(0.490 0.105 72),  oklch(0.810 0.115 82));
-  --model-tint:  light-dark(oklch(0.955 0.045 88),  oklch(0.305 0.045 80));
-  --agent:       light-dark(oklch(0.455 0.165 305), oklch(0.790 0.115 305));
-  --agent-tint:  light-dark(oklch(0.945 0.034 305), oklch(0.300 0.062 305));
-  --person:      light-dark(oklch(0.435 0.105 152), oklch(0.790 0.115 152));
-  --person-tint: light-dark(oklch(0.945 0.040 152), oklch(0.290 0.048 152));
+  --code:        light-dark(oklch(0.455 0.135 255), oklch(0.790 0.105 250));
+  --code-tint:   light-dark(oklch(0.945 0.028 250), oklch(0.310 0.062 255));
+  --model:       light-dark(oklch(0.490 0.105 72),  oklch(0.820 0.115 82));
+  --model-tint:  light-dark(oklch(0.950 0.050 88),  oklch(0.315 0.050 80));
+  --agent:       light-dark(oklch(0.455 0.165 305), oklch(0.800 0.115 305));
+  --agent-tint:  light-dark(oklch(0.945 0.034 305), oklch(0.310 0.068 305));
+  --person:      light-dark(oklch(0.435 0.105 152), oklch(0.800 0.115 152));
+  --person-tint: light-dark(oklch(0.945 0.040 152), oklch(0.300 0.052 152));
 
   /* Gate results. PASS is an ink stamp; only FAIL takes a colour. */
-  --fail:      light-dark(oklch(0.495 0.190 27), oklch(0.760 0.150 27));
-  --fail-tint: light-dark(oklch(0.955 0.030 27), oklch(0.300 0.070 27));
-  --focus:     light-dark(oklch(0.520 0.210 262), oklch(0.800 0.130 255));
+  --fail:      light-dark(oklch(0.495 0.190 27), oklch(0.770 0.150 27));
+  --fail-tint: light-dark(oklch(0.950 0.032 27), oklch(0.310 0.075 27));
+  --focus:     light-dark(oklch(0.520 0.210 262), oklch(0.820 0.130 250));
+
+  /* Depth: only layers that float over the page have a shadow. */
+  --shadow-float: 0 1.25rem 2.75rem -1.5rem light-dark(oklch(0.2 0.02 265 / 0.5), oklch(0 0 0 / 0.8));
 
   /* Motion */
   --d-press: 120ms;
@@ -64,9 +82,13 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-move: cubic-bezier(0.65, 0, 0.35, 1);
 
-  --radius: 3px;
+  --radius: 2px;
   --radius-2: 6px;
+  --hex: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); /* the gate mark */
 }
+
+/* A wide window: the path rail shows the titles of the parts. */
+@media (min-width: 90rem) { :root { --rail: 15.5rem; } }
 
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"]  { color-scheme: dark; }
@@ -74,10 +96,11 @@
 /* Older browsers with no light-dark(): one light theme with plain values. */
 @supports not (color: light-dark(#000, #fff)) {
   :root {
-    --paper: #f8f9fc; --paper-2: #eff2f7; --paper-3: #e6eaf1;
-    --ink: #171c26; --ink-2: #414856; --ink-3: #58606e; --rule: #d3d8e0; --rule-2: #8e96a3;
+    --paper: #faf8f3; --paper-2: #f3f0e8; --paper-3: #eae6db;
+    --ink: #15171f; --ink-2: #3c3f4a; --ink-3: #555863; --rule: #d9d5c9; --rule-2: #8d897d; --grid-dot: #cfcbbe;
     --code: #2a5db0; --code-tint: #e6eefb; --model: #8a5a00; --model-tint: #fbefd0;
     --agent: #6d35b0; --agent-tint: #f1e8fb; --person: #1f6e3c; --person-tint: #e3f4e7;
     --fail: #b3261e; --fail-tint: #fbe9e7; --focus: #2f5fe0;
+    --shadow-float: 0 1.25rem 2.75rem -1.5rem rgba(20, 22, 30, 0.5);
   }
 }

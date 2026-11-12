@@ -1,94 +1,178 @@
 /* layout.css: page frame (top bar, path rail), chapter structure, reading column and bench. */
 
-.skip { position: absolute; left: var(--s4); top: -4rem; background: var(--ink); color: var(--paper); padding: var(--s2) var(--s4); z-index: 50; }
+.skip { position: absolute; left: var(--s4); top: -4rem; background: var(--ink); color: var(--paper); padding: var(--s2) var(--s4); z-index: 60; }
 .skip:focus { top: var(--s2); }
 
-/* Top bar */
+/* ---- Top bar: the mark, where you are, and four quiet tools ---- */
 .top {
-  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: var(--s4); height: var(--top);
-  padding: 0 var(--gutter); padding-left: calc(var(--rail) + var(--gutter));
-  background: var(--paper); border-bottom: 1px solid var(--rule);
+  --col: 4.25rem; /* the column of the path nodes; the mark sits on the same axis */
+  position: sticky; top: 0; z-index: 45; display: flex; align-items: center; gap: var(--s5); height: var(--top);
+  padding: 0 var(--gutter) 0 0; background: var(--paper); border-bottom: 1px solid var(--rule);
 }
-.wordmark { font-family: var(--font-display); font-weight: 600; font-size: var(--t-base); text-decoration: none; white-space: nowrap; }
-.top-where { font-size: var(--t-sm); color: var(--ink-3); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.top-tools { display: flex; gap: var(--s2); margin-left: auto; }
+.wordmark { display: inline-flex; align-items: center; height: 100%; font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; letter-spacing: -0.005em; text-decoration: none; white-space: nowrap; flex: none; }
+.wordmark::before { content: ""; width: 1.05rem; height: 0.95rem; margin-inline: calc((var(--col) - 1.05rem) / 2); background: var(--ink); clip-path: var(--hex); transition: rotate var(--d-view) var(--ease-out); }
+.wordmark:hover::before { rotate: 60deg; }
+.top-where { display: flex; align-items: baseline; gap: var(--s3); min-width: 0; flex: 1; padding-left: var(--s5); border-left: 1px solid var(--rule); font-size: var(--t-sm); color: var(--ink-2); white-space: nowrap; }
+.top-no { font-family: var(--font-mono); font-size: var(--t-2xs); letter-spacing: var(--caps); color: var(--ink-3); flex: none; }
+.top-title { overflow: hidden; text-overflow: ellipsis; }
+.top-tools { display: flex; align-items: center; gap: var(--s1); margin-left: auto; }
+.top .top-tools .btn { min-height: 2.25rem; padding: 0 var(--s3); border-color: transparent; background: none; color: var(--ink-2); font-weight: 400; white-space: nowrap; }
+.top .top-tools .btn:hover { background: var(--paper-3); border-color: transparent; color: var(--ink); }
+.top .top-tools #search-open { min-width: 11.5rem; justify-content: space-between; margin-right: var(--s2); background: var(--paper-2); border-color: var(--rule); color: var(--ink-3); }
+.top .top-tools #search-open:hover { border-color: var(--rule-2); background: var(--paper-2); color: var(--ink); }
+#theme-toggle::before { content: ""; width: 0.8rem; height: 0.8rem; flex: none; border-radius: 50%; border: 1.5px solid currentColor; background: linear-gradient(90deg, currentColor 50%, transparent 50%); transition: rotate var(--d-view) var(--ease-out); }
+#theme-toggle[data-dark="true"]::before { rotate: 180deg; }
+.top .top-tools #new-run { color: var(--ink-3); }
+.top-tools #new-run::before { content: "\21BA"; font-size: 1.05em; line-height: 1; }
 
-/* Path rail: the course drawn as an execution graph. It is the navigation. */
-.rail { --rail-open: 22rem; position: fixed; z-index: 40; inset: 0 auto 0 0; width: var(--rail); background: var(--paper-2); border-right: 1px solid var(--rule); overflow: hidden auto; scrollbar-width: thin; transition: width var(--d-state) var(--ease-out); }
-.rail:hover, .rail:focus-within { width: var(--rail-open); box-shadow: 8px 0 24px -18px var(--ink); }
-.rail ol { list-style: none; margin: 0; padding: var(--s5) 0; display: flex; flex-direction: column; height: 100%; justify-content: space-between; max-height: 46rem; position: relative; }
-.rail ol::before { content: ""; position: absolute; left: calc(var(--rail) / 2 - 0.5px); top: var(--s6); bottom: var(--s6); border-left: 1.5px solid var(--rule-2); }
-.rail li { margin: 0; position: relative; }
+/* ---- Path rail: the course drawn as an execution graph. It is the navigation. ---- */
+.rail {
+  --col: 4.25rem; --rail-open: 21rem;
+  position: fixed; z-index: 40; inset: var(--top) auto 0 0; width: var(--rail);
+  background: var(--paper); border-right: 1px solid var(--rule); overflow: hidden auto; scrollbar-width: none;
+  transition: width var(--d-state) var(--ease-out), box-shadow var(--d-state) var(--ease-out);
+}
+.rail::-webkit-scrollbar { display: none; }
+.rail ol { list-style: none; margin: 0; padding: var(--s5) 0; display: flex; flex-direction: column; height: 100%; justify-content: space-between; max-height: 43rem; position: relative; }
+/* The path line. The ink part grows to the last part that you opened (--progress is set by app.js). */
+.rail ol::before, .rail ol::after { content: ""; position: absolute; left: calc(var(--col) / 2 - 0.5px); top: calc(var(--s5) + 1.375rem); bottom: calc(var(--s5) + 1.375rem); width: 1px; background: var(--rule-2); }
+.rail ol::after { left: calc(var(--col) / 2 - 1px); width: 2px; background: var(--ink); transform-origin: top; transform: scaleY(var(--progress, 0)); transition: transform 600ms var(--ease-out); }
+.rail li { margin: 0; position: relative; z-index: 1; }
 .rail a { display: flex; align-items: center; gap: var(--s3); text-decoration: none; min-height: 2.75rem; width: var(--rail-open); padding-right: var(--s5); }
 .rail-node {
-  flex: none; width: 2rem; height: 2rem; margin-left: calc((var(--rail) - 2rem) / 2);
-  display: grid; place-items: center; background: var(--paper); border: 1.5px solid var(--rule-2); border-radius: var(--radius);
-  font-family: var(--font-mono); font-size: var(--t-xs); font-weight: 600; font-variant-numeric: tabular-nums; position: relative;
-  transition: background var(--d-state) var(--ease-out), color var(--d-state) var(--ease-out), border-color var(--d-state) var(--ease-out);
+  flex: none; width: 1.75rem; height: 1.75rem; margin-left: calc((var(--col) - 1.75rem) / 2);
+  display: grid; place-items: center; background: var(--paper); border: 1px solid var(--rule-2); border-radius: var(--radius);
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-3); position: relative;
+  transition: background var(--d-state) var(--ease-out), color var(--d-state) var(--ease-out), border-color var(--d-state) var(--ease-out), scale var(--d-state) var(--ease-out);
 }
-.rail-label { font-size: var(--t-sm); line-height: 1.25; color: var(--ink-2); white-space: nowrap; opacity: 0; transition: opacity var(--d-state) var(--ease-out); }
-.rail:hover .rail-label, .rail:focus-within .rail-label { opacity: 1; }
-.rail a:hover .rail-node { border-color: var(--ink); }
-.rail li.visited .rail-node { border-color: var(--ink); }
-.rail li.current .rail-node { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.rail-label { font-size: 0.875rem; line-height: 1.25; color: var(--ink-3); white-space: nowrap; opacity: 0; transition: opacity var(--d-state) var(--ease-out), color var(--d-state) var(--ease-out); }
+.rail a:hover .rail-node { border-color: var(--ink); color: var(--ink); }
+.rail a:hover .rail-label { color: var(--ink); }
+.rail a:focus-visible { outline-offset: -3px; }
+.rail li.visited .rail-node { border-color: var(--ink); color: var(--ink); }
+.rail li.visited .rail-label { color: var(--ink-2); }
+.rail li.current .rail-node { background: var(--ink); color: var(--paper); border-color: var(--ink); scale: 1.12; }
 .rail li.current .rail-label { color: var(--ink); font-weight: 700; }
 /* Gate mark: a small hexagon on the node once the gate of the chapter has a result. */
-.rail li[data-gate]::after { content: ""; position: absolute; left: calc(var(--rail) / 2 + 0.55rem); top: 0.2rem; width: 0.7rem; height: 0.7rem; clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); background: var(--ink); }
+.rail li[data-gate]::after { content: ""; position: absolute; left: calc(var(--col) / 2 + 0.5rem); top: 0.15rem; width: 0.7rem; height: 0.65rem; clip-path: var(--hex); background: var(--ink); box-shadow: 0 0 0 2px var(--paper); z-index: 2; }
 .rail li[data-gate="ESCALATED"]::after { background: var(--fail); }
+
+/* Middle widths: a narrow rail that opens when the pointer or the focus is on it. */
+@media (min-width: 56.01rem) and (max-width: 89.99rem) {
+  .rail:hover, .rail:focus-within { width: var(--rail-open); box-shadow: var(--shadow-float); }
+  .rail:hover .rail-label, .rail:focus-within .rail-label { opacity: 1; }
+}
+/* Wide: the titles are always there. */
+@media (min-width: 90rem) {
+  .rail a { width: 100%; padding-right: var(--s4); align-items: center; }
+  .rail-label { opacity: 1; white-space: normal; text-wrap: balance; }
+}
 
 main { padding-left: var(--rail); }
 
-/* Chapter */
-.chapter { padding: var(--s8) var(--gutter) var(--s9); max-width: calc(var(--bench) + 2 * var(--gutter)); margin: 0 auto; }
+/* ---- Chapter ---- */
+.chapter { padding: var(--s8) var(--gutter) var(--s9); max-width: calc(var(--bench) + 2 * var(--gutter)); margin: 0 auto; counter-reset: sec fig; }
 .js .chapter:not(.is-current) { display: none; }
+.js .chapter.is-current { animation: ch-in var(--d-view) var(--ease-out) backwards; }
+.js .chapter.is-current > .ch-head > * { animation: ch-rise 620ms var(--ease-out) backwards; }
+.js .chapter.is-current > .ch-head > :nth-child(2) { animation-delay: 40ms; }
+.js .chapter.is-current > .ch-head > :nth-child(3) { animation-delay: 90ms; }
+.js .chapter.is-current > .ch-head > :nth-child(4) { animation-delay: 140ms; }
+.js .chapter.is-current > .ch-head > :nth-child(n+5) { animation-delay: 190ms; }
+@keyframes ch-in { from { opacity: 0; } }
+@keyframes ch-rise { from { opacity: 0; translate: 0 0.6rem; } }
 .chapter > * { max-width: var(--measure); }
-.chapter > .wide, .chapter > .bench, .chapter > .ch-head, .chapter > .gate, .chapter > .ch-next { max-width: none; }
+.chapter > .wide, .chapter > .bench, .chapter > .ch-head, .chapter > .gate, .chapter > .ch-next, .chapter > h2 { max-width: none; }
 
-.ch-head { display: grid; grid-template-columns: auto 1fr; column-gap: var(--s5); align-items: start; margin-bottom: var(--s7); padding-bottom: var(--s6); border-bottom: 1.5px solid var(--ink); }
-.ch-num { font-family: var(--font-display); font-weight: 600; font-size: clamp(4rem, 2rem + 9vw, 8.5rem); line-height: 0.8; margin: 0; color: var(--ink); font-variant-numeric: tabular-nums; grid-row: span 3; }
-.ch-head h1 { max-width: 15ch; }
-.ch-q { font-size: var(--t-md); line-height: 1.35; color: var(--ink-2); margin: var(--s4) 0 var(--s3); max-width: 38ch; }
-.ch-meta { font-size: var(--t-sm); color: var(--ink-3); margin: 0; display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); align-items: center; }
+/* The opener of a part: a large numeral, where you are on the path, the title, the question, the source. */
+.ch-head { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: clamp(var(--s5), 4.5vw, var(--s8)); align-items: start; margin-bottom: var(--s7); padding-bottom: var(--s6); border-bottom: 1.5px solid var(--ink); }
+.ch-head > * { grid-column: 2; }
+.ch-num { grid-column: 1; grid-row: 1 / span 6; font-family: var(--font-serif); font-weight: 400; font-size: clamp(7.5rem, 2rem + 15vw, 15rem); line-height: 0.74; letter-spacing: -0.04em; margin: 0.02em 0 0; color: var(--ink); font-variant-numeric: lining-nums; min-width: 0.5em; text-align: center; }
+.ch-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); margin: var(--s2) 0 var(--s5); font-family: var(--font-mono); font-size: var(--t-2xs); font-weight: 600; letter-spacing: var(--caps); text-transform: uppercase; color: var(--ink-2); }
+.ch-kicker::before { content: attr(data-k); }
+.ch-path { display: inline-flex; align-items: center; gap: 3px; }
+.ch-path i { display: block; width: 1.15rem; height: 1px; background: var(--rule-2); }
+.ch-path i.on { height: 2px; background: var(--ink); }
+.ch-path i.now { height: 7px; background: var(--ink); }
+.ch-head h1 { max-width: 13ch; }
+.ch-q { font-family: var(--font-serif); font-style: italic; font-size: clamp(1.5rem, 1.25rem + 0.9vw, 1.9375rem); line-height: 1.18; color: var(--ink-2); margin: var(--s5) 0 var(--s5); max-width: 30ch; text-wrap: balance; }
+.ch-meta { font-size: var(--t-xs); color: var(--ink-3); margin: 0; display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); align-items: center; }
 
-.lede { font-size: var(--t-md); line-height: 1.45; }
+/* Part 0 is the cover: no numeral, the title at full size, the claim as a standfirst. */
+.chapter[data-chapter="0"] { padding-top: var(--s7); }
+.chapter[data-chapter="0"] .ch-head { grid-template-columns: minmax(0, 1fr); padding-top: var(--s5); }
+.chapter[data-chapter="0"] .ch-head > * { grid-column: 1; }
+.chapter[data-chapter="0"] .ch-num { display: none; }
+.chapter[data-chapter="0"] .ch-head h1 { font-size: var(--t-hero); line-height: 0.9; letter-spacing: -0.025em; max-width: none; }
+.chapter[data-chapter="0"] .ch-q { font-style: normal; color: var(--ink); font-size: clamp(1.625rem, 1.1rem + 2vw, 2.625rem); line-height: 1.1; max-width: 27ch; margin-top: var(--s6); }
 
-/* Bench: the wide working surface for an instrument. */
-.bench { margin: var(--s6) 0 var(--s7); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); background: var(--paper-2); padding: var(--s5); }
-.bench > figcaption, .bench-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2) var(--s4); margin-bottom: var(--s4); }
-.bench-title { font-family: var(--font-display); font-weight: 500; font-size: var(--t-md); margin: 0; }
-.bench-task { flex-basis: 100%; margin: 0; font-size: var(--t-sm); color: var(--ink-2); max-width: var(--measure); }
+.chapter > .lede { font-family: var(--font-serif); font-size: clamp(1.5rem, 1.3rem + 0.75vw, 1.875rem); line-height: 1.24; letter-spacing: -0.003em; max-width: 43rem; margin-bottom: var(--s5); }
+.lede code { font-size: 0.62em; vertical-align: 0.08em; }
+
+/* A section: a number in the margin voice, a hairline, the serif heading. */
+.chapter > h2 { counter-increment: sec; padding-top: var(--s4); border-top: 1px solid var(--rule); }
+.chapter > h2::before { content: counter(sec, decimal-leading-zero); display: block; margin-bottom: var(--s3); font-family: var(--font-mono); font-size: var(--t-2xs); font-weight: 600; letter-spacing: var(--caps); color: var(--ink-3); }
+
+/* ---- Bench: the plate that holds an instrument. Figure number, title, where it comes from, the task. ---- */
+.bench { counter-increment: fig; margin: var(--s7) 0 var(--s8); border-top: 1.5px solid var(--ink); background: var(--paper-2); padding: 0 var(--s5) var(--s5); }
+.bench > figcaption, .bench-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2) var(--s4); padding: var(--s4) 0; margin-bottom: var(--s5); border-bottom: 1px solid var(--rule); }
+.bench > figcaption::before { content: "Fig. " var(--ch-dot, "") counter(fig); flex-basis: 100%; font-family: var(--font-mono); font-size: var(--t-2xs); font-weight: 600; letter-spacing: var(--caps); text-transform: uppercase; color: var(--ink-2); }
+.bench-title { font-family: var(--font-display); font-weight: 500; font-size: var(--t-lg); line-height: 1.15; letter-spacing: -0.01em; margin: 0 auto 0 0; }
+.bench-task { flex-basis: 100%; margin: var(--s1) 0 0; font-size: 1rem; line-height: 1.5; color: var(--ink-2); max-width: var(--measure); }
 .bench figure { margin: 0; }
 /* A bench with a large drawing and a side panel uses the full width of a wide window. */
 @media (min-width: 90rem) {
   .bench.bench-xl { --xl: min(100vw - var(--rail) - 2 * var(--gutter) - 1rem, 96rem); width: var(--xl); margin-inline: calc((100% - var(--xl)) / 2); }
 }
 
-.ch-next { display: flex; justify-content: space-between; gap: var(--s4); margin-top: var(--s8); padding-top: var(--s5); border-top: 1px solid var(--rule); font-size: var(--t-sm); }
-.ch-next a { text-decoration: none; display: block; padding: var(--s2) 0; }
-.ch-next a span { display: block; font-family: var(--font-display); font-size: var(--t-md); }
-.ch-next a:hover span { text-decoration: underline; text-decoration-thickness: from-font; }
-.ch-next .next { text-align: end; margin-left: auto; }
+/* The end of a part: the way back and the way on. */
+.ch-next { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: var(--s8); border-top: 1.5px solid var(--ink); font-family: var(--font-mono); font-size: var(--t-2xs); font-weight: 600; letter-spacing: var(--caps); text-transform: uppercase; color: var(--ink-2); clear: both; }
+.ch-next a { text-decoration: none; display: block; padding: var(--s4) var(--s4) var(--s5) 0; transition: background var(--d-state) var(--ease-out); }
+.ch-next a span { display: block; margin-top: var(--s2); font-family: var(--font-serif); font-weight: 400; font-size: var(--t-lg); line-height: 1.1; letter-spacing: 0; text-transform: none; color: var(--ink); text-wrap: balance; }
+.ch-next a:hover span { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.16em; }
+.ch-next .next { text-align: end; grid-column: 2; padding: var(--s4) 0 var(--s5) var(--s4); border-left: 1px solid var(--rule); }
+.ch-next .next span::after { content: " \2192"; font-family: var(--font-text); }
 
 .cols { display: grid; gap: var(--s5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
 
+/* A wide window: a short note sits in the margin, beside the text that it is about. */
+@media (min-width: 82rem) {
+  .chapter > .callout.note:not(.gate-notice):not(#resume) { float: right; clear: right; width: 15.5rem; margin: 0.4rem 0 var(--s4) var(--s5); padding: var(--s2) 0 0; border-left: 0; border-top: 1px solid var(--ink); font-size: var(--t-xs); line-height: 1.5; }
+  .chapter > :not(p):not(ul):not(ol):not(.callout):not(blockquote) { clear: both; }
+}
+
 @media (max-width: 56rem) {
   :root { --rail: 0rem; }
-  .rail { position: sticky; inset: var(--top) auto auto auto; width: auto; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); overflow-x: auto; z-index: 29; box-shadow: none !important; }
-  .rail:hover, .rail:focus-within { width: auto; }
-  .rail { scrollbar-width: none; }
-  .rail::-webkit-scrollbar { display: none; }
-  .rail ol { flex-direction: row; height: auto; padding: var(--s2) var(--gutter); gap: var(--s2); justify-content: flex-start; }
-  .rail ol::before { left: var(--gutter); right: var(--gutter); top: 50%; bottom: auto; border-left: 0; border-top: 1.5px solid var(--rule-2); }
+  .top { --col: calc(1.05rem + 2 * var(--gutter)); gap: var(--s2); }
+  .wordmark::before { margin-inline: var(--gutter) 0.6rem; }
+  .top-where, .top .top-tools a { display: none; }
+  .top .top-tools #search-open { min-width: 0; margin-right: 0; }
+  .top .top-tools .btn { min-height: 2.75rem; }
+  /* The rail: one row under the top bar. The line fills from the left. */
+  .rail { position: sticky; inset: var(--top) auto auto auto; width: auto; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); overflow: auto hidden; z-index: 39; }
+  .rail ol { flex-direction: row; height: auto; width: max-content; min-width: 100%; padding: var(--s1) var(--gutter); gap: var(--s2); justify-content: space-between; }
+  .rail ol::before, .rail ol::after { left: var(--gutter); right: var(--gutter); top: 50%; bottom: auto; width: auto; height: 1px; }
+  .rail ol::after { height: 2px; margin-top: -0.5px; transform-origin: left; transform: scaleX(var(--progress, 0)); }
   .rail a { width: auto; padding: 0; min-height: 2.75rem; min-width: 2.75rem; justify-content: center; }
   .rail-node { margin: 0; }
   .rail-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .rail li[data-gate]::after { left: 1.9rem; top: 0; }
-  .top { padding-left: var(--gutter); }
-  .top-where, .top-tools a { display: none; }
-  .ch-head { grid-template-columns: 1fr; }
-  .ch-num { grid-row: auto; margin-bottom: var(--s3); font-size: 4.5rem; }
-  .bench { margin-inline: calc(-1 * var(--gutter)); padding: var(--s4) var(--gutter); }
+  .rail li[data-gate]::after { left: 1.85rem; top: 0.1rem; }
+
+  .chapter { padding-top: var(--s6); padding-bottom: var(--s8); }
+  .ch-head { grid-template-columns: minmax(0, 1fr); padding-bottom: var(--s5); margin-bottom: var(--s6); }
+  .ch-head > *, .ch-num { grid-column: 1; grid-row: auto; }
+  .ch-num { font-size: 6.5rem; text-align: start; margin-bottom: var(--s4); }
+  .bench { margin-inline: calc(-1 * var(--gutter)); padding: 0 var(--gutter) var(--s5); }
+  .ch-next a span { font-size: var(--t-md); }
   html { scroll-padding-top: 7.5rem; }
+}
+/* A phone: the two tools at the end are a mark only. The word stays for a screen reader. */
+@media (max-width: 40rem) {
+  .top .top-tools #theme-toggle, .top .top-tools #new-run { font-size: 0; gap: 0; min-width: 2.75rem; padding: 0; }
+  .top-tools #theme-toggle::before { width: 1rem; height: 1rem; }
+  .top-tools #new-run::before { font-size: 1.25rem; }
+  .ch-next { grid-template-columns: minmax(0, 1fr); }
+  .ch-next .next { grid-column: 1; border-left: 0; border-top: 1px solid var(--rule); padding-left: 0; }
 }
 
 @media print {
@@ -96,6 +180,7 @@ main { padding-left: var(--rail); }
   .rail, .top, .ch-next, .controls, .skip { display: none !important; }
   main { padding: 0; }
   .js .chapter:not(.is-current) { display: block; }
+  .js .chapter.is-current, .js .chapter.is-current > .ch-head > * { animation: none; }
   .chapter { padding: 0 0 2rem; break-before: page; }
   .factory-head, .factory-side { position: static !important; max-height: none !important; }
   .log, .note-yaml { max-height: none !important; }
@@ -103,9 +188,11 @@ main { padding-left: var(--rail); }
   .gv { min-width: 0 !important; }
 }
 
-/* A very narrow screen: the top bar keeps its two buttons in view. */
+/* A very narrow screen: the top bar keeps its tools in view. */
 @media (max-width: 23rem) {
-  .top { gap: var(--s2); padding-inline: var(--s3); }
   .wordmark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-sm); }
-  .top .btn.small { padding: 0 var(--s2); }
+  .top .top-tools .btn { padding: 0 var(--s2); }
 }
+
+/* The title of a part gets the focus when the part opens (for a screen reader). It is not a control: no ring. */
+.ch-head h1[tabindex="-1"]:focus { outline: none; }

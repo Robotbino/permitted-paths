@@ -168,6 +168,7 @@
       scrub.setAttribute('aria-valuetext', i < 0 ? 'Not started' : 'Step ' + (i + 1) + ' of ' + steps.length + ': ' + st.event + ', ' + names[st.node]);
       count.textContent = (i + 1) + ' / ' + steps.length;
       rows.forEach(function (r, k) { if (k === i) r.setAttribute('aria-current', 'step'); else r.removeAttribute('aria-current'); r.classList.toggle('ar-past', k < i); });
+      if (ticks) [].forEach.call(ticks.children, function (t, k) { t.classList.toggle('ar-past', k <= i); });
       backBtn.disabled = i < 0;
       nextBtn.disabled = i >= last;
       playBtn.textContent = playing ? 'Pause' : (i >= last ? 'Play again' : 'Play');
@@ -300,9 +301,17 @@
     }
 
     /* ---- Layout ---- */
+    // One mark on the scrubber for each step. A check (PASS or FAIL) has its own mark, so the
+    // decisions of the run are visible before the run starts.
+    var ticks = h('span', { class: 'ar-ticks', 'aria-hidden': 'true' });
+    steps.forEach(function (st, k) {
+      var t = h('i', { class: st.status ? 'is-' + st.status : null });
+      t.style.left = 'calc(0.5rem + (100% - 1rem) * ' + ((k + 1) / steps.length).toFixed(4) + ')';
+      ticks.appendChild(t);
+    });
     var controls = h('div', { class: 'ar-controls' },
       h('div', { class: 'ar-buttons' }, playBtn, backBtn, nextBtn, replayBtn),
-      h('label', { class: 'ar-progress' }, scrub, count),
+      h('label', { class: 'ar-progress' }, h('span', { class: 'ar-track' }, scrub, ticks), count),
       h('div', { class: 'ar-speed' }, h('span', { class: 'small muted' }, 'Speed'), speedSeg.el),
       h('label', { class: 'small ar-maplabel', for: 'ar-map' }, mapToggle, ' Show the full map'));
     var key = h('ul', { class: 'legend ar-key', 'aria-label': 'How to read the run' },
@@ -313,8 +322,9 @@
       h('li', null, h('span', { class: 'ln model' }), 'Selected by the model'),
       h('li', null, 'A hexagon is a decision. The small word in a node is its kind of work.'));
 
-    el.appendChild(controls);
-    el.appendChild(h('div', { class: 'ar-layout' }, h('div', { class: 'ar-main' }, stage, key), h('div', { class: 'ar-side' }, caption, statePanel, inspector)));
+    // The instrument: the stage with the transport bar under it (the bar stays at the bottom of the
+    // window while the stage is in view), and the recorder beside it (event, state, inspector).
+    el.appendChild(h('div', { class: 'ar-layout' }, h('div', { class: 'ar-main' }, stage, controls, key), h('div', { class: 'ar-side' }, caption, statePanel, inspector)));
     // Keys: left and right arrows go one step; Space plays or pauses (not when a control has focus).
     el.addEventListener('keydown', function (ev) {
       var t = ev.target, tag = t.tagName;
