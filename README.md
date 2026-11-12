@@ -4,7 +4,9 @@ An interactive course on taking decisions away from the model: nodes, edges, sta
 
 ## Start here
 
-**Open [`index.html`](index.html) in a browser.** That's the whole site. There is no build step, no install, no server and no network request.
+**Live:** https://robotbino.github.io/permitted-paths/
+
+Or run it locally: **open [`index.html`](index.html) in a browser.** That's the whole site. There is no build step, no install, no server and no network request.
 
 ```bash
 git clone git@github.com:Robotbino/permitted-paths.git
