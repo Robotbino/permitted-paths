@@ -1,0 +1,96 @@
+/* planes.js: put each part of the course in its plane (GE 05, section 2, "Where the parts of these notes are"). */
+(function (GE) {
+  'use strict';
+  var h = GE.h;
+
+  var PLANES = [
+    { id: 'intelligence', name: 'Intelligence plane', does: 'Keeps the knowledge' },
+    { id: 'control', name: 'Control plane', does: 'Manages the agents' },
+    { id: 'data', name: 'Data plane', does: 'Does the work' }
+  ];
+  var PARTS = [
+    ['Agent step', 'data'], ['Model call', 'data'], ['Tool call', 'data'],
+    ['Execution graph', 'control'], ['Maximum values', 'control'], ['Approval', 'control'], ['Tool permissions', 'control'],
+    ['Ontology', 'intelligence'], ['Knowledge graph', 'intelligence'], ['Memory', 'intelligence'], ['Traces', 'intelligence'], ['Access to data', 'intelligence']
+  ];
+  var WHY = {
+    'Access to data': 'Access to data is in the intelligence plane, because it sets what the agent can know. Tool permissions are in the control plane.',
+    'Execution graph': 'The execution graph sets limits for the agent. It is in the control plane.',
+    'Approval': 'Approval is a limit for the agent. It is in the control plane.',
+    'Maximum values': 'A maximum is a limit for the agent. It is in the control plane.',
+    'Traces': 'The traces are what the system knows about its runs. They are in the intelligence plane. The audit trail is in the control plane.'
+  };
+
+  GE.labs.planes = function (el, chapter) {
+    var placed = {}, selected = null, attempts = 0;
+    var tray = h('div', { class: 'chips plane-tray', role: 'group', 'aria-label': 'Items with no plane' });
+    var out = h('p', { class: 'feedback', 'aria-live': 'polite' });
+    var check = h('button', { type: 'button', class: 'btn', disabled: true }, 'Send my answer to the check');
+    var bands = {};
+    var chips = {};
+    var order = GE.rng(11).shuffle(PARTS);
+
+    order.forEach(function (p) {
+      chips[p[0]] = h('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', onclick: function () { select(p[0]); } }, p[0]);
+    });
+    function select(name) {
+      selected = selected === name ? null : name;
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === selected)); });
+      out.textContent = selected ? 'Selected: ' + selected + '. Now select a plane.' : '';
+    }
+    function layout() {
+      GE.clear(tray);
+      PLANES.forEach(function (pl) { GE.clear(bands[pl.id].slot); });
+      order.forEach(function (p) {
+        var where = placed[p[0]];
+        (where ? bands[where].slot : tray).appendChild(chips[p[0]]);
+      });
+      var left = PARTS.length - Object.keys(placed).length;
+      check.disabled = left > 0;
+      tray.hidden = left === 0;
+    }
+    function put(planeId) {
+      if (!selected) { out.textContent = 'First select an item. Then select a plane.'; return; }
+      placed[selected] = planeId;
+      chips[selected].classList.remove('is-wrong'); chips[selected].removeAttribute('aria-label');
+      var name = selected; select(selected);
+      layout();
+      var left = PARTS.length - Object.keys(placed).length;
+      out.textContent = name + ' is in the ' + planeId + ' plane. ' + (left ? left + ' items have no plane.' : 'Each item has a plane. Send your answer to the check.');
+      var nextChip = tray.querySelector('.chip'); if (nextChip) nextChip.focus();
+    }
+    check.addEventListener('click', function () {
+      attempts++;
+      var wrong = PARTS.filter(function (p) { return placed[p[0]] !== p[1]; });
+      GE.clear(out);
+      if (!wrong.length) {
+        out.appendChild(GE.stamp('PASS'));
+        out.appendChild(document.createTextNode(' Each item is in its plane. The control plane operates the gate. The intelligence plane supplies the rules that the gate uses.'));
+        GE.trace.lab('planes', chapter);
+        return;
+      }
+      wrong.forEach(function (p) { chips[p[0]].classList.add('is-wrong'); chips[p[0]].setAttribute('aria-label', p[0] + ', not in the correct plane'); });
+      out.appendChild(GE.stamp('FAIL'));
+      var hint = wrong.map(function (p) { return WHY[p[0]]; }).filter(Boolean)[0] || 'The data plane does the work. The control plane sets limits. The intelligence plane keeps what the system knows.';
+      out.appendChild(document.createTextNode(' ' + (wrong.length === 1 ? '1 item is' : wrong.length + ' items are') + ' not in the correct plane. Each one is marked. Select a marked item and move it. ' + hint));
+      if (attempts >= 2) out.appendChild(h('button', { type: 'button', class: 'btn ghost small', onclick: function () {
+        PARTS.forEach(function (p) { placed[p[0]] = p[1]; chips[p[0]].classList.remove('is-wrong'); }); layout();
+        out.textContent = 'This is the answer of the notes.';
+      } }, 'Show the answer'));
+    });
+
+    var stack = h('div', { class: 'planes' });
+    PLANES.forEach(function (pl) {
+      var slot = h('div', { class: 'chips plane-slot' });
+      var btn = h('button', { type: 'button', class: 'plane-target', onclick: function () { put(pl.id); } }, h('strong', null, pl.name), h('span', null, pl.does), h('span', { class: 'small' }, 'Put the selected item in this plane'));
+      bands[pl.id] = { slot: slot };
+      stack.appendChild(h('div', { class: 'plane plane-' + pl.id }, btn, slot));
+    });
+    el.appendChild(tray);
+    el.appendChild(stack);
+    el.appendChild(h('p', { class: 'small muted' }, 'The intelligence plane influences which decision the agent makes. The control plane sets limits for the agent. The data plane sends traces to the intelligence plane and audit events to the control plane.'));
+    el.appendChild(h('div', { class: 'controls' }, check));
+    el.appendChild(out);
+    layout();
+  };
+})(window.GE);

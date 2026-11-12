@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tests · Permitted Paths</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  body { padding: 2rem; max-width: 60rem; margin: 0 auto; }
+  h1 { font-size: var(--t-xl); margin-bottom: 1rem; }
+  li { font-family: var(--font-mono); font-size: var(--t-xs); list-style: none; padding: 2px 0; }
+  li.fail { color: var(--fail); font-weight: 700; }
+  ul { padding: 0; }
+</style>
+</head>
+<body>
+<h1>Tests of the engines and the data</h1>
+<p id="summary" aria-live="polite">The tests did not start. They need JavaScript.</p>
+<p class="small muted">Open this page in a browser. Each line is one assertion against the source notes. <a href="index.html">Back to the course</a>.</p>
+<ul id="out"></ul>
+
+<script src="js/core/dom.js"></script>
+<script src="js/core/rng.js"></script>
+<script src="js/core/store.js"></script>
+<script src="js/core/motion.js"></script>
+<script src="js/core/graph-runner.js"></script>
+<script src="js/core/graph-view.js"></script>
+<script src="js/core/ontology.js"></script>
+<script src="js/data/sources.js"></script>
+<script src="js/data/graphs.js"></script>
+<script src="js/data/gates.js"></script>
+<script src="js/data/reference.js"></script>
+<script src="js/labs/graphs.js"></script>
+<script src="js/labs/factory.js"></script>
+<script src="js/labs/ledger.js"></script>
+<script src="js/labs/own.js"></script>
+<script src="js/data/phone-lab.js"></script>
+<script src="js/labs/phone-lab.js"></script>
+<script>
+(function (GE) {
+  'use strict';
+  var O = GE.onto, out = document.getElementById('out'), pass = 0, fail = 0;
+  function test(name, fn) {
+    var ok = false, detail = '';
+    try { var r = fn(); ok = r === true; if (!ok) detail = ' -> ' + JSON.stringify(r); } catch (e) { detail = ' -> error: ' + e.message; }
+    if (ok) pass++; else fail++;
+    out.appendChild(GE.h('li', { class: ok ? '' : 'fail' }, (ok ? 'PASS  ' : 'FAIL  ') + name + detail));
+  }
+  function eq(a, b) { return JSON.stringify(a) === JSON.stringify(b) ? true : { got: a, expected: b }; }
+  function call(a) { return { order_id: a[0], amount_cents: a[1], payee_id: a[2], new_status: a[3] }; }
+  function rules(problems) { return problems.map(function (p) { return p.rule; }); }
+
+  /* GE 01, section 3: the table of p to the power of n */
+  [[0.99, [95, 90, 82]], [0.95, [77, 60, 36]], [0.90, [59, 35, 12]]].forEach(function (row) {
+    test('p^n table for p = ' + row[0], function () { return eq([5, 10, 20].map(function (n) { return Math.round(Math.pow(row[0], n) * 100); }), row[1]); });
+  });
+
+  /* The random number generator gives the same sequence for the same seed. */
+  test('rng: the same seed gives the same sequence', function () { var a = GE.rng(42), b = GE.rng(42); return eq([a.next(), a.next(), a.next()], [b.next(), b.next(), b.next()]); });
+  test('rng: a different seed gives a different sequence', function () { return GE.rng(1).next() !== GE.rng(2).next(); });
+
+  /* GE 04, section 10: validate_status */
+  test('validator: the five example results of the notes, three are rejected', function () {
+    return eq(['Awaiting delivery', 'Paid', 'Processing', 'Pending shipment', 'Paid'].map(function (r) { return O.validateStatus(r).ok; }), [false, true, false, false, true]);
+  });
+  test('validator: " paid " becomes PAID', function () { return O.validateStatus(' paid ').status === 'PAID'; });
+
+  /* GE 08, exercise 4: each proposal stops at the correct gate */
+  test('exercise 4, proposal 1: the amount "ten" stops at Gate 1', function () { return O.gate1(call([1042, 'ten', 7, 'REFUNDED'])).length === 1; });
+  test('exercise 4, proposal 2: PROBABLY_SHIPPED passes Gate 1', function () { return O.gate1(call([1042, 40000, 7, 'PROBABLY_SHIPPED'])).length === 0; });
+  test('exercise 4, proposal 2: PROBABLY_SHIPPED stops at Gate 2 (R1)', function () { return eq(rules(O.gate2(O.newWorld(), call([1042, 40000, 7, 'PROBABLY_SHIPPED']))), ['R1']); });
+  test('exercise 4, proposal 3: CART to REFUNDED passes Gate 1', function () { return O.gate1(call([1043, 1000, 12, 'REFUNDED'])).length === 0; });
+  test('exercise 4, proposal 3: CART to REFUNDED stops at Gate 2 (R7, R8)', function () { return eq(rules(O.gate2(O.newWorld(), call([1043, 1000, 12, 'REFUNDED']))), ['R7', 'R8']); });
+  test('gate 1: an extra field is not permitted', function () { var c = call([1042, 1, 7, 'PAID']); c.note = 'x'; return O.gate1(c).length === 1; });
+  test('gate 2: a valid refund has no problems', function () { return O.gate2(O.newWorld(), call([1042, 40000, 7, 'REFUNDED'])).length === 0; });
+  test('gate 2: a second refund is rejected (R2). Gate 1 accepts the same call.', function () {
+    var w = O.newWorld(), c = call([1042, 40000, 7, 'REFUNDED']);
+    O.commit(w, c);
+    return O.gate1(c).length === 0 && rules(O.gate2(w, c)).indexOf('R2') >= 0;
+  });
+  test('gate 2: a payment to a staff member is rejected (R3)', function () { return eq(rules(O.gate2(O.newWorld(), call([1042, 40000, 31, 'REFUNDED']))), ['R3']); });
+  test('gate 2: an amount that is more than the payment is rejected (R5)', function () { return eq(rules(O.gate2(O.newWorld(), call([1042, 90000, 7, 'REFUNDED']))), ['R5']); });
+
+  /* GE 06, section 3: transitions */
+  test('transitions: the five permitted transitions and no other', function () {
+    var n = 0; Object.keys(O.TRANSITIONS).forEach(function (k) { n += O.TRANSITIONS[k].length; });
+    return n === 5 && O.TRANSITIONS.CART.indexOf('REFUNDED') < 0 && O.TRANSITIONS.PAID.indexOf('REFUNDED') >= 0;
+  });
+
+  /* GE 06: the plan gate and the factory */
+  test('plan gate: PENDING_SHIP, ON_HOLD, RETURNED and Return are rejected', function () {
+    return O.planGate({ entities: ['Order'], statuses: ['PENDING_SHIP'] }).length === 1 && O.planGate({ entities: ['Return'], statuses: ['RETURNED'] }).length === 2 && O.planGate({ entities: ['Order'], statuses: ['ON_HOLD'] }).length === 1;
+  });
+  test('plan gate: Refund and REFUNDED are accepted', function () { return O.planGate({ entities: ['Refund'], statuses: ['REFUNDED'] }).length === 0; });
+  var NUM = { IN: '1', RET: '2', PLAN: '3', G1: '4', HUM: '5', IMP: '6', TEST: '7', G2: '8', REV: '9', PR: '10', REC: '11', UPD: '12', ANS: 'answer', ESC: 'escalate' };
+  function factory(id) {
+    var sc = GE.factoryScenarios.filter(function (s) { return s.id === id; })[0];
+    var run = GE.runGraph(GE.factoryGraph(), { scenario: sc, initial: { request: sc.request } });
+    run.numbers = run.path.map(function (n) { return NUM[n]; }).join(', ');
+    return run;
+  }
+  test('factory, scenario A: the plan gate sends the plan back one time', function () { return eq(factory('A').numbers, '1, 2, 3, 4, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12'); });
+  test('factory, scenario B: the path of run 57 in the notes', function () { return eq(factory('B').numbers, '1, 2, 3, 4, 5, 6, 7, 8, 6, 7, 8, 9, 10, 11, 12'); });
+  test('factory, scenario C: the two runs end with the same entities and status values', function () {
+    var a = factory('C1').state.plan, b = factory('C2').state.plan;
+    return eq([a.entities, a.statuses], [b.entities, b.statuses]) === true && a.entities[0] === 'Refund' && a.statuses[0] === 'REFUNDED';
+  });
+  test('factory, ON_HOLD: node 4 stops the request, plan_problems holds the cause', function () {
+    var r = factory('H');
+    return r.numbers === '1, 2, 3, 4, 3, 4, escalate, 11, 12' && r.state.plan_problems.length === 1 && /ON_HOLD/.test(r.state.plan_problems[0]);
+  });
+  test('factory, a question: the answer comes from the graph', function () { return eq(factory('Q').numbers, '1, 2, answer, 11, 12'); });
+  test('factory: twelve numbered nodes; four contain a model, code does seven, a person does one', function () {
+    var nodes = GE.data.graphs.factory.nodes.filter(function (n) { return /^\d/.test(n.label); });
+    var count = function (t) { return nodes.filter(function (n) { return n.type === t; }).length; };
+    return eq([nodes.length, count('model') + count('agent'), count('code'), count('person')], [12, 4, 7, 1]);
+  });
+  test('runner: a node cannot write a field that it does not own', function () {
+    var g = { start: 'a', nodes: [{ id: 'a', act: function () { return { writes: { x: 1 } }; } }], edges: [], owners: { x: 'b' } };
+    try { GE.runGraph(g, {}); return false; } catch (e) { return /owner/.test(e.message); }
+  });
+  test('runner: the budget stops a run with no end', function () {
+    var g = { start: 'a', nodes: [{ id: 'a' }], edges: [{ from: 'a', to: 'a' }] };
+    var r = GE.runGraph(g, { maxSteps: 10 });
+    return r.steps.length === 11 && r.steps[10].stopped === true;
+  });
+
+  test('factory with no plan gate: PENDING_SHIP goes to the pull request', function () {
+    var sc = GE.factoryScenarios[0];
+    var r = GE.runGraph(GE.factoryGraph({ noPlanGate: true }), { scenario: sc, initial: { request: sc.request } });
+    return r.path.indexOf('PR') >= 0 && r.state.plan.statuses[0] === 'PENDING_SHIP';
+  });
+  test('ledger: with the four decisions in the structure, no run goes outside the permitted paths', function () { return GE.ledgerRate({ next: true, approval: true, tests: true, attempts: true }, 7) === 0; });
+  test('ledger: each decision that moves to the structure decreases the part outside the permitted paths', function () {
+    var a = GE.ledgerRate({}, 7), b = GE.ledgerRate({ approval: true }, 7), c = GE.ledgerRate({ approval: true, tests: true }, 7), d = GE.ledgerRate({ approval: true, tests: true, next: true }, 7);
+    return a > b && b > c && c > d ? true : [a, b, c, d];
+  });
+  test('own prompt: the text is divided into sentences, and markup stays text', function () {
+    var r = GE.splitSentences('Always be friendly and short. <script>alert(1)<\/script> must stay text!\n- Get approval before a change.\n\nok.');
+    return r.length === 3 && r[2] === 'Get approval before a change.' ? true : r;
+  });
+  test('gates: each question has a hint and a section to read again', function () {
+    var bad = [];
+    Object.keys(GE.data.gates).forEach(function (k) { GE.data.gates[k].questions.forEach(function (q, i) { if (!q.hint || !q.at) bad.push(k + ':' + i); }); });
+    return bad.length ? bad : true;
+  });
+  test('gates: the correct answer is not the longest answer in most questions', function () {
+    var longest = 0, total = 0;
+    Object.keys(GE.data.gates).forEach(function (k) { GE.data.gates[k].questions.forEach(function (q) {
+      if (q.kind !== 'choice' || q.fixed) return; total++;
+      var max = Math.max.apply(null, q.options.map(function (o) { return o.text.length; }));
+      var top = q.options.filter(function (o) { return o.text.length === max; });
+      if (top.length === 1 && top[0].correct) longest++;
+    }); });
+    return longest <= total / 5 ? true : { longest: longest, total: total };
+  });
+
+  /* GE 03, section 5: the loan procedure */
+  function loan(id) { return GE.runGraph(GE.loanGraph(), { scenario: GE.loanCases.filter(function (c) { return c.id === id; })[0] }).path.join(' '); }
+  test('loan: a rule gives the loan, the model is not used', function () { return eq(loan('a'), 'A H AP E'); });
+  test('loan: a rule refuses the loan, the model is not used', function () { return eq(loan('b'), 'A H DN E'); });
+  test('loan: no rule decides, low risk', function () { return eq(loan('c'), 'A H DM R RP LN E'); });
+  test('loan: no rule decides, a person is necessary', function () { return eq(loan('d'), 'A H DM R HU E'); });
+  test('loan: the report gets FAIL two times, then a person', function () { return eq(loan('e'), 'A H DM R RP LN RP LN HU E'); });
+
+  /* GE 07: the graph validator */
+  var KNOWN = ['BR-R2', 'REQ-Refunds', 'CODE-RefundService', 'TEST-second-refund'];
+  var note = function (patch) { return Object.assign({ knowledge_class: 'AUTH', confidence: 'Strong evidence', relations: ['specified_by|REQ-Refunds', 'implemented_by|CODE-RefundService', 'validated_by|TEST-second-refund'] }, patch); };
+  test('note validator: the example note of the notes is valid', function () { return O.validateNote(note({}), KNOWN).length === 0; });
+  test('note validator: nine relation types', function () { return Object.keys(O.NOTE.relations).length === 9; });
+  test('note validator: a relation type that is not in the list', function () { return O.validateNote(note({ relations: ['implements|CODE-RefundService'] }), KNOWN).length === 1; });
+  test('note validator: a target of an incorrect type', function () { return O.validateNote(note({ relations: ['validated_by|CODE-RefundService'] }), KNOWN).length === 1; });
+  test('note validator: a confidence value that is not in the list', function () { return O.validateNote(note({ confidence: 'Probably' }), KNOWN).length === 1; });
+
+  /* The data of the drawings and the gates is complete. */
+  Object.keys(GE.data.graphs).forEach(function (name) {
+    test('drawing "' + name + '": each edge and each step points to a node or an edge of the drawing', function () {
+      var g = GE.data.graphs[name], ids = {}, keys = {}, bad = [];
+      g.nodes.forEach(function (n) { ids[n.id] = true; });
+      g.edges.forEach(function (e) { keys[GE.edgeKey(e)] = true; if (!ids[e.from] || !ids[e.to]) bad.push(GE.edgeKey(e)); });
+      (g.steps || []).forEach(function (s) { s.nodes.forEach(function (n) { if (!ids[n]) bad.push(n); }); s.edges.forEach(function (k) { if (!keys[k]) bad.push(k); }); });
+      return bad.length ? bad : true;
+    });
+  });
+  Object.keys(GE.data.gates).forEach(function (ch) {
+    test('gate ' + ch + ': each question has one correct answer and each item has a location', function () {
+      return GE.data.gates[ch].questions.every(function (q) {
+        if (q.kind === 'choice') return q.options.filter(function (o) { return o.correct; }).length === 1;
+        return q.items.every(function (i) { return q.bins.indexOf(i.bin) >= 0; });
+      });
+    });
+  });
+  test('reference: 35 terms, 10 incorrect ideas, 24 checklist items, 7 levels, 9 sources', function () {
+    var R = GE.data.reference;
+    return eq([R.glossary.length, R.ideas.length, R.checklist.reduce(function (n, g) { return n + g[1].length; }, 0), R.ladder.length, R.sources.length], [35, 10, 24, 7, 9]);
+  });
+
+  /* Part L, the practical laboratory: the data of the three architectures, the checks of the bridge and the costs. */
+  var PH = GE.data.phone;
+  Object.keys(PH.archs).forEach(function (k) {
+    test('laboratory, architecture ' + k + ': each node is a component, each edge has a connection, each failure names nodes of the drawing', function () {
+      var a = PH.archs[k], ids = {}, bad = [];
+      a.nodes.forEach(function (n) { ids[n.id] = true; if (!PH.components[n.id]) bad.push('node ' + n.id); });
+      a.edges.forEach(function (e) { if (!ids[e.from] || !ids[e.to]) bad.push('edge ' + e.from + '>' + e.to); if (!PH.links[e.link]) bad.push('link ' + e.link); });
+      Object.keys(a.off).forEach(function (id) { if (!ids[id]) bad.push('off ' + id); a.off[id].breaks.forEach(function (b) { if (!ids[b]) bad.push('breaks ' + b); }); });
+      return bad.length ? bad : true;
+    });
+    test('laboratory, architecture ' + k + ': the drawing puts each node in its band, and no two nodes at one place', function () {
+      var g = GE.phoneGraph(PH.archs[k]), seen = {}, bad = [];
+      g.nodes.forEach(function (n) { var key = n.x + ',' + n.y; if (seen[key]) bad.push(n.id); seen[key] = true; if (!(n.y > 0 && n.y < g.h)) bad.push('y ' + n.id); });
+      g.edges.forEach(function (e) { (e.via || []).forEach(function (p) { if (typeof p[1] !== 'number' || isNaN(p[1])) bad.push('via ' + e.from + '>' + e.to); }); });
+      return bad.length ? bad : true;
+    });
+  });
+  test('laboratory: each component has a layer, a host, a cost and a status that exist', function () {
+    var layers = PH.layers.map(function (l) { return l.id; }), bad = [];
+    Object.keys(PH.components).forEach(function (id) { var c = PH.components[id]; if (layers.indexOf(c.layer) < 0 || !PH.hosts[c.host] || !PH.costs[c.cost] || !PH.ready[c.ready] || !c.does) bad.push(id); });
+    return bad.length ? bad : true;
+  });
+  test('laboratory: each connection has a method, an authentication and a purpose', function () {
+    var bad = Object.keys(PH.links).filter(function (k) { var l = PH.links[k]; return !PH.hows[l.how] || !l.method || !l.auth || !l.purpose; });
+    return bad.length ? bad : true;
+  });
+  test('laboratory: architecture A has nothing to build, B has the bridge, and no push to GitHub is without an approval', function () {
+    function build(k) { return PH.archs[k].nodes.filter(function (n) { return PH.components[n.id].ready === 'build'; }).map(function (n) { return n.id; }).sort(); }
+    var push = [];
+    Object.keys(PH.archs).forEach(function (k) { PH.archs[k].edges.forEach(function (e) { var l = PH.links[e.link]; if (e.to === 'gh' && l.how === 'cli' && !l.approval) push.push(k + ':' + e.link); }); });
+    return eq([build('A'), build('B'), push], [[], ['bridge', 'jobs'], []]);
+  });
+  test('laboratory, lifecycle: 11 stages for the defect and 5 for the question; each stage has an actor, a role and a status', function () {
+    var ok = ['fix', 'ask'].every(function (f) { return PH.flows[f].stages.every(function (s) { return s.name && s.actor && s.what && PH.ready[s.ready] && ['code', 'agent', 'person'].indexOf(s.role) >= 0; }); });
+    return ok && eq([PH.flows.fix.stages.length, PH.flows.ask.stages.length], [11, 5]);
+  });
+  test('laboratory, lifecycle: the agent does 2 of the 11 stages, you do 2, and each stage with buttons has a path for Reject', function () {
+    var st = PH.flows.fix.stages;
+    var withButtons = st.filter(function (s) { return (s.phone || []).some(function (m) { return m.buttons; }); });
+    return eq([st.filter(function (s) { return s.role === 'agent'; }).length, st.filter(function (s) { return s.role === 'person'; }).length, withButtons.length, withButtons.every(function (s) { return !!s.rejected; })], [2, 2, 2, true]);
+  });
+  var CFG = PH.intake.config;
+  function req(o) { var r = { user: '111', token: CFG.token, repo: 'employee-manager', mode: 'investigate', approved: false }; Object.keys(o || {}).forEach(function (k) { r[k] = o[k]; }); return GE.phoneCheck(r, CFG).stop; }
+  test('bridge checks: a read-only task from you passes with no approval', function () { return req() === null; });
+  test('bridge checks: no shared secret stops first, also for a correct sender', function () { return eq([req({ token: 'x' }), req({ token: 'x', user: '999' })], ['token', 'token']); });
+  test('bridge checks: a stranger stops at the sender check', function () { return req({ user: '999' }) === 'sender'; });
+  test('bridge checks: a repository that is not on the allowlist stops at the repository check', function () { return req({ repo: 'work-repo' }) === 'repo'; });
+  test('bridge checks: mode change on the vault, and mode ask on a code repository, stop at the mode check', function () { return eq([req({ repo: 'vault', mode: 'change', approved: true }), req({ mode: 'ask' })], ['mode', 'mode']); });
+  test('bridge checks: a change with no approval stops; with approval it passes', function () { return eq([req({ mode: 'change' }), req({ mode: 'change', approved: true })], ['approval', null]); });
+  test('costs: scenario 1 and scenario 2 add only electricity; 20 W for 10 hours each day is R21.36', function () {
+    var a = GE.phoneCost(PH.scenarios[0], { plan: 'pro', hours: 10 }), b = GE.phoneCost(PH.scenarios[1], { plan: 'pro', hours: 10 });
+    return eq([a.added.toFixed(2), b.added.toFixed(2), a.optional], ['21.36', '21.36', 0]);
+  });
+  test('costs: the plan is a cost of today, not an added cost: Pro is $20 = R331.20', function () {
+    var a = GE.phoneCost(PH.scenarios[0], { plan: 'pro', hours: 10 }), m = GE.phoneCost(PH.scenarios[0], { plan: 'max', hours: 10 });
+    return eq([a.existing.toFixed(2), m.existing.toFixed(2), a.added === m.added], ['331.20', '1656.00', true]);
+  });
+  test('costs: scenario 3 adds the server: EUR 5.99 = R110.40, plus electricity', function () {
+    var c = GE.phoneCost(PH.scenarios[2], { plan: 'pro', hours: 10 });
+    return eq([c.added.toFixed(2), c.optional.toFixed(2)], [(21.36 + 5.99 * 18.43).toFixed(2), (4 * 16.56 + 91).toFixed(2)]);
+  });
+  test('milestones: six, and the first one needs nothing that you build', function () { return eq([PH.road.length, PH.road[0].ready], [6, 'now']); });
+
+  var summary = document.getElementById('summary');
+  GE.clear(summary);
+  summary.appendChild(GE.stamp(fail ? 'FAIL' : 'PASS'));
+  summary.appendChild(document.createTextNode(' ' + pass + ' of ' + (pass + fail) + ' assertions are correct.'));
+  window.__tests = { pass: pass, fail: fail };
+})(window.GE);
+</script>
+</body>
+</html>
