@@ -15,7 +15,9 @@
     "test": "vitest run",
     "build": "npm run typecheck && vite build",
     "start": "tsx --env-file-if-exists=.env server/main.ts",
-    "check": "npm run typecheck && npm test"
+    "record-runs": "tsx scripts/record-runs.ts",
+    "record-runs:check": "tsx scripts/record-runs.ts --check",
+    "check": "npm run typecheck && npm test && npm run record-runs:check"
   },
   "dependencies": {
     "react": "^19.3.1",

@@ -14,14 +14,14 @@ const MIME: Record<string, string> = {
   '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml',
 };
 
-const fail = (status: number, code: ErrorCode, problems: Problem[] = [], headers?: Record<string, string>): Reply => ({
-  status, headers, body: { error: { code, problems } } satisfies ApiError,
+const fail = (status: number, code: ErrorCode, problems: Problem[] = [], headers?: Record<string, string>, run_id?: string): Reply => ({
+  status, headers, body: { error: { code, problems, ...(run_id ? { run_id } : {}) } } satisfies ApiError,
 });
 
 /** Changes each error into a reply. This is the only location that selects a status code for an error. */
 export function replyForError(error: unknown): Reply {
-  if (error instanceof AppError) return fail(STATUS_OF[error.code], error.code, error.problems);
-  if (error instanceof StorageUnavailable) return fail(503, 'STORAGE_UNAVAILABLE', [], { 'Retry-After': '1' });
+  if (error instanceof AppError) return fail(STATUS_OF[error.code], error.code, error.problems, undefined, error.run_id);
+  if (error instanceof StorageUnavailable) return fail(503, 'STORAGE_UNAVAILABLE', [], { 'Retry-After': '1' }, error.run_id);
   if (error instanceof DuplicateKey) return fail(409, 'KEY_CONFLICT', [{ rule: 'R8', text: 'This request key is already recorded.' }]);
   console.error(error); // a defect: the detail goes to the log of the server, not to the client
   return fail(500, 'INTERNAL');

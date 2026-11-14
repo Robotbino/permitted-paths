@@ -85,7 +85,8 @@ export type BudgetStatus = {
   remaining_cents: number | null;
 };
 
-export type RecordExpenseResult = { expense: Expense; budget: BudgetStatus; replayed: boolean };
+/** run_id (level 2): the run of the execution graph that made this result. GET /api/runs/<id> gives its trace. */
+export type RecordExpenseResult = { expense: Expense; budget: BudgetStatus; replayed: boolean; run_id?: string };
 
 export type MonthSummary = {
   period: string;
@@ -94,8 +95,8 @@ export type MonthSummary = {
   recent: Expense[];
 };
 
-export const ERROR_CODES = ['SHAPE', 'RULE', 'NEEDS_CONFIRMATION', 'KEY_CONFLICT', 'STORAGE_UNAVAILABLE', 'NOT_FOUND', 'BAD_REQUEST', 'INTERNAL'] as const;
+export const ERROR_CODES = ['SHAPE', 'RULE', 'NEEDS_CONFIRMATION', 'KEY_CONFLICT', 'STORAGE_UNAVAILABLE', 'VERIFICATION_FAILED', 'NOT_FOUND', 'BAD_REQUEST', 'INTERNAL'] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
 /** Each response that is not a success has this body. */
-export type ApiError = { error: { code: ErrorCode; problems: Problem[] } };
+export type ApiError = { error: { code: ErrorCode; problems: Problem[]; run_id?: string } };

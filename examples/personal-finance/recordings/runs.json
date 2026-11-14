@@ -1,0 +1,1813 @@
+{
+ "about": "Recorded by \"npm run record-runs\" from the real code. Fixed clock, sequential ids, SQLite in memory. Do not edit.",
+ "today": "2026-03-14",
+ "rules": {
+  "R1": {
+   "text": "The amount is an integer number of cents, more than 0 and not more than 100 000 000.",
+   "kind": "value",
+   "checked_by": [
+    "gate1",
+    "schema"
+   ]
+  },
+  "R2": {
+   "text": "The currency is ZAR.",
+   "kind": "enumeration",
+   "checked_by": [
+    "gate1",
+    "schema"
+   ]
+  },
+  "R3": {
+   "text": "The date is a real calendar date in the form YYYY-MM-DD.",
+   "kind": "shape",
+   "checked_by": [
+    "gate1"
+   ]
+  },
+  "R4": {
+   "text": "The merchant name has 1 to 80 characters, and the request has no field that the contract does not name.",
+   "kind": "shape",
+   "checked_by": [
+    "gate1"
+   ]
+  },
+  "R5": {
+   "text": "The date of an expense is not after today.",
+   "kind": "value",
+   "checked_by": [
+    "gate2"
+   ]
+  },
+  "R6": {
+   "text": "The category of an expense is one active category of the store.",
+   "kind": "typed relation",
+   "checked_by": [
+    "gate2",
+    "schema"
+   ]
+  },
+  "R7": {
+   "text": "A second expense with the same date, amount and merchant needs a confirmation of the person.",
+   "kind": "cardinality",
+   "checked_by": [
+    "gate2"
+   ]
+  },
+  "R8": {
+   "text": "One request key records one expense at most.",
+   "kind": "cardinality",
+   "checked_by": [
+    "dedupe",
+    "schema",
+    "verifier"
+   ]
+  },
+  "R9": {
+   "text": "A category has one budget at most for a month, and the limit is more than 0.",
+   "kind": "cardinality",
+   "checked_by": [
+    "schema"
+   ]
+  },
+  "R10": {
+   "text": "The spent amount of a budget is the sum of its expenses in its month. No table stores it.",
+   "kind": "derived value",
+   "checked_by": [
+    "verifier"
+   ]
+  },
+  "R11": {
+   "text": "Over budget is a state of the budget. It is not a FAIL: the expense is recorded.",
+   "kind": "enumeration",
+   "checked_by": [
+    "function"
+   ]
+  }
+ },
+ "graphs": {
+  "record-expense": {
+   "name": "record-expense",
+   "start": "gate1",
+   "nodes": [
+    {
+     "id": "gate1",
+     "type": "code",
+     "owns": [
+      "proposal",
+      "idempotency_key",
+      "confirmed",
+      "gate1_problems"
+     ]
+    },
+    {
+     "id": "dedupe",
+     "type": "code",
+     "owns": [
+      "dedupe",
+      "replay"
+     ]
+    },
+    {
+     "id": "load_facts",
+     "type": "code",
+     "owns": [
+      "facts"
+     ]
+    },
+    {
+     "id": "gate2",
+     "type": "code",
+     "owns": [
+      "gate2_problems"
+     ]
+    },
+    {
+     "id": "commit",
+     "type": "code",
+     "owns": [
+      "commit",
+      "expense",
+      "attempts"
+     ]
+    },
+    {
+     "id": "backoff",
+     "type": "code",
+     "owns": [
+      "waited_ms"
+     ]
+    },
+    {
+     "id": "project",
+     "type": "code",
+     "owns": [
+      "budget_after"
+     ]
+    },
+    {
+     "id": "verify",
+     "type": "code",
+     "owns": [
+      "verification"
+     ]
+    },
+    {
+     "id": "respond",
+     "type": "code",
+     "owns": [
+      "response"
+     ]
+    },
+    {
+     "id": "reject",
+     "type": "code",
+     "owns": [
+      "rejection"
+     ]
+    },
+    {
+     "id": "escalate",
+     "type": "code",
+     "owns": [
+      "escalation"
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "gate1",
+     "to": "reject",
+     "label": "shape FAIL"
+    },
+    {
+     "from": "gate1",
+     "to": "dedupe",
+     "label": "shape PASS"
+    },
+    {
+     "from": "dedupe",
+     "to": "respond",
+     "label": "replay"
+    },
+    {
+     "from": "dedupe",
+     "to": "reject",
+     "label": "key conflict"
+    },
+    {
+     "from": "dedupe",
+     "to": "escalate",
+     "label": "store unavailable"
+    },
+    {
+     "from": "dedupe",
+     "to": "load_facts",
+     "label": "new"
+    },
+    {
+     "from": "load_facts",
+     "to": "escalate",
+     "label": "store unavailable"
+    },
+    {
+     "from": "load_facts",
+     "to": "gate2",
+     "label": ""
+    },
+    {
+     "from": "gate2",
+     "to": "reject",
+     "label": "sense FAIL"
+    },
+    {
+     "from": "gate2",
+     "to": "commit",
+     "label": "sense PASS"
+    },
+    {
+     "from": "commit",
+     "to": "project",
+     "label": "saved"
+    },
+    {
+     "from": "commit",
+     "to": "backoff",
+     "label": "try again"
+    },
+    {
+     "from": "commit",
+     "to": "escalate",
+     "label": "attempts used"
+    },
+    {
+     "from": "backoff",
+     "to": "commit",
+     "label": ""
+    },
+    {
+     "from": "project",
+     "to": "verify",
+     "label": ""
+    },
+    {
+     "from": "verify",
+     "to": "respond",
+     "label": "ledger agrees"
+    },
+    {
+     "from": "verify",
+     "to": "escalate",
+     "label": "ledger does not agree"
+    }
+   ],
+   "input": [
+    "run_id",
+    "request"
+   ],
+   "initial_state": {
+    "run_id": "run_0000",
+    "request": null,
+    "proposal": null,
+    "idempotency_key": null,
+    "confirmed": false,
+    "gate1_problems": [],
+    "dedupe": null,
+    "replay": null,
+    "facts": null,
+    "gate2_problems": [],
+    "commit": null,
+    "expense": null,
+    "attempts": 0,
+    "waited_ms": 0,
+    "budget_after": null,
+    "verification": null,
+    "response": null,
+    "rejection": null,
+    "escalation": null
+   }
+  }
+ },
+ "scenarios": [
+  {
+   "id": "valid",
+   "level": 2,
+   "title": "A correct expense: R185.00 at Woolworths",
+   "fault": "none",
+   "before": 0,
+   "request": {
+    "amount_cents": 18500,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Woolworths",
+    "category_id": "groceries",
+    "idempotency_key": "key-valid-1"
+   },
+   "http": {
+    "status": 201,
+    "body": {
+     "expense": {
+      "id": "exp_0001",
+      "idempotency_key": "key-valid-1",
+      "occurred_on": "2026-03-14",
+      "amount_cents": 18500,
+      "currency": "ZAR",
+      "merchant_name": "Woolworths",
+      "merchant_key": "woolworths",
+      "category_id": "groceries",
+      "note": null,
+      "created_at": "2026-03-14T10:00:00.000Z"
+     },
+     "budget": {
+      "category_id": "groceries",
+      "period": "2026-03",
+      "state": "WITHIN",
+      "limit_cents": 450000,
+      "spent_cents": 18500,
+      "remaining_cents": 431500
+     },
+     "replayed": false,
+     "run_id": "run_0001"
+    }
+   },
+   "rows_after": 1,
+   "run": {
+    "id": "run_0001",
+    "graph": "record-expense",
+    "result": "PASS",
+    "path": [
+     "gate1",
+     "dedupe",
+     "load_facts",
+     "gate2",
+     "commit",
+     "project",
+     "verify",
+     "respond"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "PASS",
+      "note": "The shape is correct.",
+      "edge": "gate1>dedupe",
+      "by": "code",
+      "writes": {
+       "proposal": {
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "occurred_on": "2026-03-14",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries"
+       },
+       "idempotency_key": "key-valid-1",
+       "confirmed": false,
+       "gate1_problems": []
+      }
+     },
+     {
+      "node": "dedupe",
+      "type": "code",
+      "result": "PASS",
+      "note": "This request key is new.",
+      "edge": "dedupe>load_facts",
+      "by": "code",
+      "writes": {
+       "dedupe": "NEW"
+      }
+     },
+     {
+      "node": "load_facts",
+      "type": "code",
+      "result": "PASS",
+      "note": "Facts read: today, the category, similar expenses, the budget, the spent amount.",
+      "edge": "load_facts>gate2",
+      "by": "code",
+      "writes": {
+       "facts": {
+        "today": "2026-03-14",
+        "category": {
+         "id": "groceries",
+         "name": "Groceries",
+         "active": true
+        },
+        "similar_ids": [],
+        "limit_cents": 450000,
+        "spent_before_cents": 0
+       }
+      }
+     },
+     {
+      "node": "gate2",
+      "type": "code",
+      "result": "PASS",
+      "note": "The proposal is sensible against the facts.",
+      "edge": "gate2>commit",
+      "by": "code",
+      "writes": {
+       "gate2_problems": []
+      }
+     },
+     {
+      "node": "commit",
+      "type": "code",
+      "result": "PASS",
+      "note": "Saved as exp_0001.",
+      "edge": "commit>project",
+      "by": "code",
+      "writes": {
+       "commit": "SAVED",
+       "expense": {
+        "id": "exp_0001",
+        "idempotency_key": "key-valid-1",
+        "occurred_on": "2026-03-14",
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries",
+        "note": null,
+        "created_at": "2026-03-14T10:00:00.000Z"
+       },
+       "attempts": 1
+      }
+     },
+     {
+      "node": "project",
+      "type": "code",
+      "result": "PASS",
+      "note": "Budget after: WITHIN (18500 cents spent).",
+      "edge": "project>verify",
+      "by": "code",
+      "writes": {
+       "budget_after": {
+        "category_id": "groceries",
+        "period": "2026-03",
+        "state": "WITHIN",
+        "limit_cents": 450000,
+        "spent_cents": 18500,
+        "remaining_cents": 431500
+       }
+      }
+     },
+     {
+      "node": "verify",
+      "type": "code",
+      "result": "PASS",
+      "note": "The ledger agrees with the graph.",
+      "edge": "verify>respond",
+      "by": "code",
+      "writes": {
+       "verification": {
+        "ok": true,
+        "problems": []
+       }
+      }
+     },
+     {
+      "node": "respond",
+      "type": "code",
+      "result": "PASS",
+      "note": "Answer with the expense and the budget.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "response": {
+        "expense": {
+         "id": "exp_0001",
+         "idempotency_key": "key-valid-1",
+         "occurred_on": "2026-03-14",
+         "amount_cents": 18500,
+         "currency": "ZAR",
+         "merchant_name": "Woolworths",
+         "merchant_key": "woolworths",
+         "category_id": "groceries",
+         "note": null,
+         "created_at": "2026-03-14T10:00:00.000Z"
+        },
+        "budget": {
+         "category_id": "groceries",
+         "period": "2026-03",
+         "state": "WITHIN",
+         "limit_cents": 450000,
+         "spent_cents": 18500,
+         "remaining_cents": 431500
+        },
+        "replayed": false,
+        "run_id": "run_0001"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "bad_shape",
+   "level": 2,
+   "title": "The amount is 185.5: not an integer number of cents",
+   "fault": "none",
+   "before": 0,
+   "request": {
+    "amount_cents": 185.5,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Woolworths",
+    "category_id": "groceries",
+    "idempotency_key": "key-shape-1"
+   },
+   "http": {
+    "status": 400,
+    "body": {
+     "error": {
+      "code": "SHAPE",
+      "problems": [
+       {
+        "rule": "R1",
+        "text": "The amount must be an integer number of cents, more than 0 and not more than 100000000."
+       }
+      ],
+      "run_id": "run_0001"
+     }
+    }
+   },
+   "rows_after": 0,
+   "run": {
+    "id": "run_0001",
+    "graph": "record-expense",
+    "result": "FAIL",
+    "path": [
+     "gate1",
+     "reject"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "FAIL",
+      "note": "Shape: R1.",
+      "edge": "gate1>reject",
+      "by": "code",
+      "writes": {
+       "proposal": null,
+       "idempotency_key": null,
+       "confirmed": false,
+       "gate1_problems": [
+        {
+         "rule": "R1",
+         "text": "The amount must be an integer number of cents, more than 0 and not more than 100000000."
+        }
+       ]
+      }
+     },
+     {
+      "node": "reject",
+      "type": "code",
+      "result": "FAIL",
+      "note": "Refused: SHAPE. Nothing is saved.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "rejection": {
+        "code": "SHAPE",
+        "problems": [
+         {
+          "rule": "R1",
+          "text": "The amount must be an integer number of cents, more than 0 and not more than 100000000."
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "inactive_category",
+   "level": 2,
+   "title": "The category \"Gym (closed)\" is not active",
+   "fault": "none",
+   "before": 0,
+   "request": {
+    "amount_cents": 18500,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Virgin Active",
+    "category_id": "gym",
+    "idempotency_key": "key-rule-1"
+   },
+   "http": {
+    "status": 422,
+    "body": {
+     "error": {
+      "code": "RULE",
+      "problems": [
+       {
+        "rule": "R6",
+        "text": "The category \"Gym (closed)\" is not active."
+       }
+      ],
+      "run_id": "run_0001"
+     }
+    }
+   },
+   "rows_after": 0,
+   "run": {
+    "id": "run_0001",
+    "graph": "record-expense",
+    "result": "FAIL",
+    "path": [
+     "gate1",
+     "dedupe",
+     "load_facts",
+     "gate2",
+     "reject"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "PASS",
+      "note": "The shape is correct.",
+      "edge": "gate1>dedupe",
+      "by": "code",
+      "writes": {
+       "proposal": {
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "occurred_on": "2026-03-14",
+        "merchant_name": "Virgin Active",
+        "merchant_key": "virgin active",
+        "category_id": "gym"
+       },
+       "idempotency_key": "key-rule-1",
+       "confirmed": false,
+       "gate1_problems": []
+      }
+     },
+     {
+      "node": "dedupe",
+      "type": "code",
+      "result": "PASS",
+      "note": "This request key is new.",
+      "edge": "dedupe>load_facts",
+      "by": "code",
+      "writes": {
+       "dedupe": "NEW"
+      }
+     },
+     {
+      "node": "load_facts",
+      "type": "code",
+      "result": "PASS",
+      "note": "Facts read: today, the category, similar expenses, the budget, the spent amount.",
+      "edge": "load_facts>gate2",
+      "by": "code",
+      "writes": {
+       "facts": {
+        "today": "2026-03-14",
+        "category": {
+         "id": "gym",
+         "name": "Gym (closed)",
+         "active": false
+        },
+        "similar_ids": [],
+        "limit_cents": null,
+        "spent_before_cents": 0
+       }
+      }
+     },
+     {
+      "node": "gate2",
+      "type": "code",
+      "result": "FAIL",
+      "note": "Sense: R6.",
+      "edge": "gate2>reject",
+      "by": "code",
+      "writes": {
+       "gate2_problems": [
+        {
+         "rule": "R6",
+         "text": "The category \"Gym (closed)\" is not active."
+        }
+       ]
+      }
+     },
+     {
+      "node": "reject",
+      "type": "code",
+      "result": "FAIL",
+      "note": "Refused: RULE. Nothing is saved.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "rejection": {
+        "code": "RULE",
+        "problems": [
+         {
+          "rule": "R6",
+          "text": "The category \"Gym (closed)\" is not active."
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "over_budget",
+   "level": 2,
+   "title": "R4 600.00 of groceries, with a budget of R4 500.00",
+   "fault": "none",
+   "before": 0,
+   "request": {
+    "amount_cents": 460000,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Makro",
+    "category_id": "groceries",
+    "idempotency_key": "key-over-1"
+   },
+   "http": {
+    "status": 201,
+    "body": {
+     "expense": {
+      "id": "exp_0001",
+      "idempotency_key": "key-over-1",
+      "occurred_on": "2026-03-14",
+      "amount_cents": 460000,
+      "currency": "ZAR",
+      "merchant_name": "Makro",
+      "merchant_key": "makro",
+      "category_id": "groceries",
+      "note": null,
+      "created_at": "2026-03-14T10:00:00.000Z"
+     },
+     "budget": {
+      "category_id": "groceries",
+      "period": "2026-03",
+      "state": "OVER",
+      "limit_cents": 450000,
+      "spent_cents": 460000,
+      "remaining_cents": -10000
+     },
+     "replayed": false,
+     "run_id": "run_0001"
+    }
+   },
+   "rows_after": 1,
+   "run": {
+    "id": "run_0001",
+    "graph": "record-expense",
+    "result": "PASS",
+    "path": [
+     "gate1",
+     "dedupe",
+     "load_facts",
+     "gate2",
+     "commit",
+     "project",
+     "verify",
+     "respond"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "PASS",
+      "note": "The shape is correct.",
+      "edge": "gate1>dedupe",
+      "by": "code",
+      "writes": {
+       "proposal": {
+        "amount_cents": 460000,
+        "currency": "ZAR",
+        "occurred_on": "2026-03-14",
+        "merchant_name": "Makro",
+        "merchant_key": "makro",
+        "category_id": "groceries"
+       },
+       "idempotency_key": "key-over-1",
+       "confirmed": false,
+       "gate1_problems": []
+      }
+     },
+     {
+      "node": "dedupe",
+      "type": "code",
+      "result": "PASS",
+      "note": "This request key is new.",
+      "edge": "dedupe>load_facts",
+      "by": "code",
+      "writes": {
+       "dedupe": "NEW"
+      }
+     },
+     {
+      "node": "load_facts",
+      "type": "code",
+      "result": "PASS",
+      "note": "Facts read: today, the category, similar expenses, the budget, the spent amount.",
+      "edge": "load_facts>gate2",
+      "by": "code",
+      "writes": {
+       "facts": {
+        "today": "2026-03-14",
+        "category": {
+         "id": "groceries",
+         "name": "Groceries",
+         "active": true
+        },
+        "similar_ids": [],
+        "limit_cents": 450000,
+        "spent_before_cents": 0
+       }
+      }
+     },
+     {
+      "node": "gate2",
+      "type": "code",
+      "result": "PASS",
+      "note": "The proposal is sensible against the facts.",
+      "edge": "gate2>commit",
+      "by": "code",
+      "writes": {
+       "gate2_problems": []
+      }
+     },
+     {
+      "node": "commit",
+      "type": "code",
+      "result": "PASS",
+      "note": "Saved as exp_0001.",
+      "edge": "commit>project",
+      "by": "code",
+      "writes": {
+       "commit": "SAVED",
+       "expense": {
+        "id": "exp_0001",
+        "idempotency_key": "key-over-1",
+        "occurred_on": "2026-03-14",
+        "amount_cents": 460000,
+        "currency": "ZAR",
+        "merchant_name": "Makro",
+        "merchant_key": "makro",
+        "category_id": "groceries",
+        "note": null,
+        "created_at": "2026-03-14T10:00:00.000Z"
+       },
+       "attempts": 1
+      }
+     },
+     {
+      "node": "project",
+      "type": "code",
+      "result": "PASS",
+      "note": "Budget after: OVER (460000 cents spent).",
+      "edge": "project>verify",
+      "by": "code",
+      "writes": {
+       "budget_after": {
+        "category_id": "groceries",
+        "period": "2026-03",
+        "state": "OVER",
+        "limit_cents": 450000,
+        "spent_cents": 460000,
+        "remaining_cents": -10000
+       }
+      }
+     },
+     {
+      "node": "verify",
+      "type": "code",
+      "result": "PASS",
+      "note": "The ledger agrees with the graph.",
+      "edge": "verify>respond",
+      "by": "code",
+      "writes": {
+       "verification": {
+        "ok": true,
+        "problems": []
+       }
+      }
+     },
+     {
+      "node": "respond",
+      "type": "code",
+      "result": "PASS",
+      "note": "Answer with the expense and the budget.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "response": {
+        "expense": {
+         "id": "exp_0001",
+         "idempotency_key": "key-over-1",
+         "occurred_on": "2026-03-14",
+         "amount_cents": 460000,
+         "currency": "ZAR",
+         "merchant_name": "Makro",
+         "merchant_key": "makro",
+         "category_id": "groceries",
+         "note": null,
+         "created_at": "2026-03-14T10:00:00.000Z"
+        },
+        "budget": {
+         "category_id": "groceries",
+         "period": "2026-03",
+         "state": "OVER",
+         "limit_cents": 450000,
+         "spent_cents": 460000,
+         "remaining_cents": -10000
+        },
+        "replayed": false,
+        "run_id": "run_0001"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "duplicate_submit",
+   "level": 2,
+   "title": "The same request arrives a second time (the phone lost the first answer)",
+   "fault": "none",
+   "before": 1,
+   "request": {
+    "amount_cents": 18500,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Woolworths",
+    "category_id": "groceries",
+    "idempotency_key": "key-dup-1"
+   },
+   "http": {
+    "status": 200,
+    "body": {
+     "expense": {
+      "id": "exp_0001",
+      "idempotency_key": "key-dup-1",
+      "occurred_on": "2026-03-14",
+      "amount_cents": 18500,
+      "currency": "ZAR",
+      "merchant_name": "Woolworths",
+      "merchant_key": "woolworths",
+      "category_id": "groceries",
+      "note": null,
+      "created_at": "2026-03-14T10:00:00.000Z"
+     },
+     "budget": {
+      "category_id": "groceries",
+      "period": "2026-03",
+      "state": "WITHIN",
+      "limit_cents": 450000,
+      "spent_cents": 18500,
+      "remaining_cents": 431500
+     },
+     "replayed": true,
+     "run_id": "run_0002"
+    }
+   },
+   "rows_after": 1,
+   "run": {
+    "id": "run_0002",
+    "graph": "record-expense",
+    "result": "PASS",
+    "path": [
+     "gate1",
+     "dedupe",
+     "respond"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "PASS",
+      "note": "The shape is correct.",
+      "edge": "gate1>dedupe",
+      "by": "code",
+      "writes": {
+       "proposal": {
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "occurred_on": "2026-03-14",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries"
+       },
+       "idempotency_key": "key-dup-1",
+       "confirmed": false,
+       "gate1_problems": []
+      }
+     },
+     {
+      "node": "dedupe",
+      "type": "code",
+      "result": "PASS",
+      "note": "This request already recorded its expense. Nothing more is saved.",
+      "edge": "dedupe>respond",
+      "by": "code",
+      "writes": {
+       "dedupe": "REPLAY",
+       "replay": {
+        "expense": {
+         "id": "exp_0001",
+         "idempotency_key": "key-dup-1",
+         "occurred_on": "2026-03-14",
+         "amount_cents": 18500,
+         "currency": "ZAR",
+         "merchant_name": "Woolworths",
+         "merchant_key": "woolworths",
+         "category_id": "groceries",
+         "note": null,
+         "created_at": "2026-03-14T10:00:00.000Z"
+        },
+        "budget": {
+         "category_id": "groceries",
+         "period": "2026-03",
+         "state": "WITHIN",
+         "limit_cents": 450000,
+         "spent_cents": 18500,
+         "remaining_cents": 431500
+        }
+       }
+      }
+     },
+     {
+      "node": "respond",
+      "type": "code",
+      "result": "PASS",
+      "note": "Answer with the stored expense.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "response": {
+        "expense": {
+         "id": "exp_0001",
+         "idempotency_key": "key-dup-1",
+         "occurred_on": "2026-03-14",
+         "amount_cents": 18500,
+         "currency": "ZAR",
+         "merchant_name": "Woolworths",
+         "merchant_key": "woolworths",
+         "category_id": "groceries",
+         "note": null,
+         "created_at": "2026-03-14T10:00:00.000Z"
+        },
+        "budget": {
+         "category_id": "groceries",
+         "period": "2026-03",
+         "state": "WITHIN",
+         "limit_cents": 450000,
+         "spent_cents": 18500,
+         "remaining_cents": 431500
+        },
+        "replayed": true,
+        "run_id": "run_0002"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "similar_expense",
+   "level": 2,
+   "title": "A new request with the same date, amount and merchant",
+   "fault": "none",
+   "before": 1,
+   "request": {
+    "amount_cents": 18500,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Woolworths",
+    "category_id": "groceries",
+    "idempotency_key": "key-sim-2"
+   },
+   "http": {
+    "status": 409,
+    "body": {
+     "error": {
+      "code": "NEEDS_CONFIRMATION",
+      "problems": [
+       {
+        "rule": "R7",
+        "text": "An expense with the same date, amount and merchant is already recorded. Confirm to record a second one."
+       }
+      ],
+      "run_id": "run_0002"
+     }
+    }
+   },
+   "rows_after": 1,
+   "run": {
+    "id": "run_0002",
+    "graph": "record-expense",
+    "result": "FAIL",
+    "path": [
+     "gate1",
+     "dedupe",
+     "load_facts",
+     "gate2",
+     "reject"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "PASS",
+      "note": "The shape is correct.",
+      "edge": "gate1>dedupe",
+      "by": "code",
+      "writes": {
+       "proposal": {
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "occurred_on": "2026-03-14",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries"
+       },
+       "idempotency_key": "key-sim-2",
+       "confirmed": false,
+       "gate1_problems": []
+      }
+     },
+     {
+      "node": "dedupe",
+      "type": "code",
+      "result": "PASS",
+      "note": "This request key is new.",
+      "edge": "dedupe>load_facts",
+      "by": "code",
+      "writes": {
+       "dedupe": "NEW"
+      }
+     },
+     {
+      "node": "load_facts",
+      "type": "code",
+      "result": "PASS",
+      "note": "Facts read: today, the category, similar expenses, the budget, the spent amount.",
+      "edge": "load_facts>gate2",
+      "by": "code",
+      "writes": {
+       "facts": {
+        "today": "2026-03-14",
+        "category": {
+         "id": "groceries",
+         "name": "Groceries",
+         "active": true
+        },
+        "similar_ids": [
+         "exp_0001"
+        ],
+        "limit_cents": 450000,
+        "spent_before_cents": 18500
+       }
+      }
+     },
+     {
+      "node": "gate2",
+      "type": "code",
+      "result": "FAIL",
+      "note": "Sense: R7.",
+      "edge": "gate2>reject",
+      "by": "code",
+      "writes": {
+       "gate2_problems": [
+        {
+         "rule": "R7",
+         "text": "An expense with the same date, amount and merchant is already recorded. Confirm to record a second one."
+        }
+       ]
+      }
+     },
+     {
+      "node": "reject",
+      "type": "code",
+      "result": "FAIL",
+      "note": "Refused: NEEDS_CONFIRMATION. Nothing is saved.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "rejection": {
+        "code": "NEEDS_CONFIRMATION",
+        "problems": [
+         {
+          "rule": "R7",
+          "text": "An expense with the same date, amount and merchant is already recorded. Confirm to record a second one."
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "save_fails_once",
+   "level": 2,
+   "title": "The store fails one time during the save",
+   "fault": "save_fails_once",
+   "before": 0,
+   "request": {
+    "amount_cents": 18500,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Woolworths",
+    "category_id": "groceries",
+    "idempotency_key": "key-retry-1"
+   },
+   "http": {
+    "status": 201,
+    "body": {
+     "expense": {
+      "id": "exp_0002",
+      "idempotency_key": "key-retry-1",
+      "occurred_on": "2026-03-14",
+      "amount_cents": 18500,
+      "currency": "ZAR",
+      "merchant_name": "Woolworths",
+      "merchant_key": "woolworths",
+      "category_id": "groceries",
+      "note": null,
+      "created_at": "2026-03-14T10:00:00.000Z"
+     },
+     "budget": {
+      "category_id": "groceries",
+      "period": "2026-03",
+      "state": "WITHIN",
+      "limit_cents": 450000,
+      "spent_cents": 18500,
+      "remaining_cents": 431500
+     },
+     "replayed": false,
+     "run_id": "run_0001"
+    }
+   },
+   "rows_after": 1,
+   "run": {
+    "id": "run_0001",
+    "graph": "record-expense",
+    "result": "PASS",
+    "path": [
+     "gate1",
+     "dedupe",
+     "load_facts",
+     "gate2",
+     "commit",
+     "backoff",
+     "commit",
+     "project",
+     "verify",
+     "respond"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "PASS",
+      "note": "The shape is correct.",
+      "edge": "gate1>dedupe",
+      "by": "code",
+      "writes": {
+       "proposal": {
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "occurred_on": "2026-03-14",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries"
+       },
+       "idempotency_key": "key-retry-1",
+       "confirmed": false,
+       "gate1_problems": []
+      }
+     },
+     {
+      "node": "dedupe",
+      "type": "code",
+      "result": "PASS",
+      "note": "This request key is new.",
+      "edge": "dedupe>load_facts",
+      "by": "code",
+      "writes": {
+       "dedupe": "NEW"
+      }
+     },
+     {
+      "node": "load_facts",
+      "type": "code",
+      "result": "PASS",
+      "note": "Facts read: today, the category, similar expenses, the budget, the spent amount.",
+      "edge": "load_facts>gate2",
+      "by": "code",
+      "writes": {
+       "facts": {
+        "today": "2026-03-14",
+        "category": {
+         "id": "groceries",
+         "name": "Groceries",
+         "active": true
+        },
+        "similar_ids": [],
+        "limit_cents": 450000,
+        "spent_before_cents": 0
+       }
+      }
+     },
+     {
+      "node": "gate2",
+      "type": "code",
+      "result": "PASS",
+      "note": "The proposal is sensible against the facts.",
+      "edge": "gate2>commit",
+      "by": "code",
+      "writes": {
+       "gate2_problems": []
+      }
+     },
+     {
+      "node": "commit",
+      "type": "code",
+      "result": "FAIL",
+      "note": "The store did not save. Attempt 1 of 2.",
+      "edge": "commit>backoff",
+      "by": "code",
+      "writes": {
+       "commit": "TRANSIENT_ERROR",
+       "attempts": 1
+      }
+     },
+     {
+      "node": "backoff",
+      "type": "code",
+      "result": "PASS",
+      "note": "Waited 40 ms before the next attempt.",
+      "edge": "backoff>commit",
+      "by": "code",
+      "writes": {
+       "waited_ms": 40
+      }
+     },
+     {
+      "node": "commit",
+      "type": "code",
+      "result": "PASS",
+      "note": "Saved as exp_0002.",
+      "edge": "commit>project",
+      "by": "code",
+      "writes": {
+       "commit": "SAVED",
+       "expense": {
+        "id": "exp_0002",
+        "idempotency_key": "key-retry-1",
+        "occurred_on": "2026-03-14",
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries",
+        "note": null,
+        "created_at": "2026-03-14T10:00:00.000Z"
+       },
+       "attempts": 2
+      }
+     },
+     {
+      "node": "project",
+      "type": "code",
+      "result": "PASS",
+      "note": "Budget after: WITHIN (18500 cents spent).",
+      "edge": "project>verify",
+      "by": "code",
+      "writes": {
+       "budget_after": {
+        "category_id": "groceries",
+        "period": "2026-03",
+        "state": "WITHIN",
+        "limit_cents": 450000,
+        "spent_cents": 18500,
+        "remaining_cents": 431500
+       }
+      }
+     },
+     {
+      "node": "verify",
+      "type": "code",
+      "result": "PASS",
+      "note": "The ledger agrees with the graph.",
+      "edge": "verify>respond",
+      "by": "code",
+      "writes": {
+       "verification": {
+        "ok": true,
+        "problems": []
+       }
+      }
+     },
+     {
+      "node": "respond",
+      "type": "code",
+      "result": "PASS",
+      "note": "Answer with the expense and the budget.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "response": {
+        "expense": {
+         "id": "exp_0002",
+         "idempotency_key": "key-retry-1",
+         "occurred_on": "2026-03-14",
+         "amount_cents": 18500,
+         "currency": "ZAR",
+         "merchant_name": "Woolworths",
+         "merchant_key": "woolworths",
+         "category_id": "groceries",
+         "note": null,
+         "created_at": "2026-03-14T10:00:00.000Z"
+        },
+        "budget": {
+         "category_id": "groceries",
+         "period": "2026-03",
+         "state": "WITHIN",
+         "limit_cents": 450000,
+         "spent_cents": 18500,
+         "remaining_cents": 431500
+        },
+        "replayed": false,
+        "run_id": "run_0001"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "store_down",
+   "level": 2,
+   "title": "The store fails each time during the save",
+   "fault": "save_always_fails",
+   "before": 0,
+   "request": {
+    "amount_cents": 18500,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Woolworths",
+    "category_id": "groceries",
+    "idempotency_key": "key-down-1"
+   },
+   "http": {
+    "status": 503,
+    "body": {
+     "error": {
+      "code": "STORAGE_UNAVAILABLE",
+      "problems": [],
+      "run_id": "run_0001"
+     }
+    }
+   },
+   "rows_after": 0,
+   "run": {
+    "id": "run_0001",
+    "graph": "record-expense",
+    "result": "ESCALATED",
+    "path": [
+     "gate1",
+     "dedupe",
+     "load_facts",
+     "gate2",
+     "commit",
+     "backoff",
+     "commit",
+     "escalate"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "PASS",
+      "note": "The shape is correct.",
+      "edge": "gate1>dedupe",
+      "by": "code",
+      "writes": {
+       "proposal": {
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "occurred_on": "2026-03-14",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries"
+       },
+       "idempotency_key": "key-down-1",
+       "confirmed": false,
+       "gate1_problems": []
+      }
+     },
+     {
+      "node": "dedupe",
+      "type": "code",
+      "result": "PASS",
+      "note": "This request key is new.",
+      "edge": "dedupe>load_facts",
+      "by": "code",
+      "writes": {
+       "dedupe": "NEW"
+      }
+     },
+     {
+      "node": "load_facts",
+      "type": "code",
+      "result": "PASS",
+      "note": "Facts read: today, the category, similar expenses, the budget, the spent amount.",
+      "edge": "load_facts>gate2",
+      "by": "code",
+      "writes": {
+       "facts": {
+        "today": "2026-03-14",
+        "category": {
+         "id": "groceries",
+         "name": "Groceries",
+         "active": true
+        },
+        "similar_ids": [],
+        "limit_cents": 450000,
+        "spent_before_cents": 0
+       }
+      }
+     },
+     {
+      "node": "gate2",
+      "type": "code",
+      "result": "PASS",
+      "note": "The proposal is sensible against the facts.",
+      "edge": "gate2>commit",
+      "by": "code",
+      "writes": {
+       "gate2_problems": []
+      }
+     },
+     {
+      "node": "commit",
+      "type": "code",
+      "result": "FAIL",
+      "note": "The store did not save. Attempt 1 of 2.",
+      "edge": "commit>backoff",
+      "by": "code",
+      "writes": {
+       "commit": "TRANSIENT_ERROR",
+       "attempts": 1
+      }
+     },
+     {
+      "node": "backoff",
+      "type": "code",
+      "result": "PASS",
+      "note": "Waited 40 ms before the next attempt.",
+      "edge": "backoff>commit",
+      "by": "code",
+      "writes": {
+       "waited_ms": 40
+      }
+     },
+     {
+      "node": "commit",
+      "type": "code",
+      "result": "FAIL",
+      "note": "The store did not save. Attempt 2 of 2.",
+      "edge": "commit>escalate",
+      "by": "code",
+      "writes": {
+       "commit": "TRANSIENT_ERROR",
+       "attempts": 2
+      }
+     },
+     {
+      "node": "escalate",
+      "type": "code",
+      "result": "FAIL",
+      "note": "The store did not save after 2 attempts.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "escalation": {
+        "code": "STORAGE_UNAVAILABLE",
+        "reason": "The store did not save after 2 attempts.",
+        "problems": []
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "ledger_mismatch",
+   "level": 2,
+   "title": "A defect saves R186.00, not R185.00",
+   "fault": "save_wrong_cents",
+   "before": 0,
+   "request": {
+    "amount_cents": 18500,
+    "currency": "ZAR",
+    "occurred_on": "2026-03-14",
+    "merchant_name": "Woolworths",
+    "category_id": "groceries",
+    "idempotency_key": "key-wrong-1"
+   },
+   "http": {
+    "status": 500,
+    "body": {
+     "error": {
+      "code": "VERIFICATION_FAILED",
+      "problems": [
+       {
+        "rule": "R8",
+        "text": "The stored row is not the proposal. Different fields: amount_cents."
+       },
+       {
+        "rule": "R10",
+        "text": "The graph reports 18500 cents spent. The ledger adds up to 18600 cents."
+       }
+      ],
+      "run_id": "run_0001"
+     }
+    }
+   },
+   "rows_after": 1,
+   "run": {
+    "id": "run_0001",
+    "graph": "record-expense",
+    "result": "ESCALATED",
+    "path": [
+     "gate1",
+     "dedupe",
+     "load_facts",
+     "gate2",
+     "commit",
+     "project",
+     "verify",
+     "escalate"
+    ],
+    "steps": [
+     {
+      "node": "gate1",
+      "type": "code",
+      "result": "PASS",
+      "note": "The shape is correct.",
+      "edge": "gate1>dedupe",
+      "by": "code",
+      "writes": {
+       "proposal": {
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "occurred_on": "2026-03-14",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries"
+       },
+       "idempotency_key": "key-wrong-1",
+       "confirmed": false,
+       "gate1_problems": []
+      }
+     },
+     {
+      "node": "dedupe",
+      "type": "code",
+      "result": "PASS",
+      "note": "This request key is new.",
+      "edge": "dedupe>load_facts",
+      "by": "code",
+      "writes": {
+       "dedupe": "NEW"
+      }
+     },
+     {
+      "node": "load_facts",
+      "type": "code",
+      "result": "PASS",
+      "note": "Facts read: today, the category, similar expenses, the budget, the spent amount.",
+      "edge": "load_facts>gate2",
+      "by": "code",
+      "writes": {
+       "facts": {
+        "today": "2026-03-14",
+        "category": {
+         "id": "groceries",
+         "name": "Groceries",
+         "active": true
+        },
+        "similar_ids": [],
+        "limit_cents": 450000,
+        "spent_before_cents": 0
+       }
+      }
+     },
+     {
+      "node": "gate2",
+      "type": "code",
+      "result": "PASS",
+      "note": "The proposal is sensible against the facts.",
+      "edge": "gate2>commit",
+      "by": "code",
+      "writes": {
+       "gate2_problems": []
+      }
+     },
+     {
+      "node": "commit",
+      "type": "code",
+      "result": "PASS",
+      "note": "Saved as exp_0001.",
+      "edge": "commit>project",
+      "by": "code",
+      "writes": {
+       "commit": "SAVED",
+       "expense": {
+        "id": "exp_0001",
+        "idempotency_key": "key-wrong-1",
+        "occurred_on": "2026-03-14",
+        "amount_cents": 18500,
+        "currency": "ZAR",
+        "merchant_name": "Woolworths",
+        "merchant_key": "woolworths",
+        "category_id": "groceries",
+        "note": null,
+        "created_at": "2026-03-14T10:00:00.000Z"
+       },
+       "attempts": 1
+      }
+     },
+     {
+      "node": "project",
+      "type": "code",
+      "result": "PASS",
+      "note": "Budget after: WITHIN (18500 cents spent).",
+      "edge": "project>verify",
+      "by": "code",
+      "writes": {
+       "budget_after": {
+        "category_id": "groceries",
+        "period": "2026-03",
+        "state": "WITHIN",
+        "limit_cents": 450000,
+        "spent_cents": 18500,
+        "remaining_cents": 431500
+       }
+      }
+     },
+     {
+      "node": "verify",
+      "type": "code",
+      "result": "FAIL",
+      "note": "The ledger does not agree: R8, R10.",
+      "edge": "verify>escalate",
+      "by": "code",
+      "writes": {
+       "verification": {
+        "ok": false,
+        "problems": [
+         {
+          "rule": "R8",
+          "text": "The stored row is not the proposal. Different fields: amount_cents."
+         },
+         {
+          "rule": "R10",
+          "text": "The graph reports 18500 cents spent. The ledger adds up to 18600 cents."
+         }
+        ]
+       }
+      }
+     },
+     {
+      "node": "escalate",
+      "type": "code",
+      "result": "FAIL",
+      "note": "The expense exp_0001 is saved, but the ledger does not agree with the graph. A person must look.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "escalation": {
+        "code": "VERIFICATION_FAILED",
+        "reason": "The expense exp_0001 is saved, but the ledger does not agree with the graph. A person must look.",
+        "problems": [
+         {
+          "rule": "R8",
+          "text": "The stored row is not the proposal. Different fields: amount_cents."
+         },
+         {
+          "rule": "R10",
+          "text": "The graph reports 18500 cents spent. The ledger adds up to 18600 cents."
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

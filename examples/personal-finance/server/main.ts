@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { randomIds, systemClock } from './clock.ts';
 import { readConfig } from './config.ts';
 import { periodOf } from './domain/expense.ts';
+import { sqliteTrace } from './graph/trace.ts';
+import { sqliteLedgerReader } from './graph/verifier.ts';
 import type { App } from './http/handlers.ts';
 import { createHttpServer } from './http/server.ts';
 import { seed } from './repositories/seed.ts';
@@ -16,7 +18,8 @@ const db = openDatabase(config.dbFile);
 const stores = sqliteStores(db);
 seed(stores, periodOf(systemClock.today()));
 
-const app: App = { stores, clock: systemClock, ids: randomIds };
+// Level 2: the trace store, and the read-only view of the ledger that the verifier uses.
+const app: App = { stores, clock: systemClock, ids: randomIds, trace: sqliteTrace(db), ledger: sqliteLedgerReader(db) };
 
 const webDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'web', 'dist');
 const server = createHttpServer(app, { webDir });

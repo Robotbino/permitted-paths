@@ -1,14 +1,13 @@
 // The handlers: one small function for each operation of the API.
 // A handler changes an HTTP request into a call of a service, and the result into a reply.
 // It contains no business rule.
-import type { Clock, IdGen } from '../clock.ts';
 import { periodOf } from '../domain/expense.ts';
-import type { Stores } from '../repositories/ports.ts';
+import { AppError } from '../errors.ts';
 import { monthSummary } from '../services/month-summary.ts';
-import { recordExpense } from '../services/record-expense.ts';
+import { recordExpense, type RecordExpenseDeps } from '../services/record-expense.ts';
 
 /** All that the handlers can use. main.ts makes it one time. */
-export type App = { stores: Stores; clock: Clock; ids: IdGen };
+export type App = RecordExpenseDeps;
 
 export type ApiRequest = { query: URLSearchParams; params: string[]; body: unknown };
 export type Reply = { status: number; body: unknown; headers?: Record<string, string> };
@@ -32,6 +31,17 @@ export const HANDLERS: Handler[] = [
       const result = await recordExpense(app, request.body);
       // 201: a new expense. 200: a replay of a request that already recorded its expense.
       return { status: result.replayed ? 200 : 201, body: result };
+    },
+  },
+
+  // Level 2. The trace of one run: each step, PASS or FAIL, the edge, and the state after the step.
+  {
+    method: 'GET',
+    path: /^\/api\/runs\/([\w-]+)$/,
+    handle(app, request) {
+      const run = app.trace?.get(request.params[0]!);
+      if (!run) throw new AppError('NOT_FOUND');
+      return { status: 200, body: run };
     },
   },
 ];
