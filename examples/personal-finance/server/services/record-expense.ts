@@ -24,7 +24,7 @@ export type RecordExpenseDeps = {
   sleep?: (ms: number) => Promise<void>;
   /** Level 3. With a memory, the graph has one more node: remember. */
   memory?: MerchantMemory;
-  /** Level 4: the run that started this run as a worker. */
+  /** Level 3: the run that started this run as a worker. */
   parent_run_id?: string;
 };
 

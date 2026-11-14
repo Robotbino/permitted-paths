@@ -244,26 +244,31 @@ To put a new section in the search, give its `h2` an `id`.
 
 ## Part S: the practical architecture studio
 
-Part S shows how the ideas of the course become the files of an application. It is one more `<section class="chapter is-lab is-studio" data-chapter="studio">`, between part L and the reference shelf. Its content is not from the notes. The research date of its product facts is 2026-11-14.
+Part S shows how an everyday problem that a person describes in one sentence becomes a dependable application, and where a model belongs in it. The case is a budgeting system for a fictional person. It is one more `<section class="chapter is-lab is-studio" data-chapter="studio">`, between part L and the reference shelf. Its content is not from the notes. The research date of its product facts is 2026-11-14.
 
 ```
 examples/personal-finance/   the reference application: TypeScript, React, Node, SQLite. It has its own README.
-examples/tools/sync-studio.py  copies the source files and the recordings into the page
+examples/tools/sync-studio.py  copies the source files, the recordings and the shared functions into the page
+examples/tools/studio-entry.ts the list of the functions of the application that the page runs
 css/studio.css               styles of part S. It uses only the tokens of tokens.css.
-js/data/studio.js            the eight drawings, the replays, the questions, and the gate of part S
+js/data/studio.js            the seven drawings, the replays, the questions, and the gate of part S
 js/data/studio-files.js      GENERATED: each source file with its level and its role
-js/data/studio-runs.js       GENERATED: what the real code did in 19 scenarios
+js/data/studio-runs.js       GENERATED: what the real code did in 33 scenarios
+js/data/studio-domain.js     GENERATED: the planning, pipeline and export functions of the application, as one script (GE.domain)
 js/labs/studio.js            the instruments: studioLevels, studioDiagram, studioRun, studioExplorer, studioCheck
+js/labs/studio-live.js       the instruments that run GE.domain or replay a request: studioSort, studioPlan, studioPipeline, studioInsights, studioAssist
 ```
 
-The application has four levels, and each level is a git tag: `studio-l1` to `studio-l4`. The page shows the same four levels.
+The application has three levels: an ordinary application, structured workflows, a model inside permitted paths. `levels.json` gives the level of each file, and a test of the application checks it. The git tags `studio-l1` to `studio-l4` are the code of the first edition of the part, which had four levels.
+
+**The page runs the code of the application.** The folders `shared/planning`, `shared/pipeline` and `shared/export` use no Node API and no store. The sync tool makes one classic script from them with esbuild (a development package of the application; run `npm install` in `examples/personal-finance` one time). The calculator and the pipeline of the part call those functions, and `tests.html` compares their results with the recordings of the server.
 
 ### Change the reference application
 
 1. Change the files in `examples/personal-finance/`.
 2. In that folder, run `npm run check`. It does the type check, the tests and the check of the recordings. If a recording changed on purpose, run `npm run record-runs` first.
 3. If you added a file, add it to `levels.json` with its level and its role. A test fails if you do not.
-4. From the root, run `python examples/tools/sync-studio.py`. It writes the two generated files and the code blocks of the page.
+4. From the root, run `python examples/tools/sync-studio.py`. It writes the three generated files and the code blocks of the page.
 5. Open `tests.html`.
 
 `python examples/tools/sync-studio.py --check` writes nothing and gives FAIL if a generated file is not current. The tool refuses a file that contains a key or a path of a computer.
@@ -272,13 +277,15 @@ The application has four levels, and each level is a git tag: `studio-l1` to `st
 
 Change `GE.data.studio.drawings` in `js/data/studio.js`.
 
-- A node and an edge have a `level` (1 to 4). The lens of the drawing makes a later level faint. The level 9 is for a class of the ontology that is not built.
+- A node and an edge have a `level` (1 to 3). The lens of the drawing makes a later level faint.
 - A drawing with `graph` is the drawing of a real execution graph. `tests.html` compares its nodes and edges with the recording. A node with `outside: true` is not part of that graph.
 - The text of each component is not in the data file. It is in the table that is inside the mount of the drawing in `index.html`: a row with `data-node="<id>"` or `data-edge="<from>><to>"`. The instrument reads the table, and a browser with no JavaScript shows the table.
 
 ### Rules of part S
 
-- No instrument of part S is a simulation. `studioRun` plays a recording of the real code. Where a scenario has a model, the model is a stand-in, and the page says so.
+- No instrument of part S is a simulation. `studioRun` and `studioAssist` play a recording of the real code; `studioPlan`, `studioPipeline` and `studioInsights` run the functions of the application. Where a scenario has a model, the model is a stand-in, and the page says so.
+- The person, the banks, the amounts and the files of the case are fictional. Do not put data of a real person into the part or into the application.
 - Each product fact has a source link. A statement that reads more into a document than the document says has the mark "The reading of this edition".
-- The part says what was not run: a call to the real model, and a real iPhone.
+- The part says what was not run: a call to the real model, a real bank file, and a real iPhone.
+- Each source in the list of sources has a mark: Read, Abstract only, or Not confirmed. Do not add a source that nobody opened.
 - A file name in the text is a link with `data-st-file`. With JavaScript it opens the file in the explorer of the page.

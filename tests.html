@@ -42,17 +42,29 @@
 <script src="js/data/studio.js"></script>
 <script src="js/data/studio-files.js"></script>
 <script src="js/data/studio-runs.js"></script>
+<script src="js/data/studio-domain.js"></script>
 <script src="js/labs/studio.js"></script>
+<script src="js/labs/studio-live.js"></script>
 <script>
 (function (GE) {
   'use strict';
   var O = GE.onto, out = document.getElementById('out'), pass = 0, fail = 0;
-  function test(name, fn) {
-    var ok = false, detail = '';
-    try { var r = fn(); ok = r === true; if (!ok) detail = ' -> ' + JSON.stringify(r); } catch (e) { detail = ' -> error: ' + e.message; }
+  function record(name, r, error) {
+    var ok = !error && r === true, detail = error ? ' -> error: ' + error.message : ok ? '' : ' -> ' + JSON.stringify(r);
     if (ok) pass++; else fail++;
     out.appendChild(GE.h('li', { class: ok ? '' : 'fail' }, (ok ? 'PASS  ' : 'FAIL  ') + name + detail));
   }
+  function test(name, fn) {
+    var r, error = null;
+    try { r = fn(); } catch (e) { error = e; }
+    record(name, r, error);
+  }
+  /** A test that returns a promise. The summary waits for each one. */
+  var pending = [];
+  function testAsync(name, fn) {
+    pending.push(Promise.resolve().then(fn).then(function (r) { record(name, r); }, function (e) { record(name, null, e); }));
+  }
+  function tick() { return new Promise(function (r) { setTimeout(r, 0); }); }
   function eqArr(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
   function eq(a, b) { return JSON.stringify(a) === JSON.stringify(b) ? true : { got: a, expected: b }; }
   function call(a) { return { order_id: a[0], amount_cents: a[1], payee_id: a[2], new_status: a[3] }; }
@@ -302,8 +314,9 @@
   /* ---- Part S, the practical architecture studio (2026-11-14). The drawings are compared with
           the recordings of the real application, thus the page cannot show a graph that the code does not have. ---- */
   var ST = GE.data.studio, SR = GE.data.studioRuns, SF = GE.data.studioFiles;
-  test('studio: the two generated files come from the same run of the sync tool', function () {
-    return !!SR && !!SF && SR.hash === SF.hash && /^[0-9a-f]{16}$/.test(SR.hash);
+  var SD = GE.domain;
+  test('studio: the three generated files come from the same run of the sync tool', function () {
+    return !!SR && !!SF && !!SD && SR.hash === SF.hash && SD.hash === SR.hash && /^[0-9a-f]{16}$/.test(SR.hash);
   });
   Object.keys(ST.drawings).forEach(function (key) {
     var d = ST.drawings[key];
@@ -329,10 +342,10 @@
     var plain = SR.graphs['record-expense'], full = SR.graphs['record-expense+memory'];
     return eq(full.nodes.map(function (n) { return n.id; }).filter(function (id) { return id !== 'remember'; }), plain.nodes.map(function (n) { return n.id; }));
   });
-  test('studio drawings: each node and each edge has a level (1 to 4, or 9 for "not built")', function () {
+  test('studio drawings: each node and each edge has a level (1 to 3)', function () {
     var bad = [];
     Object.keys(ST.drawings).forEach(function (key) {
-      ST.drawings[key].nodes.concat(ST.drawings[key].edges).forEach(function (x) { if ([1, 2, 3, 4, 9].indexOf(x.level) < 0) bad.push(key + ':' + (x.id || GE.edgeKey(x))); });
+      ST.drawings[key].nodes.concat(ST.drawings[key].edges).forEach(function (x) { if ([1, 2, 3].indexOf(x.level) < 0) bad.push(key + ':' + (x.id || GE.edgeKey(x))); });
     });
     return eq(bad, []);
   });
@@ -354,10 +367,10 @@
     });
     return eq(bad, []);
   });
-  test('studio recordings: 19 scenarios; each one that ends at respond is PASS, at reject is FAIL, at escalate is ESCALATED', function () {
+  test('studio recordings: 33 scenarios; each graph run that ends at respond is PASS, at reject is FAIL, at escalate is ESCALATED', function () {
     var want = { respond: 'PASS', reject: 'FAIL', escalate: 'ESCALATED' };
-    var bad = SR.scenarios.filter(function (sc) { return want[sc.run.path[sc.run.path.length - 1]] !== sc.run.result; }).map(function (sc) { return sc.id; });
-    return eq([SR.scenarios.length, bad], [19, []]);
+    var bad = SR.scenarios.filter(function (sc) { return sc.run && want[sc.run.path[sc.run.path.length - 1]] !== sc.run.result; }).map(function (sc) { return sc.id; });
+    return eq([SR.scenarios.length, SR.scenarios.filter(function (sc) { return sc.run; }).length, bad], [33, 23, []]);
   });
   test('studio recordings: a suggestion never adds a row to the ledger or to the memory (R13)', function () {
     return eq(SR.scenarios.filter(function (sc) { return sc.endpoint === '/api/expenses/suggest' && (sc.rows_after !== 0 || sc.memory_rows_added !== 0); }).map(function (sc) { return sc.id; }), []);
@@ -365,6 +378,7 @@
   test('studio recordings: each node wrote only the fields that it owns', function () {
     var bad = [];
     SR.scenarios.forEach(function (sc) {
+      if (!sc.run) return;
       var owners = {};
       SR.graphs[sc.run.graph].nodes.forEach(function (n) { n.owns.forEach(function (f) { owners[f] = n.id; }); });
       (sc.first ? sc.first.run.steps : []).concat(sc.run.steps).forEach(function (st) {
@@ -375,7 +389,7 @@
   });
   test('studio files: each has a level, a role and text; no file has a key or a path of a computer', function () {
     var names = Object.keys(SF.files);
-    var bad = names.filter(function (n) { var f = SF.files[n]; return [1, 2, 3, 4].indexOf(f.level) < 0 || !f.role || !f.text || /sk-ant-|[A-Za-z]:\\Users|\/Users\/|\/home\/[a-z]/.test(f.text); });
+    var bad = names.filter(function (n) { var f = SF.files[n]; return [1, 2, 3].indexOf(f.level) < 0 || !f.role || !f.text || /sk-ant-|[A-Za-z]:\\Users|\/Users\/|\/home\/[a-z]/.test(f.text); });
     return eq([names.length > 60, bad], [true, []]);
   });
   test('studio files: no file of a level imports a file of a later level (the same rule as the architecture test)', function () {
@@ -397,9 +411,9 @@
       var o = ST.checks[k].options;
       return o.filter(function (x) { return x.correct; }).length !== 1 || o.some(function (x) { return !x.why || !x.text; });
     });
-    return eq([Object.keys(ST.checks).length, bad], [9, []]);
+    return eq([Object.keys(ST.checks).length, bad], [15, []]);
   });
-  test('studio: the replay instrument plays a recording to its end and shows the HTTP answer', function () {
+  test('studio: the replay instrument needs a prediction, then shows the first state of the run', function () {
     GE.trace = GE.trace || { lab: function () {} };
     var el = document.createElement('div'); el.dataset.replay = 'record'; document.body.appendChild(el);
     GE.labs.studioRun(el, 'studio');
@@ -410,12 +424,248 @@
     el.remove();
     return eq([disabledFirst, buttons[0].disabled, /run_0001/.test(text), /gate1_problems/.test(text)], [true, false, true, true]);
   });
+  test('studio replays: the answer of each scenario is one of the options of its prediction', function () {
+    var bad = [];
+    Object.keys(ST.replays).forEach(function (k) {
+      var conf = ST.replays[k];
+      if (!conf.answer) return;
+      conf.scenarios.forEach(function (id) {
+        var sc = SR.scenarios.filter(function (x) { return x.id === id; })[0];
+        if (sc && !conf.options.some(function (o) { return o.value === conf.answer(sc); })) bad.push(k + ':' + id);
+      });
+    });
+    return eq(bad, []);
+  });
 
-  var summary = document.getElementById('summary');
-  GE.clear(summary);
-  summary.appendChild(GE.stamp(fail ? 'FAIL' : 'PASS'));
-  summary.appendChild(document.createTextNode(' ' + pass + ' of ' + (pass + fail) + ' assertions are correct.'));
-  window.__tests = { pass: pass, fail: fail };
+  /** Mounts a replay, selects a scenario and a prediction, and pushes "One step" until the HTTP answer shows. */
+  function playToEnd(replay, scenarioId, predict) {
+    GE.trace = GE.trace || { lab: function () {} };
+    var el = document.createElement('div'); el.dataset.replay = replay; document.body.appendChild(el);
+    GE.labs.studioRun(el, 'studio');
+    var pick = el.querySelector('select'); pick.value = scenarioId; pick.dispatchEvent(new Event('change'));
+    var seg = el.querySelectorAll('.st-predict .seg button');
+    if (predict) [].filter.call(seg, function (b) { return b.dataset.v === predict; })[0].click();
+    var step = [].filter.call(el.querySelectorAll('.controls .btn'), function (b) { return /One step/.test(b.textContent); })[0];
+    var n = 0;
+    function more() {
+      if (el.querySelector('.st-out').textContent || n++ > 60) return el;
+      step.click();
+      return tick().then(more);
+    }
+    return more();
+  }
+  testAsync('studio: the replay instrument plays a recording to its end and shows the HTTP answer', function () {
+    return playToEnd('record', 'valid', 'escalate').then(function (el) {
+      var seg = [].slice.call(el.querySelectorAll('.st-predict .seg button'));
+      var locked = seg.every(function (b) { return b.disabled; });
+      seg[0].click(); // a click after the answer changes nothing
+      var text = el.querySelector('.st-out').textContent;
+      var steps = el.querySelectorAll('.st-log li').length;
+      el.remove();
+      return eq([/The HTTP answer: 201/.test(text), /Your prediction: escalate.*FAIL/.test(text), /The run did this: respond/.test(text), /Expense rows in the ledger|expenses and \d+ income/.test(text), locked, steps > 2],
+        [true, true, true, true, true, true]);
+    });
+  });
+  testAsync('studio: the replay instrument fixes the prediction at the first step', function () {
+    GE.trace = GE.trace || { lab: function () {} };
+    var el = document.createElement('div'); el.dataset.replay = 'record'; document.body.appendChild(el);
+    GE.labs.studioRun(el, 'studio');
+    var seg = el.querySelectorAll('.st-predict .seg button');
+    seg[0].click();
+    var step = el.querySelectorAll('.controls .btn')[1];
+    step.click();
+    var lockedNow = seg[1].disabled;
+    var again = el.querySelectorAll('.controls .btn')[2]; again.click(); // Start again
+    var free = !seg[1].disabled;
+    el.remove();
+    return eq([lockedNow, free], [true, true]);
+  });
+  testAsync('studio: the replay instrument plays an import of two requests to its end', function () {
+    return playToEnd('importer', 'import_northbank').then(function (el) {
+      var text = el.querySelector('.st-out').textContent;
+      var breaks = el.querySelectorAll('.st-log li.st-break').length;
+      el.remove();
+      return eq([breaks, /RECORDED/.test(text), /Reconciliation: PASS/.test(text), /The HTTP answer: 20\d/.test(text)], [1, true, true, true]);
+    });
+  });
+
+  /* ---- Part S: the page runs the functions of the application (GE.domain). They must give what the server gave. ---- */
+  var scById = {};
+  SR.scenarios.forEach(function (sc) { scById[sc.id] = sc; });
+  test('studio domain: the plan of the page is the plan that the application recorded, to the cent', function () {
+    var plan = SD.planning.buildPlan(SD.planExample());
+    var served = scById.plan_worked_example.http.body.plan;
+    return eq([JSON.stringify(plan) === JSON.stringify(SR.plan_example.plan), JSON.stringify(plan) === JSON.stringify(served), plan.headroom_cents, plan.sizing.chosen_cents, plan.weeks.map(function (w) { return w.cap_cents; })],
+      [true, true, 845100, 600000, [55342, 55342, 55342, 55342, 23718]]);
+  });
+  test('studio domain: the plan accounts for each cent of the income', function () {
+    var input = SD.planExample(), plan = SD.planning.buildPlan(input);
+    var moves = plan.moves.reduce(function (t, m) { return t + m.amount_cents; }, 0);
+    var caps = plan.weeks.reduce(function (t, w) { return t + w.cap_cents; }, 0);
+    return eq([caps + plan.remainder_cents, plan.discretionary_cents <= plan.headroom_cents - plan.sizing.chosen_cents, moves > 0], [plan.discretionary_cents, true, true]);
+  });
+  test('studio domain: the pipeline of the page stages the Northbank file as the server did', function () {
+    var S = SD.samples, r = SD.pipeline.runPipeline(S.NORTHBANK_SAMPLE, { account: S.NORTHBANK_ACCOUNT, source_name: 'statement' });
+    var served = scById.import_northbank.first.http.body;
+    var mine = r.rows.slice(0, served.lines.length).map(function (x) { return [x.line_no, x.status, x.occurred_on, x.amount_cents, x.direction].join('|'); });
+    var theirs = served.lines.map(function (x) { return [x.line_no, x.status, x.occurred_on, x.amount_cents, x.direction].join('|'); });
+    return eq([r.profile.id, r.rows.length, mine], [served.profile.id, served.rows_total || served.lines.length, theirs]);
+  });
+  test('studio domain: an unknown layout stops for a mapping, and a wrong date format does not pass the check', function () {
+    var S = SD.samples;
+    var none = SD.pipeline.runPipeline(S.UNKNOWN_SAMPLE, { account: 'x', source_name: 'statement' });
+    var cols = { date: 'When', description: 'What', debit: 'Money out', credit: 'Money in' };
+    var wrong = SD.pipeline.runPipeline(S.UNKNOWN_SAMPLE, { account: 'x', source_name: 'statement', profile: { id: 'p', name: 'p', columns: cols, date_format: 'DD/MM/YYYY', decimal: '.' } });
+    var right = SD.pipeline.runPipeline(S.UNKNOWN_SAMPLE, { account: 'x', source_name: 'statement', profile: { id: 'p', name: 'p', columns: cols, date_format: 'MM/DD/YYYY', decimal: '.' } });
+    return eq([none.needs_mapping, none.rows.length, wrong.mapping_problems.length > 0, wrong.rows.length, right.mapping_problems.length, right.rows.length > 0], [true, 0, true, 0, 0, true]);
+  });
+  test('studio domain: the same file a second time gives only duplicates', function () {
+    var S = SD.samples, o = { account: S.NORTHBANK_ACCOUNT, source_name: 'statement' };
+    var first = SD.pipeline.runPipeline(S.NORTHBANK_SAMPLE, o);
+    var again = SD.pipeline.runPipeline(S.NORTHBANK_SAMPLE, Object.assign({ known: { fingerprints: first.rows.map(function (r) { return r.fingerprint; }) } }, o));
+    return eq(again.rows.filter(function (r) { return r.status === 'new'; }).length, 0);
+  });
+  test('studio domain: the consequences that the server showed for +10 percent are what the plan function gives', function () {
+    var c = scById.assist_allowance_approved.exchanges[0].response.consequences;
+    var input = Object.assign({}, SD.planExample(), { savings_request_cents: c.savings_request_after_cents });
+    var plan = SD.planning.buildPlan(input);
+    return eq([plan.weeks.map(function (w) { return w.cap_cents; }), plan.sizing.chosen_cents, plan.discretionary_cents], [c.weekly_caps.map(function (w) { return w.after_cents; }), c.savings_after_cents, c.free_spending_after_cents]);
+  });
+  test('studio recordings: the allowlist has four capabilities, and the rules R15 to R18', function () {
+    return eq([SR.assist.allowlist.map(function (c) { return c.name; }), SR.assist.rules.map(function (r) { return r.id; }), SR.assist.allowlist.filter(function (c) { return c.changes_data && !c.needs_approval; }).length],
+      [['analyse_spending', 'suggest_category', 'propose_column_mapping', 'recommend_allowance'], ['R15', 'R16', 'R17', 'R18'], 0]);
+  });
+  test('studio recordings: no request in plain words changed the ledger; only an approved one changed a setting', function () {
+    var assist = SR.scenarios.filter(function (sc) { return sc.endpoint === '/api/assist'; });
+    var rows = assist.map(function (sc) { return sc.rows_after; });
+    var executed = assist.filter(function (sc) { return sc.exchanges && sc.exchanges[1] && sc.exchanges[1].response.status === 'EXECUTED'; }).map(function (sc) { return sc.id; });
+    var refused = scById.assist_outside_allowlist.http.body;
+    return eq([assist.length, rows.every(function (n) { return n === rows[0]; }), executed, refused.status, refused.reason, refused.problems[0].rule, scById.assist_ai_off.model_calls],
+      [9, true, ['assist_allowance_approved'], 'REJECTED', 'UNKNOWN_CAPABILITY', 'R15', 0]);
+  });
+  test('studio: the gate of the part has seven questions, and each one names a section of the part', function () {
+    var q = GE.data.gates.studio.questions;
+    return eq([q.length, q.every(function (x) { return /^ps-/.test(x.at); }), q.filter(function (x) { return x.kind === 'assign'; }).every(function (x) { return x.items.every(function (i) { return x.bins.indexOf(i.bin) > -1; }); })], [7, true, true]);
+  });
+  function mount(lab, data) {
+    GE.trace = GE.trace || { lab: function () {} };
+    var el = document.createElement('div');
+    Object.keys(data || {}).forEach(function (k) { el.dataset[k] = data[k]; });
+    document.body.appendChild(el);
+    GE.labs[lab](el, 'studio');
+    return el;
+  }
+  test('studio: the plan instrument shows the figures of the worked example, and a new figure after a change', function () {
+    var el = mount('studioPlan');
+    var before = el.querySelector('.st-plan-out').textContent;
+    var box = el.querySelector('#st-ignore'); box.checked = true; box.dispatchEvent(new Event('change'));
+    var after = el.querySelector('.st-plan-out').textContent;
+    el.remove();
+    return eq([/R8 451\.00/.test(before), /R6 000\.00/.test(before), /R553\.42/.test(before), /You left a layer out/.test(after)], [true, true, true, true]);
+  });
+  test('studio: the pipeline instrument stages 14 rows and shows the provenance of a row', function () {
+    var el = mount('studioPipeline');
+    var btns = el.querySelectorAll('.st-rowbtn');
+    btns[0].click();
+    var prov = el.querySelector('.st-prov').textContent;
+    el.remove();
+    return eq([btns.length, /as it is in the file/.test(prov), /25\/02\/2026/.test(prov)], [14, true, true]);
+  });
+  test('studio: the assist instrument needs a prediction, then shows the refusal by name', function () {
+    var el = mount('studioAssist');
+    var pick = el.querySelector('select'); pick.value = 'assist_outside_allowlist'; pick.dispatchEvent(new Event('change'));
+    var send = el.querySelector('.controls .btn');
+    var disabledFirst = send.disabled;
+    el.querySelector('.st-predict .seg button').click();
+    send.click();
+    var text = el.querySelector('.st-layer-list').textContent + el.querySelector('.st-out').textContent;
+    el.remove();
+    return eq([disabledFirst, /UNKNOWN_CAPABILITY/.test(text), /move_money_to_savings/.test(text), /Nothing is executed/.test(text)], [true, true, true, true]);
+  });
+  test('studio: the replay instrument for the import offers five scenarios and shows the first request', function () {
+    var el = mount('studioRun', { replay: 'importer' });
+    var text = el.querySelector('.st-setup').textContent;
+    var ok = el.querySelectorAll('select option').length;
+    el.remove();
+    return eq([ok, /POST \/api\/imports/.test(text)], [5, true]);
+  });
+  test('studio: the plan instrument numbers the weeks from 1, and says FAIL for an amount it cannot read', function () {
+    var el = mount('studioPlan');
+    var first = el.querySelector('.st-week-label').textContent;
+    var input = el.querySelector('input[type="number"]');
+    input.value = '-5'; input.dispatchEvent(new Event('input'));
+    var badText = el.querySelector('.st-plan-out').textContent, invalid = input.getAttribute('aria-invalid');
+    var again = [].filter.call(el.querySelectorAll('button'), function (b) { return /Start again/.test(b.textContent); })[0];
+    again.focus(); again.click();
+    var kept = document.activeElement === again, back = el.querySelector('.st-plan-out').textContent;
+    var live = el.querySelector('.st-plan-out').hasAttribute('aria-live');
+    el.remove();
+    return eq([/^Week 1 /.test(first), /FAIL/.test(badText), /Income/.test(badText), invalid, kept, /R8 451\.00/.test(back), live], [true, true, false, 'true', true, true, false]);
+  });
+  test('studio: the pipeline maps one amount column with a sign, and keeps the focus after the check', function () {
+    var el = mount('studioPipeline');
+    var pick = el.querySelector('select'); pick.value = 'own'; pick.dispatchEvent(new Event('change'));
+    var check = el.querySelector('.st-mapping button');
+    check.focus(); check.click();
+    var focus = document.activeElement, text = el.querySelector('.st-pipe-out').textContent;
+    var rows = el.querySelectorAll('.st-rowbtn').length;
+    el.remove();
+    return eq([rows, /Map and validate/.test(focus.textContent), el.contains(focus), /FAIL/.test(text)], [2, true, true, false]);
+  });
+  test('studio: the assist instrument fixes the prediction, and says in words which layer decided', function () {
+    var el = mount('studioAssist');
+    var pick = el.querySelector('select'); pick.value = 'assist_outside_allowlist'; pick.dispatchEvent(new Event('change'));
+    var seg = el.querySelectorAll('.st-predict .seg button'), send = el.querySelector('.controls .btn');
+    seg[0].click(); send.click(); // "It answers at once": wrong
+    var text = el.querySelector('.st-out').textContent, now = el.querySelector('.st-layer[aria-current="step"]');
+    var locked = seg[3].disabled;
+    seg[3].click(); send.click();
+    var after = el.querySelector('.st-out').textContent;
+    el.remove();
+    return eq([/FAIL/.test(text), /Decided here/.test(text), now && /3 Gate/.test(now.textContent) && /Decided here/.test(now.textContent), locked, after === text], [true, true, true, true, true]);
+  });
+  test('studio: in each drawing each arrow that is a button can have the focus', function () {
+    var el = mount('studioDiagram', { diagram: 'system', level: '1' });
+    var edges = [].slice.call(el.querySelectorAll('svg [role="button"][aria-label^="Connection"]'));
+    var all = edges.every(function (g) { return g.hasAttribute('tabindex'); });
+    edges[0].focus(); edges[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    var moved = document.activeElement === edges[1];
+    el.remove();
+    return eq([edges.length > 0, all, moved], [true, true, true]);
+  });
+  test('studio: a change of the lens paints the panel of the selected item again', function () {
+    var el = mount('studioDiagram', { diagram: 'system', level: '1' });
+    var gate = el.querySelector('svg [data-id="gate"]') || [].filter.call(el.querySelectorAll('svg [role="button"]'), function (g) { return /Permitted-action gate/.test(g.getAttribute('aria-label') || g.textContent); })[0];
+    gate.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    var before = el.querySelector('.st-panel').textContent;
+    [].filter.call(el.querySelectorAll('.seg button'), function (b) { return /3/.test(b.textContent); })[0].click();
+    var after = el.querySelector('.st-panel').textContent;
+    el.remove();
+    return eq([/Not in the drawing at level 1/.test(before), /Not in the drawing/.test(after), /Permitted-action gate/.test(after)], [true, false, true]);
+  });
+  test('studio: the explorer keeps the focus on the file button that the person used', function () {
+    if (!SF) return true;
+    var el = mount('studioExplorer');
+    var b = el.querySelectorAll('.st-filebtn')[1];
+    b.focus(); b.click();
+    var ok = [document.activeElement === b, b.getAttribute('aria-pressed'), el.querySelectorAll('.st-filebtn[aria-pressed="true"]').length];
+    el.remove();
+    return eq(ok, [true, 'true', 1]);
+  });
+  test('studio: the insights instrument gives an observation, interpretations and an option', function () {
+    var el = mount('studioInsights');
+    var text = el.querySelector('.st-insights').textContent;
+    el.remove();
+    return eq([/Observation/.test(text), /Possible interpretations/.test(text), /An option/.test(text)], [true, true, true]);
+  });
+
+  Promise.all(pending).then(function () {
+    var summary = document.getElementById('summary');
+    GE.clear(summary);
+    summary.appendChild(GE.stamp(fail ? 'FAIL' : 'PASS'));
+    summary.appendChild(document.createTextNode(' ' + pass + ' of ' + (pass + fail) + ' assertions are correct.'));
+    window.__tests = { pass: pass, fail: fail };
+  });
 })(window.GE);
 </script>
 </body>

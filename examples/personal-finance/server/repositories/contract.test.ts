@@ -10,7 +10,7 @@ import { openDatabase, sqliteStores } from './sqlite.ts';
 
 const expense = (n: number, over: Partial<Expense> = {}): Expense => ({
   id: 'exp_' + n, idempotency_key: 'key-000' + n, occurred_on: '2026-03-14', amount_cents: 18500, currency: 'ZAR',
-  merchant_name: 'Woolworths', merchant_key: 'woolworths', category_id: 'groceries', note: null, created_at: '2026-03-14T10:00:0' + n + '.000Z', ...over,
+  merchant_name: 'Woolworths', merchant_key: 'woolworths', category_id: 'groceries', note: null, account: 'main', created_at: '2026-03-14T10:00:0' + n + '.000Z', ...over,
 });
 
 const implementations: Array<[string, () => Stores]> = [
@@ -28,7 +28,7 @@ describe.each(implementations)('the stores: %s', (_name, make) => {
   test('the seed gives categories and budgets, and a second seed changes nothing', () => {
     const stores = fresh();
     seed(stores, '2026-03');
-    expect(stores.categories.get('groceries')).toEqual({ id: 'groceries', name: 'Groceries', active: true });
+    expect(stores.categories.get('groceries')).toEqual({ id: 'groceries', name: 'Groceries', active: true, kind: 'consumption', class: 'variable' });
     expect(stores.categories.get('gym')?.active).toBe(false);
     expect(stores.budgets.find('groceries', '2026-03')?.limit_cents).toBe(450_000);
     expect(stores.budgets.find('entertainment', '2026-03')).toBeNull();
@@ -36,8 +36,9 @@ describe.each(implementations)('the stores: %s', (_name, make) => {
 
   test('an expense that goes in comes out the same', () => {
     const stores = fresh();
-    stores.expenses.insert(expense(1, { note: 'milk' }));
-    expect(stores.expenses.findByKey('key-0001')).toEqual(expense(1, { note: 'milk' }));
+    stores.expenses.insert(expense(1, { note: 'milk', account: 'northbank-current' }));
+    expect(stores.expenses.findByKey('key-0001')).toEqual(expense(1, { note: 'milk', account: 'northbank-current' }));
+    expect(stores.expenses.listBetween('2026-03-14', '2026-03-14')[0]!.account).toBe('northbank-current');
     expect(stores.expenses.findByKey('key-9999')).toBeNull();
   });
 

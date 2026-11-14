@@ -12,12 +12,15 @@ import type { App } from './http/handlers.ts';
 import { sqliteImportStore } from './import/line-worker.ts';
 import { claudeSuggester } from './intelligence/claude-suggester.ts';
 import { sqliteMerchantMemory } from './intelligence/merchant-memory.ts';
+import { claudeInterpreter } from './intelligence/permitted/claude-interpreter.ts';
 import { createHttpServer } from './http/server.ts';
+import { sqliteAssistStore } from './repositories/assist-store.ts';
 import { seed } from './repositories/seed.ts';
 import { openDatabase, sqliteStores } from './repositories/sqlite.ts';
 
 const config = readConfig();
 const db = openDatabase(config.dbFile);
+// The SQLite stores: expenses, categories, budgets, and the plan and income stores of planning.
 const stores = sqliteStores(db);
 seed(stores, periodOf(systemClock.today()));
 
@@ -29,8 +32,12 @@ const app: App = {
   memory: sqliteMerchantMemory(db),
   suggester: config.ai ? claudeSuggester(config.ai) : undefined,
   dailyCap: config.ai?.dailyCap,
-  // Level 4: the store of the import checkpoints.
+  // Level 3: the store of the import checkpoints.
   batches: sqliteImportStore(db),
+  // Level 3: the assist path. The interpreter uses the same key, the same model setting and the same budget
+  // as the suggester. No key: no interpreter. The store keeps the audit records and the proposals.
+  interpreter: config.ai ? claudeInterpreter(config.ai) : undefined,
+  assistStore: sqliteAssistStore(db),
 };
 
 const webDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'web', 'dist');

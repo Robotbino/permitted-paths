@@ -3,7 +3,7 @@ import { merchantKey, toProposal } from './expense.ts';
 import { checkRules, onlyNeedsConfirmation, type ExpenseFacts } from './expense-rules.ts';
 
 const proposal = toProposal({ idempotency_key: 'key-0001', amount_cents: 18500, currency: 'ZAR', occurred_on: '2026-03-14', merchant_name: 'Woolworths', category_id: 'groceries' });
-const facts: ExpenseFacts = { today: '2026-03-14', category: { id: 'groceries', name: 'Groceries', active: true }, similar_ids: [] };
+const facts: ExpenseFacts = { today: '2026-03-14', category: { id: 'groceries', name: 'Groceries', active: true, kind: 'consumption', class: 'variable' }, similar_ids: [] };
 const rules = (f: Partial<ExpenseFacts>, confirmed = false) => checkRules(proposal, { ...facts, ...f }, confirmed).map((p) => p.rule);
 
 test('a sensible proposal has no problem', () => {
@@ -17,7 +17,7 @@ test('R5: the date is not after today', () => {
 
 test('R6: the category is an active category of the store', () => {
   expect(rules({ category: null })).toEqual(['R6']);
-  expect(rules({ category: { id: 'gym', name: 'Gym', active: false } })).toEqual(['R6']);
+  expect(rules({ category: { id: 'gym', name: 'Gym', active: false, kind: 'consumption', class: 'free' } })).toEqual(['R6']);
 });
 
 test('R7: a similar expense needs a confirmation of the person', () => {

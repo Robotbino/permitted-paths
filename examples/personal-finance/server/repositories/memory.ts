@@ -3,6 +3,7 @@
 import type { Budget, Category, Expense } from '../../shared/contracts.ts';
 import { monthRange } from '../domain/budget.ts';
 import { DuplicateKey } from '../errors.ts';
+import { memoryPlanStores } from './memory-plan.ts';
 import type { Stores } from './ports.ts';
 
 export function memoryStores(): Stores {
@@ -30,6 +31,11 @@ export function memoryStores(): Stores {
           .sort((a, b) => (a.occurred_on === b.occurred_on ? b.created_at.localeCompare(a.created_at) || b.id.localeCompare(a.id) : b.occurred_on.localeCompare(a.occurred_on)))
           .slice(0, limit)
           .map((e) => ({ ...e })),
+      listBetween: (from, toInclusive) =>
+        expenses
+          .filter((e) => e.occurred_on >= from && e.occurred_on <= toInclusive)
+          .sort((a, b) => a.occurred_on.localeCompare(b.occurred_on) || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))
+          .map((e) => ({ ...e })),
     },
     categories: {
       get: (id) => categories.get(id) ?? null,
@@ -40,5 +46,6 @@ export function memoryStores(): Stores {
       find: (category_id, period) => budgets.get(category_id + '|' + period) ?? null,
       upsert: (budget) => void budgets.set(budget.category_id + '|' + budget.period, { ...budget }),
     },
+    ...memoryPlanStores(),
   };
 }

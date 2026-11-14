@@ -1,19 +1,28 @@
 {
-  "about": "For each source file: the level that introduced it, the later levels that changed it, and its one responsibility. tests/architecture.test.ts checks this file. The course page reads it.",
+  "about": "For each source file: the level that introduced it (1, 2 or 3), the later levels that changed it, and its one responsibility. tests/architecture.test.ts checks this file. The course page reads it.",
   "levels": {
-    "1": "Ordinary software",
-    "2": "Graph structure",
-    "3": "Intelligence layer",
-    "4": "Orchestration"
+    "1": "An ordinary application",
+    "2": "Structured workflows",
+    "3": "A model inside permitted paths"
   },
   "files": {
+    "shared/dates.ts": {
+      "level": 1,
+      "role": "A check that text is a real calendar date. It imports nothing."
+    },
     "shared/money.ts": {
       "level": 1,
-      "role": "Money as integer cents: text to cents, cents to text."
+      "role": "Money as integer cents: text to cents, cents to text, a percentage of an amount.",
+      "modified": [
+        3
+      ]
     },
     "shared/money.test.ts": {
       "level": 1,
-      "role": "Proves that amounts are exact."
+      "role": "Proves that amounts are exact.",
+      "modified": [
+        3
+      ]
     },
     "shared/contracts.ts": {
       "level": 1,
@@ -32,8 +41,7 @@
       "role": "Composition root: makes all the parts and connects them.",
       "modified": [
         2,
-        3,
-        4
+        3
       ]
     },
     "server/config.ts": {
@@ -79,7 +87,7 @@
     },
     "server/repositories/ports.ts": {
       "level": 1,
-      "role": "The interfaces of the stores. Services know only these."
+      "role": "The ports of the stores: expenses, categories, budgets, the plan and the income."
     },
     "server/repositories/memory.ts": {
       "level": 1,
@@ -87,7 +95,10 @@
     },
     "server/repositories/sqlite.ts": {
       "level": 1,
-      "role": "The stores in SQLite. The only SQL of the three tables."
+      "role": "The stores in SQLite. The only SQL of the three tables.",
+      "modified": [
+        3
+      ]
     },
     "server/repositories/migrate.ts": {
       "level": 1,
@@ -103,19 +114,24 @@
     },
     "server/repositories/contract.test.ts": {
       "level": 1,
-      "role": "One suite that the two store implementations must pass."
+      "role": "One suite that the two store implementations must pass.",
+      "modified": [
+        3
+      ]
     },
     "server/repositories/sqlite-file.test.ts": {
       "level": 1,
-      "role": "Proves that data stays in a file, and that the database refuses bad data."
+      "role": "Proves that data stays in a file, and that the database refuses bad data.",
+      "modified": [
+        3
+      ]
     },
     "server/services/record-expense.ts": {
       "level": 1,
       "role": "The use case 'record an expense'. From level 2: a thin facade that runs the graph.",
       "modified": [
         2,
-        3,
-        4
+        3
       ]
     },
     "server/services/record-expense.test.ts": {
@@ -131,8 +147,7 @@
       "role": "One small function for each operation of the API.",
       "modified": [
         2,
-        3,
-        4
+        3
       ]
     },
     "server/http/server.ts": {
@@ -154,16 +169,14 @@
       "level": 1,
       "role": "Owns the screen state and calls the server.",
       "modified": [
-        3,
-        4
+        3
       ]
     },
     "web/src/api.ts": {
       "level": 1,
       "role": "The only file of the web application that calls fetch.",
       "modified": [
-        3,
-        4
+        3
       ]
     },
     "web/src/state.ts": {
@@ -195,8 +208,7 @@
       "level": 1,
       "role": "Mobile-first styles.",
       "modified": [
-        3,
-        4
+        3
       ]
     },
     "tests/architecture.test.ts": {
@@ -210,15 +222,14 @@
       "level": 2,
       "role": "The classes, relations, permitted values and rules R1 to R11, as data.",
       "modified": [
-        3,
-        4
+        3
       ]
     },
     "server/graph/engine.ts": {
       "level": 2,
       "role": "The interpreter of an execution graph. Enforces the state contract.",
       "modified": [
-        4
+        3
       ]
     },
     "server/graph/engine.test.ts": {
@@ -241,11 +252,17 @@
     },
     "server/graph/verifier.ts": {
       "level": 2,
-      "role": "Reads the ledger again with its own queries and compares."
+      "role": "Reads the ledger again with its own queries and compares.",
+      "modified": [
+        3
+      ]
     },
     "server/graph/verifier.test.ts": {
       "level": 2,
-      "role": "Breaks the ledger in five ways; the verifier must give FAIL."
+      "role": "Breaks the ledger in five ways; the verifier must give FAIL.",
+      "modified": [
+        3
+      ]
     },
     "server/graph/trace.ts": {
       "level": 2,
@@ -281,18 +298,16 @@
     },
     "scripts/scenarios.ts": {
       "level": 2,
-      "role": "Named scenarios with the expected status and path.",
+      "role": "The scenario type, the scenarios of the record graph and the suggest graph, the list of all scenarios, and the function that runs one.",
       "modified": [
-        3,
-        4
+        3
       ]
     },
     "scripts/record-runs.ts": {
       "level": 2,
-      "role": "Records each scenario from the real code for the course page.",
+      "role": "Records each scenario from the real code for the course page, with the allowlist, the gate rules and the plan example.",
       "modified": [
-        3,
-        4
+        3
       ]
     },
     "scripts/recordings.test.ts": {
@@ -313,7 +328,7 @@
     },
     "server/intelligence/claude-suggester.ts": {
       "level": 3,
-      "role": "The real model: one Claude API call with a structured output. The only file that imports the SDK."
+      "role": "The real model: one Claude API call with a structured output. One of the two files that import the SDK; the other is the interpreter of the assist path."
     },
     "server/intelligence/prompts/suggest-category.md": {
       "level": 3,
@@ -329,10 +344,7 @@
     },
     "server/intelligence/suggest-category.graph.ts": {
       "level": 3,
-      "role": "The suggest graph: memory, cost control, model, gate. It cannot write the ledger.",
-      "modified": [
-        4
-      ]
+      "role": "The suggest graph: memory, cost control, model, gate. It cannot write the ledger."
     },
     "server/intelligence/suggest-category.paths.test.ts": {
       "level": 3,
@@ -351,52 +363,409 @@
       "role": "Runs level 2 again with no model, a slow model and a broken model."
     },
     "shared/contracts.import.ts": {
-      "level": 4,
-      "role": "The contracts of an import: lines, suggestions, the four ends, the two answers."
-    },
-    "server/import/statement-parser.ts": {
-      "level": 4,
-      "role": "Text of a statement to lines. A bad line is a value, not an exception."
+      "level": 2,
+      "role": "The contracts of an import: the rows of the proposal, the mapping step, the five ends, the answers."
     },
     "server/import/pool.ts": {
-      "level": 4,
+      "level": 3,
       "role": "Runs work for many items, a limited number at the same time."
     },
     "server/import/line-worker.ts": {
-      "level": 4,
-      "role": "The workers: one suggest sub-run or one record sub-run. And the store of checkpoints."
+      "level": 2,
+      "role": "The workers: one suggest sub-run, one record sub-run or one income row. And the store of checkpoints.",
+      "modified": [
+        3
+      ]
     },
     "server/import/reconciler.ts": {
-      "level": 4,
-      "role": "The independent check of an import: each line has exactly one end (R14)."
+      "level": 2,
+      "role": "The independent check of an import: each line has exactly one end, and the ledger agrees (R14)."
     },
     "server/import/import.graph.ts": {
-      "level": 4,
-      "role": "The orchestrator graph: fan-out, one budget, a wait for the person, a resume."
+      "level": 2,
+      "role": "The orchestrator graph: its edges, and the three steps (propose, give a mapping, decide) with a resume."
+    },
+    "server/import/import-state.ts": {
+      "level": 2,
+      "role": "The typed state of the import graph with its owners, the ports of the orchestrator, and the keys."
+    },
+    "server/import/import-nodes.read.ts": {
+      "level": 2,
+      "role": "The nodes that read and propose: inspect, map, await_mapping, stage, classify.",
+      "modified": [
+        3
+      ]
+    },
+    "server/import/import-nodes.write.ts": {
+      "level": 2,
+      "role": "The nodes that act after the decisions: await_person, apply, reconcile, export, respond, reject."
+    },
+    "server/import/ledger-view.ts": {
+      "level": 2,
+      "role": "What an import reads from the ledger: known keys, rows of other accounts, entries for the export."
     },
     "server/import/import.test.ts": {
-      "level": 4,
-      "role": "Parser, pool, reconciler by sabotage, and the whole import in two steps."
+      "level": 2,
+      "role": "Pool, reconciler by sabotage, and the whole import with the sample files: mapping, pairs, duplicates, export."
     },
     "server/repositories/migrations/004_imports.sql": {
-      "level": 4,
+      "level": 2,
       "role": "Table: import_batches (the checkpoints)."
     },
-    "web/src/ImportReview.tsx": {
-      "level": 4,
-      "role": "The review screen of an import: the person decides each line."
+    "server/repositories/migrations/006_import_mapping.sql": {
+      "level": 2,
+      "role": "Table: import_batches again, with the state \"waits for a mapping\"."
     },
-    "fixtures/statement-march.csv": {
-      "level": 4,
-      "role": "A fictional statement with good lines, a bad date and money in."
+    "web/src/ImportReview.tsx": {
+      "level": 2,
+      "role": "The review screen of an import: the account, the rows with their status, the decision of each line."
+    },
+    "web/src/ImportOutcome.tsx": {
+      "level": 2,
+      "role": "The result of an import with the export text to copy, and the form for a mapping."
     },
     "server/intelligence/model-budget.ts": {
       "level": 3,
       "role": "The model calls of one day. A call is reserved before it is made."
     },
     "tests/review-fixes.test.ts": {
-      "level": 4,
+      "level": 3,
       "role": "One test for each defect that the adversarial review found."
+    },
+    "shared/planning/pay-cycle.ts": {
+      "level": 1,
+      "role": "The pay cycle: from payday to the day before the next payday, and its 7-day blocks."
+    },
+    "shared/planning/pay-cycle.test.ts": {
+      "level": 1,
+      "role": "Proves the pay cycle at month ends, year ends and the limits of the payday."
+    },
+    "shared/planning/plan-types.ts": {
+      "level": 1,
+      "role": "The types of the payday plan: the input, the lines, the moves, the plan."
+    },
+    "shared/planning/plan-check.ts": {
+      "level": 1,
+      "role": "The check of the plan input: a wrong number is a problem, not a plan."
+    },
+    "shared/planning/plan-check.test.ts": {
+      "level": 1,
+      "role": "Proves that a plan input with a wrong number is refused."
+    },
+    "shared/planning/plan-sizing.ts": {
+      "level": 1,
+      "role": "How much the person can save (the worst complete cycle) and which pot gets it."
+    },
+    "shared/planning/plan-moves.ts": {
+      "level": 1,
+      "role": "The moves of the day after payday in a fixed order, and the weekly caps."
+    },
+    "shared/planning/plan.ts": {
+      "level": 1,
+      "role": "buildPlan: one pure function from the plan input to the payday plan."
+    },
+    "shared/planning/plan.test.ts": {
+      "level": 1,
+      "role": "Proves each line of the worked example, and the sizing."
+    },
+    "shared/planning/plan-edges.test.ts": {
+      "level": 1,
+      "role": "Proves the priority split, the order of the moves and the warnings."
+    },
+    "shared/planning/plan-example.ts": {
+      "level": 1,
+      "role": "The worked example of the payday plan: one fictional pay cycle."
+    },
+    "shared/planning/pace.ts": {
+      "level": 1,
+      "role": "The status of each week against its cap, and if the savings really moved."
+    },
+    "shared/planning/pace.test.ts": {
+      "level": 1,
+      "role": "Proves the week status at its boundaries and the savings rule."
+    },
+    "shared/planning/insights.ts": {
+      "level": 1,
+      "role": "Insights from the data of a cycle: observation, possible causes, an option."
+    },
+    "shared/planning/insights.test.ts": {
+      "level": 1,
+      "role": "Proves each detector with data that supports it and data that does not."
+    },
+    "shared/planning/insights-edges.test.ts": {
+      "level": 1,
+      "role": "Proves the insights for a cycle in progress, refunds and unsafe keys."
+    },
+    "shared/pipeline/index.ts": {
+      "level": 2,
+      "role": "runPipeline: raw text to staged rows through five deterministic stages."
+    },
+    "shared/pipeline/index.test.ts": {
+      "level": 2,
+      "role": "Proves the whole pipeline on the three sample files."
+    },
+    "shared/pipeline/inspect.ts": {
+      "level": 2,
+      "role": "Stage 1: raw text to a header and rows of cells."
+    },
+    "shared/pipeline/inspect.test.ts": {
+      "level": 2,
+      "role": "Proves the delimiter, the quoting and the problems of the inspect stage."
+    },
+    "shared/pipeline/profiles.ts": {
+      "level": 2,
+      "role": "Stages 2 and 3: the mapping profiles of two fictional banks, and the gate for any mapping."
+    },
+    "shared/pipeline/profiles.test.ts": {
+      "level": 2,
+      "role": "Proves the profile match and the mapping gate."
+    },
+    "shared/pipeline/mapping-shape.ts": {
+      "level": 2,
+      "role": "The shape check of a mapping at run time. It never throws."
+    },
+    "shared/pipeline/values.ts": {
+      "level": 2,
+      "role": "The readers of one date and one amount, shared by the gate and the normalise stage."
+    },
+    "shared/pipeline/clean.ts": {
+      "level": 2,
+      "role": "The clean description of a row, with only a safe part of the expression language."
+    },
+    "shared/pipeline/normalise.ts": {
+      "level": 2,
+      "role": "Stage 4: rows of cells to staged rows with provenance and a fingerprint."
+    },
+    "shared/pipeline/normalise.test.ts": {
+      "level": 2,
+      "role": "Proves dates, cents, directions and provenance of the normalise stage."
+    },
+    "shared/pipeline/reconcile.ts": {
+      "level": 2,
+      "role": "Stage 5: each staged row gets a status; only a new row is a candidate for the ledger."
+    },
+    "shared/pipeline/reconcile.test.ts": {
+      "level": 2,
+      "role": "Proves each status of the reconcile stage."
+    },
+    "shared/pipeline/transfers.ts": {
+      "level": 2,
+      "role": "The transfer rule: a move between two own accounts, matched by amount and date."
+    },
+    "shared/pipeline/balance.ts": {
+      "level": 2,
+      "role": "The balance check of a batch that has a running balance."
+    },
+    "shared/pipeline/samples.ts": {
+      "level": 2,
+      "role": "Three synthetic sample files of two fictional banks."
+    },
+    "shared/pipeline/review-gate.test.ts": {
+      "level": 2,
+      "role": "Review repairs: the mapping gate gives problems for any value."
+    },
+    "shared/pipeline/review-rows.test.ts": {
+      "level": 2,
+      "role": "Review repairs: a wrong amount or direction is never staged as new."
+    },
+    "shared/export/paste-rows.ts": {
+      "level": 2,
+      "role": "Ledger entries to tab-separated rows that a person pastes into a budget sheet."
+    },
+    "shared/export/paste-rows.test.ts": {
+      "level": 2,
+      "role": "Proves the columns, the notes and the safe cells of the export."
+    },
+    "server/intelligence/permitted/capabilities.ts": {
+      "level": 3,
+      "role": "The allowlist: the complete list of what a model is permitted to request (R15)."
+    },
+    "server/intelligence/permitted/capabilities.test.ts": {
+      "level": 3,
+      "role": "Fixes the allowlist: a new capability needs a change that a person reviews."
+    },
+    "server/intelligence/permitted/inputs.ts": {
+      "level": 3,
+      "role": "The input of each capability as a strict Zod schema."
+    },
+    "server/intelligence/permitted/inputs.test.ts": {
+      "level": 3,
+      "role": "Proves the input schemas and that the allowlist is frozen."
+    },
+    "server/intelligence/permitted/action-gate.ts": {
+      "level": 3,
+      "role": "The action gate: four checks of each request of a model; the first FAIL stops it."
+    },
+    "server/intelligence/permitted/action-gate.test.ts": {
+      "level": 3,
+      "role": "The gate check by check, with the audit record of each case."
+    },
+    "server/intelligence/permitted/gate-findings.test.ts": {
+      "level": 3,
+      "role": "Review repairs of the gate: untrusted check answers, frozen results, clean texts."
+    },
+    "server/intelligence/permitted/verify.ts": {
+      "level": 3,
+      "role": "Check 4 of the gate: the application verifies the input against its own facts (R16)."
+    },
+    "server/intelligence/permitted/audit.ts": {
+      "level": 3,
+      "role": "The short audit record of one request at the gate, and the helpers for safe text."
+    },
+    "server/intelligence/permitted/execute.ts": {
+      "level": 3,
+      "role": "The last step: only the application executes (R18), and a change waits for the person (R17)."
+    },
+    "server/intelligence/permitted/execute.test.ts": {
+      "level": 3,
+      "role": "Proves that only a PROPOSED result executes and a change waits for the person."
+    },
+    "server/intelligence/permitted/execute-findings.test.ts": {
+      "level": 3,
+      "role": "Review repairs of execute: the input is checked again and runs one time."
+    },
+    "server/intelligence/permitted/interpreter.ts": {
+      "level": 3,
+      "role": "The port of the model that reads a request of the person in plain words."
+    },
+    "server/intelligence/permitted/interpreter.test.ts": {
+      "level": 3,
+      "role": "The stand-in interpreter and the adapter of the real model with a stand-in client."
+    },
+    "server/intelligence/permitted/fake-interpreter.ts": {
+      "level": 3,
+      "role": "A predictable stand-in for the interpreter, for tests and recordings."
+    },
+    "server/intelligence/permitted/fake-findings.test.ts": {
+      "level": 3,
+      "role": "Review repairs of the stand-in interpreter."
+    },
+    "server/intelligence/permitted/claude-interpreter.ts": {
+      "level": 3,
+      "role": "The adapter of the real model for the interpreter port: one call through the SDK."
+    },
+    "server/intelligence/permitted/adapter-findings.test.ts": {
+      "level": 3,
+      "role": "Review repairs of the adapter of the real model, with a stand-in client."
+    },
+    "server/intelligence/permitted/flat-answer.ts": {
+      "level": 3,
+      "role": "The flat answer of the real model, and its change into a value of the port."
+    },
+    "server/intelligence/permitted/prompts/interpret-intent.md": {
+      "level": 3,
+      "role": "The system prompt of the interpreter."
+    },
+    "shared/contracts.plan.ts": {
+      "level": 1,
+      "role": "The contracts of planning: settings, commitments, pots, income, and the plan view."
+    },
+    "server/repositories/migrations/005_planning.sql": {
+      "level": 1,
+      "role": "Columns for the kind and class of a category and the account of an expense; tables: income, commitments, savings_pots, plan_settings."
+    },
+    "server/repositories/memory-plan.ts": {
+      "level": 1,
+      "role": "The plan store and the income store in memory."
+    },
+    "server/repositories/sqlite-plan.ts": {
+      "level": 1,
+      "role": "The plan store and the income store in SQLite."
+    },
+    "server/repositories/plan-contract.test.ts": {
+      "level": 1,
+      "role": "One suite for the plan, income and listBetween stores, on memory and on SQLite.",
+      "modified": [
+        3
+      ]
+    },
+    "server/services/plan-cycle.ts": {
+      "level": 1,
+      "role": "The use case \"show the plan of one pay cycle\": each figure is calculated from stored rows.",
+      "modified": [
+        3
+      ]
+    },
+    "server/services/plan-ledger.ts": {
+      "level": 1,
+      "role": "Reads the ledger for the plan: the income of a cycle, the history of earlier cycles, the totals of this cycle.",
+      "modified": [
+        3
+      ]
+    },
+    "server/services/plan-cycle.test.ts": {
+      "level": 1,
+      "role": "The plan service with the stores in memory: the worked example, the history, the weeks, the headline.",
+      "modified": [
+        3
+      ]
+    },
+    "server/http/plan-api.test.ts": {
+      "level": 1,
+      "role": "GET /api/plan and GET /api/weeks through HTTP."
+    },
+    "shared/contracts.assist.ts": {
+      "level": 3,
+      "role": "The contract of the assist path: the request, each status of the answer, the proposal, the decision, the audit record."
+    },
+    "server/repositories/migrations/007_assist.sql": {
+      "level": 3,
+      "role": "Tables: assist_audit and assist_proposals."
+    },
+    "server/repositories/assist-store.ts": {
+      "level": 3,
+      "role": "The store of the audit records and the proposals of the assist path: the port, memory and SQLite."
+    },
+    "server/repositories/assist-contract.test.ts": {
+      "level": 3,
+      "role": "One suite for the store of the assist path, on memory and on SQLite."
+    },
+    "server/services/assist.ts": {
+      "level": 3,
+      "role": "The use case \"read a request in plain words\": the model recommends, the gate validates, a change becomes a stored proposal."
+    },
+    "server/services/assist-checks.ts": {
+      "level": 3,
+      "role": "The real Checks of the action gate: categories, import batches, the dry run of a mapping, the consequences of an allowance change (BR4)."
+    },
+    "server/services/assist-executors.ts": {
+      "level": 3,
+      "role": "The executors of the assist path: services of the application, one for each capability (R18)."
+    },
+    "server/services/assist-decide.ts": {
+      "level": 3,
+      "role": "The decision of the person for one proposal: decline, or the gate again and then execute, one time (R17)."
+    },
+    "server/services/assist.test.ts": {
+      "level": 3,
+      "role": "The assist path with the stand-in interpreter: each status, the approval, and a ledger that stays the same."
+    },
+    "server/http/assist-api.test.ts": {
+      "level": 3,
+      "role": "POST /api/assist and the decide endpoint through HTTP, for the four capabilities."
+    },
+    "scripts/world.ts": {
+      "level": 2,
+      "role": "The world of a scenario: the real application with SQLite in memory, a fixed clock, stand-in models and a real HTTP server.",
+      "modified": [
+        3
+      ]
+    },
+    "scripts/scenarios.import.ts": {
+      "level": 2,
+      "role": "The scenarios of the import graph: two banks, the same file two times, an unknown layout, a mapping that fails."
+    },
+    "scripts/scenarios.assist.ts": {
+      "level": 3,
+      "role": "The scenarios of the assist path (each end of the permitted path) and of the plan of the worked example."
+    },
+    "scripts/scenarios.test.ts": {
+      "level": 3,
+      "role": "For each import, assist and plan scenario: status, path, answer, rows; and the shape of the recording."
+    },
+    "tests/hardening.test.ts": {
+      "level": 3,
+      "role": "One test for each defect that the final hardening pass repaired."
     }
   }
 }

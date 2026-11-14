@@ -4,6 +4,7 @@
 // It does not call sumForCategory and it does not call monthRange. It reads the raw rows and adds them.
 import type { DatabaseSync } from 'node:sqlite';
 import type { BudgetStatus, Expense, Problem } from '../../shared/contracts.ts';
+import type { Income } from '../../shared/contracts.plan.ts';
 import type { ExpenseProposal } from '../domain/expense.ts';
 import { StorageUnavailable } from '../errors.ts';
 import type { Stores } from '../repositories/ports.ts';
@@ -12,6 +13,8 @@ import type { Stores } from '../repositories/ports.ts';
 export interface LedgerReader {
   rowsForKey(idempotency_key: string): Expense[];
   amountsInMonth(category_id: string, period: string): number[];
+  /** The income rows of one request key. The reconciler of an import uses it. */
+  incomeRowsForKey(idempotency_key: string): Income[];
 }
 
 /** The last day of a month, by the calendar: day 0 of the subsequent month. */
@@ -34,6 +37,7 @@ export function sqliteLedgerReader(db: DatabaseSync): LedgerReader {
       guard(() =>
         db.prepare('SELECT amount_cents FROM expenses WHERE category_id = ? AND occurred_on BETWEEN ? AND ?').all(category_id, period + '-01', lastDay(period)).map((row) => Number(row.amount_cents)),
       ),
+    incomeRowsForKey: (key) => guard(() => db.prepare('SELECT * FROM income WHERE idempotency_key = ?').all(key).map((row) => ({ ...row }) as Income)),
   };
 }
 
@@ -45,6 +49,10 @@ export function ledgerReaderFromStores(stores: Stores): LedgerReader {
       return row ? [row] : [];
     },
     amountsInMonth: (category_id, period) => stores.expenses.listRecent(period, 100_000).filter((e) => e.category_id === category_id).map((e) => e.amount_cents),
+    incomeRowsForKey(key) {
+      const row = stores.income.findByKey(key);
+      return row ? [row] : [];
+    },
   };
 }
 

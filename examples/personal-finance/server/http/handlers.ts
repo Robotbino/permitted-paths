@@ -4,20 +4,31 @@
 import { periodOf } from '../domain/expense.ts';
 import { AppError } from '../errors.ts';
 import { ledgerReaderFromStores } from '../graph/verifier.ts';
-import { decideImport, startImport, type ImportDeps } from '../import/import.graph.ts';
-import { recordWorker, suggestWorker, type ImportStore } from '../import/line-worker.ts';
+import { decideImport, mapImport, startImport, type ImportDeps } from '../import/import.graph.ts';
+import { ledgerView } from '../import/ledger-view.ts';
+import { incomeWorker, recordWorker, suggestWorker, type ImportStore } from '../import/line-worker.ts';
 import { modelBudget, type ModelBudget } from '../intelligence/model-budget.ts';
+import type { IntentInterpreter } from '../intelligence/permitted/interpreter.ts';
 import { suggestCategory, type SuggestDeps } from '../intelligence/suggest-category.graph.ts';
+import { memoryAssistStore, type AssistStore } from '../repositories/assist-store.ts';
+import { assist, decide, type AssistDeps } from '../services/assist.ts';
 import { monthSummary } from '../services/month-summary.ts';
+import { planCycle, weeksOfCycle } from '../services/plan-cycle.ts';
 import { recordExpense, type RecordExpenseDeps } from '../services/record-expense.ts';
 
 /** All that the handlers can use. main.ts makes it one time. */
-export type App = RecordExpenseDeps & Pick<SuggestDeps, 'suggester'> & { dailyCap?: number; budget?: ModelBudget; batches?: ImportStore; importBudget?: number };
+export type App = RecordExpenseDeps & Pick<SuggestDeps, 'suggester'> & {
+  dailyCap?: number; budget?: ModelBudget; batches?: ImportStore; importBudget?: number;
+  /** Level 3, the assist path. No interpreter: the AI is off. The store is made at the first use if main.ts gave none. */
+  interpreter?: IntentInterpreter; assistStore?: AssistStore;
+};
 
-/** The one budget of model calls of the application. It is made at the first use. */
+const assistStoreOf = (app: App): AssistStore => (app.assistStore ??= memoryAssistStore());
+
+/** The one budget of model calls of the application: suggestions and the assist path use it. It is made at the first use. */
 function budgetOf(app: App): ModelBudget {
-  const trace = app.trace;
-  return (app.budget ??= modelBudget(app.dailyCap ?? 50, app.clock, trace ? (day) => trace.countSteps('ask_model', day) : undefined));
+  // After a start of the server, the count of the day comes from the trace (suggestions) and the audit (assist).
+  return (app.budget ??= modelBudget(app.dailyCap ?? 50, app.clock, (day) => (app.trace?.countSteps('ask_model', day) ?? 0) + assistStoreOf(app).countModelCalls(day)));
 }
 
 /** What the suggest graph gets. Look at what is absent: no store of expenses, and a memory that can only read. */
@@ -45,6 +56,11 @@ export const HANDLERS: Handler[] = [
     handle: (app, request) => ({ status: 200, body: monthSummary(app.stores, request.query.get('period') ?? periodOf(app.clock.today())) }),
   },
 
+  // The plan of the pay cycle that contains the date (without a date: today). Each figure is calculated from stored rows.
+  { method: 'GET', path: '/api/plan', handle: (app, request) => ({ status: 200, body: planCycle(app, request.query.get('date') ?? undefined) }) },
+  // Only the weeks of that cycle, the pace and the savings.
+  { method: 'GET', path: '/api/weeks', handle: (app, request) => ({ status: 200, body: weeksOfCycle(app, request.query.get('date') ?? undefined) }) },
+
   {
     method: 'POST',
     path: '/api/expenses',
@@ -66,12 +82,27 @@ export const HANDLERS: Handler[] = [
     },
   },
 
-  // Level 4. Import a statement, in two steps. Step 1 proposes; step 2 records what the person decided.
+  // Level 3. Import a statement, in steps. Step 1 proposes, or asks for a mapping when the layout is not known.
+  // The mapping step gives the mapping. The last step records what the person decided.
   { method: 'POST', path: '/api/imports', handle: async (app, request) => ({ status: 200, body: await startImport(importDeps(app), request.body) }) },
+  {
+    method: 'POST',
+    path: /^\/api\/imports\/([\w-]+)\/mapping$/,
+    handle: async (app, request) => ({ status: 200, body: await mapImport(importDeps(app), request.params[0]!, request.body) }),
+  },
   {
     method: 'POST',
     path: /^\/api\/imports\/([\w-]+)\/decide$/,
     handle: async (app, request) => ({ status: 200, body: await decideImport(importDeps(app), request.params[0]!, request.body) }),
+  },
+
+  // Level 3. The assist path. The first request asks the model and the action gate; it changes no data.
+  // The second request is the decision of the person for one stored proposal. Only then the application executes.
+  { method: 'POST', path: '/api/assist', handle: async (app, request) => ({ status: 200, body: await assist(assistDeps(app), request.body) }) },
+  {
+    method: 'POST',
+    path: /^\/api\/assist\/([\w-]+)\/decide$/,
+    handle: async (app, request) => ({ status: 200, body: await decide(assistDeps(app), request.params[0]!, request.body) }),
   },
 
   // Level 2. The trace of one run: each step, PASS or FAIL, the edge, and the state after the step.
@@ -86,7 +117,7 @@ export const HANDLERS: Handler[] = [
   },
 ];
 
-/** Level 4. The ports of the import orchestrator, made from the parts of the application. */
+/** Level 3. The ports of the import orchestrator, made from the parts of the application. */
 function importDeps(app: App): ImportDeps {
   if (!app.batches) throw new AppError('NOT_FOUND');
   const suggestDeps = suggestDepsOf(app);
@@ -95,8 +126,19 @@ function importDeps(app: App): ImportDeps {
     ledger: app.ledger ?? ledgerReaderFromStores(app.stores),
     knows: (merchant_key) => app.memory?.recall(merchant_key) != null,
     suggestLine: (merchant_name, withModel, parent) => suggestWorker(suggestDeps, merchant_name, withModel, parent),
-    recordLine: (line, category_id, key, suggest_run_id, parent) => recordWorker(app, line, category_id, key, suggest_run_id, parent),
+    recordLine: (row, category_id, key, suggest_run_id, parent, fileConfirms) => recordWorker(app, row, category_id, key, suggest_run_id, parent, fileConfirms),
+    recordIncome: (row, key) => incomeWorker({ income: app.stores.income, clock: app.clock, ids: app.ids }, row, key),
+    ...ledgerView(app.stores),
     // One import gets 20 model calls at most, and not more than what is left of the day. The calls are reserved now.
     reserveModelCalls: (n) => (app.suggester ? budgetOf(app).reserve(Math.min(n, app.importBudget ?? 20)) : 0),
+  };
+}
+
+/** Level 3. What the assist service gets. The executors are services of the application: the suggest graph and the mapping step of the import. */
+function assistDeps(app: App): AssistDeps {
+  return {
+    stores: app.stores, clock: app.clock, ids: app.ids, assist: assistStoreOf(app), interpreter: app.interpreter, budget: budgetOf(app), batches: app.batches,
+    suggest: (merchant_name) => suggestCategory(suggestDepsOf(app), { merchant_name }),
+    resumeMapping: (batch_id, mapping) => mapImport(importDeps(app), batch_id, { mapping }),
   };
 }
