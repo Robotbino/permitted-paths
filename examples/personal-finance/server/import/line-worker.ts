@@ -13,7 +13,7 @@ import { recordExpense, type RecordExpenseDeps } from '../services/record-expens
 /** One suggest sub-run for one merchant. `withModel: false`: the orchestrator gave this merchant no model call. */
 export async function suggestWorker(deps: SuggestDeps, merchant_name: string, withModel: boolean, parent_run_id: string): Promise<{ suggestion: LineSuggestion; reason: string }> {
   try {
-    const response = await suggestCategory({ ...deps, suggester: withModel ? deps.suggester : undefined, parent_run_id }, { merchant_name });
+    const response = await suggestCategory({ ...deps, suggester: withModel ? deps.suggester : undefined, preapproved: withModel, parent_run_id }, { merchant_name });
     return { suggestion: response.suggestion ? { ...response.suggestion, run_id: response.run_id } : null, reason: response.reason };
   } catch {
     return { suggestion: null, reason: 'WORKER_FAILED' }; // a failed worker is "no suggestion" for its merchant only
@@ -38,6 +38,7 @@ export async function recordWorker(deps: RecordExpenseDeps, line: StatementLine,
   }
 }
 
+/** `checkpoint`: while the batch waits, the state at the node await_person. When it is DONE, the final state with the result. */
 export type ImportBatch = { id: string; created_at: string; status: 'WAITING_FOR_PERSON' | 'DONE'; run_id: string; checkpoint: unknown };
 
 export interface ImportStore {

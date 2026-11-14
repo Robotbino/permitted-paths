@@ -6,11 +6,16 @@ export type ExpenseProposal = Omit<RecordExpenseRequest, 'idempotency_key' | 'co
 
 /** "  Woolworths  Food " and "WOOLWORTHS FOOD" are the same merchant: "woolworths food". */
 export function merchantKey(name: string): string {
-  return name
-    .toLowerCase()
+  // Letters and digits of each script stay ("Müller" and "Muller" are one merchant; a name in
+  // Cyrillic or Japanese keeps its own key). Accents, case, spaces and punctuation go away.
+  const key = name
     .normalize('NFKD')
-    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\p{M}+/gu, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
+  // A name with no letter and no digit ("***") must not have the empty key: all such names would be one merchant.
+  return key !== '' ? key : name.trim().toLowerCase();
 }
 
 export function toProposal(request: RecordExpenseRequest): ExpenseProposal {

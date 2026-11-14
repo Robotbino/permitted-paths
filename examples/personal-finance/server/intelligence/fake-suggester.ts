@@ -14,13 +14,14 @@ const KEYWORDS: Array<[word: string, category_id: string]> = [
   ['ster-kinekor', 'entertainment'], ['showmax', 'entertainment'],
 ];
 
-export function fakeSuggester(behaviour: FakeBehaviour = 'answer'): CategorySuggester & { calls: SuggesterInput[] } {
+export function fakeSuggester(behaviour: FakeBehaviour = 'answer', latencyMs = 0): CategorySuggester & { calls: SuggesterInput[] } {
   const calls: SuggesterInput[] = [];
   return {
     model: 'stand-in',
     calls,
     async suggest(input): Promise<SuggesterOutput> {
       calls.push(input);
+      if (latencyMs > 0) await new Promise((done) => setTimeout(done, latencyMs));
       if (behaviour === 'throw') throw new Error('the stand-in was told to throw');
       if (behaviour === 'timeout') return { status: 'TIMEOUT', detail: 'No answer in the permitted time.' };
       if (behaviour === 'not_permitted') return { status: 'OK', category_id: 'crypto-investments', input_tokens: 60, output_tokens: 8 };

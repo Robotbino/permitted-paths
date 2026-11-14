@@ -1,12 +1,13 @@
 // The stores in SQLite, through the module node:sqlite that is part of Node.
 // This is the only file that contains SQL for the three tables of level 1.
-// Each failure of the database becomes StorageUnavailable, thus no SQLite error goes out of this file.
+// No SQLite error goes out of this file. A failure becomes one of three errors of the application:
+// DuplicateKey, StoreRejected (the data breaks a rule of the schema) or StorageUnavailable.
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import type { Budget, Category, Expense } from '../../shared/contracts.ts';
 import { monthRange } from '../domain/budget.ts';
-import { DuplicateKey, StorageUnavailable } from '../errors.ts';
+import { DuplicateKey, StorageUnavailable, StoreRejected } from '../errors.ts';
 import { migrate } from './migrate.ts';
 import type { Stores } from './ports.ts';
 
@@ -24,6 +25,7 @@ function guard<T>(operation: () => T): T {
   } catch (error) {
     const text = error instanceof Error ? error.message : String(error);
     if (/UNIQUE constraint failed: expenses\.idempotency_key/.test(text)) throw new DuplicateKey();
+    if (/constraint failed|datatype mismatch|cannot store/i.test(text)) throw new StoreRejected(text);
     throw new StorageUnavailable(text);
   }
 }

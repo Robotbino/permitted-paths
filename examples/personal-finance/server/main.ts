@@ -25,6 +25,7 @@ seed(stores, periodOf(systemClock.today()));
 const app: App = {
   stores, clock: systemClock, ids: randomIds, trace: sqliteTrace(db), ledger: sqliteLedgerReader(db),
   // Level 3: the memory is always there. The model is there only if the environment has a key.
+  // The budget of model calls is made at the first use, from dailyCap and the trace (http/handlers.ts).
   memory: sqliteMerchantMemory(db),
   suggester: config.ai ? claudeSuggester(config.ai) : undefined,
   dailyCap: config.ai?.dailyCap,

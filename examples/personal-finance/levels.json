@@ -389,6 +389,14 @@
     "fixtures/statement-march.csv": {
       "level": 4,
       "role": "A fictional statement with good lines, a bad date and money in."
+    },
+    "server/intelligence/model-budget.ts": {
+      "level": 3,
+      "role": "The model calls of one day. A call is reserved before it is made."
+    },
+    "tests/review-fixes.test.ts": {
+      "level": 4,
+      "role": "One test for each defect that the adversarial review found."
     }
   }
 }

@@ -61,7 +61,8 @@ test('each kind of refusal has its status code', async () => {
 test('the server protects itself', async () => {
   expect((await post('{not json')).status).toBe(400);
   expect((await post(request, { 'Content-Type': 'text/plain' })).status).toBe(415);
-  expect((await post({ ...request, note: 'x'.repeat(20_000) })).status).toBe(400); // larger than the limit
+  const large = await post({ ...request, note: 'x'.repeat(50_000) });
+  expect([large.status, large.body.error.problems[0].text]).toEqual([400, 'The body is larger than 40000 bytes.']); // the limit of the body, not the limit of the note
   expect((await post(request, { 'Content-Type': 'application/json', Origin: 'https://example.com' })).status).toBe(403);
   expect((await fetch(base + '/api/no-such-thing')).status).toBe(404);
 });

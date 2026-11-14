@@ -36,6 +36,7 @@ The application was made in four levels. Each level is one commit with a tag. Ea
 | 2. Graph structure | `studio-l2` | The service becomes an execution graph: typed state with owners, two gates, an independent verifier, a trace with checkpoints | 102 |
 | 3. Intelligence layer | `studio-l3` | An optional category suggestion: merchant memory, cost control, a model behind a port, a suggestion gate | 139 |
 | 4. Orchestration | `studio-l4` | The import of a statement: workers, a bounded pool, one budget, a wait for the person, a reconciler | 155 |
+| After a review | (no tag) | Repairs: the server does not stop on a malformed address; a model call is reserved before it is made; merchant keys for each script; consistent import limits | 169 |
 
 To see what one level changed:
 
@@ -98,5 +99,6 @@ A plan for the Claude apps (Pro, Max, Ultra) is not an API key, and the sign-in 
 - **The server listens only on 127.0.0.1.** It has no sign-in. Do not make it listen on a network before you add authentication and HTTPS. The chapter has a section on this.
 - **One process, one writer.** The record service runs one request at a time.
 - **No offline mode.** The web application has a manifest and no service worker.
-- **Budgets and categories come from the seed.** The slice has no screen that makes them.
+- **Budgets and categories come from the seed.** The slice has no screen that makes them. The seed makes budgets only for the month in which the server starts; a different month shows "No budget".
+- **One import has 100 lines at most.** Divide a longer statement.
 - `node:sqlite` prints an `ExperimentalWarning` on some Node versions. It is not a failure.

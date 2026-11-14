@@ -33,7 +33,14 @@ function importsOf(file: string): { local: string[]; packages: string[] } {
   const text = readFileSync(join(ROOT, file), 'utf8');
   const local: string[] = [];
   const packages: string[] = [];
-  for (const m of text.matchAll(/(?:from|import)\s+'([^']+)'/g)) {
+  // Static imports (on a line that starts with import or export), dynamic imports and require,
+  // with single or double quotes. A sentence in a comment that has the word "from" is not an import.
+  const found = [
+    ...text.matchAll(/^\s*(?:import|export)\b[^\n]*?\bfrom\s*['"]([^'"]+)['"]/gm),
+    ...text.matchAll(/^\s*import\s*['"]([^'"]+)['"]/gm),
+    ...text.matchAll(/\b(?:import|require)\s*\(\s*['"]([^'"]+)['"]\s*\)/g),
+  ];
+  for (const m of found) {
     const target = m[1]!;
     if (target.startsWith('.')) local.push(posix.normalize(posix.join(posix.dirname(file), target)));
     else packages.push(target);
@@ -77,7 +84,7 @@ test('the domain is pure: it imports only the domain and shared/, and no package
 });
 
 test('only server/config.ts reads the environment', () => {
-  const readers = files.filter((f) => isCode(f) && !isTest(f) && f.startsWith('server/') && /process\.env/.test(readFileSync(join(ROOT, f), 'utf8')));
+  const readers = files.filter((f) => isCode(f) && !isTest(f) && f.startsWith('server/') && /process\s*(\.|\[\s*['"])\s*env|\benv\b[^;]*=\s*process\b/.test(readFileSync(join(ROOT, f), 'utf8')));
   expect(readers).toEqual(['server/config.ts']);
 });
 

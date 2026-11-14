@@ -38,6 +38,17 @@ export class StorageUnavailable extends Error {
   }
 }
 
+/**
+ * The database refused the data: a CHECK, a foreign key, a wrong type. The gates must stop such data
+ * before the store, thus this is a defect of the program. It is not StorageUnavailable: a second
+ * attempt cannot succeed. The HTTP layer answers 500.
+ */
+export class StoreRejected extends Error {
+  constructor(detail: string) {
+    super('The store refused the data: ' + detail);
+  }
+}
+
 /** A repository throws this when an insert has a request key that is already in the store. */
 export class DuplicateKey extends Error {
   constructor() {

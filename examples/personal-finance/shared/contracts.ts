@@ -16,15 +16,18 @@ export function isRealDate(text: string): boolean {
   return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
 }
 
+/** Text with no control character. The database does not give such text back the same, and then a replay looks like a different request. */
+const NO_CONTROL = /^[^\u0000-\u001f\u007f]*$/;
+
 /** The request to record one expense. strictObject: a field that is not in the contract is a problem. */
 export const RecordExpenseRequest = z.strictObject({
   idempotency_key: z.string().min(8).max(64),
   amount_cents: z.number().int().min(1).max(MAX_CENTS),
   currency: z.enum(CURRENCIES),
   occurred_on: z.string().refine(isRealDate),
-  merchant_name: z.string().trim().min(1).max(80),
+  merchant_name: z.string().trim().min(1).max(80).regex(NO_CONTROL),
   category_id: z.string().min(1).max(40),
-  note: z.string().max(200).optional(),
+  note: z.string().max(200).regex(NO_CONTROL).optional(),
   confirm_duplicate: z.boolean().optional(),
   /** Level 3: the run of the suggest graph that the person saw. Only for the trace; it changes nothing in the expense. */
   suggest_run_id: z.string().max(40).optional(),

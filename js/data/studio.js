@@ -309,7 +309,7 @@
       ]
     },
     l1_layers: {
-      q: 'You must add the rule "an expense is not more than R50 000". Which one file gets the rule?',
+      q: 'You must add the rule "an expense is not more than R50 000". Where does the rule go?',
       options: [
         { text: 'web/src/ExpenseForm.tsx, because the person must see the problem immediately.', why: 'A rule only in the form is not a rule: a request can come from a script, from the import, or from an old page. The form can show it, but it cannot own it.' },
         { text: 'shared/money.ts and shared/contracts.ts: it is a limit on the value of one field.', correct: true, why: 'It reads only the request, thus it is a rule of shape (R1 has this form already). The web application and the server import the same file.' },
@@ -326,7 +326,7 @@
       ]
     },
     l2_missing: {
-      q: 'The path tests have nine scenarios. Which of these paths has no scenario, and thus no test?',
+      q: 'The path tests have nine scenarios. Which of these paths has no scenario, and no other test?',
       options: [
         { text: 'The store fails one time during the save, then the save is good.', why: 'This is the scenario save_fails_once. It goes through commit, backoff and commit again.' },
         { text: 'The store does not answer when dedupe looks for the request key.', correct: true, why: 'The edge dedupe to escalate exists, and no scenario uses it. The test "the graph is complete" lists it, with two more. An edge with no test is a path that nobody has seen work.' },
@@ -350,10 +350,10 @@
       ]
     },
     l4_budget: {
-      q: 'Three suggest workers start at the same moment. Each one reads "0 model calls today, the limit is 2" from the trace. How many model calls happen?',
+      q: 'A design where each worker counts for itself: three suggest workers start at the same moment, and each one reads "0 model calls today, the limit is 2" from the trace. How many model calls happen?',
       options: [
         { text: 'Two. The third worker sees that the limit is used.', why: 'Each worker read the count before any of them wrote its run to the trace. No worker can see the other two.' },
-        { text: 'Three, if each worker does its own count. Thus the orchestrator counts, one time, before the workers start.', correct: true, why: 'This is why level 4 needs an orchestrator. A limit across parallel workers needs one owner. classify gives a model call to the first merchants and tells the other workers that they have none.' },
+        { text: 'Three. Thus a call is reserved in one step before it is made, and the orchestrator reserves for the whole import.', correct: true, why: 'The first version of this application had this defect, and a review found it: ten requests together made ten calls with a limit of two. Now model-budget.ts counts a call when it is reserved, and classify reserves the calls of an import before the workers start.' },
         { text: 'None. The engine refuses parallel runs.', why: 'The engine runs one graph. The pool starts three runs of the suggest graph, and each is independent.' }
       ]
     },

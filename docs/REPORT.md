@@ -419,3 +419,35 @@ A structural audit of the page, then the corrections that do not change the cont
 - The git tags `studio-l1` to `studio-l4` are local until they are pushed. The file links of the part go to the repository on GitHub, and work there after a push.
 - The page is now about 430 kB, and the two generated data files are about 320 kB more.
 - Some files of the application are longer than the target of 150 lines: the three graph files and the scenarios.
+
+## 2026-11-14: adversarial review of part S, and the repairs
+
+**How.** Three reviews after the part was finished: the author's own checks, and two independent sessions with no knowledge of the author's reasoning. One attacked the application code and ran its attacks. One checked each statement of the chapter against the code.
+
+**Defects of the application, repaired.** Each has a test in `examples/personal-finance/tests/review-fixes.test.ts`.
+
+- *One request stopped the server.* `GET /%` (and `//`) threw outside the error handler of `server/http/server.ts`, and an error that nobody handles ends a Node process. This ran before the Host and Origin checks. Now all the work of a request is inside one function with one `catch`. Reproduced on the real server before the repair; after it the same requests give 404 and 400 and the server answers the next request.
+- *The daily limit of model calls did not hold.* The limit was a count of saved traces, and a run saves its trace after the model answers: ten requests together made ten calls with a limit of two, and a trace that failed to save was a free call. Now `server/intelligence/model-budget.ts` reserves a call in one step before it is made. The import reserves from the same budget.
+- *A merchant name that is not in Latin letters had an empty key*, thus the memory of one merchant was suggested for a different one. The key now keeps the letters and digits of each script.
+- *The limits of an import did not agree*: a statement could be read and then not decided. One import now has 100 lines at most, the first step refuses a longer one with a clear message, and the body limit is in bytes (40 000).
+- *A second decide request on a finished import reported a false reconciliation failure.* It now gets the stored result.
+- *Each SQLite error was "try again later"*, also a constraint that a second attempt cannot pass. Such an error is now `StoreRejected`, a defect, and the graph does not try again.
+- *The web form kept its request key after the form changed*, thus each try after a lost answer gave a conflict. A changed form now gets a new key.
+- Smaller: `Origin: null` gives 403, not 500; text with a control character is refused; the test of the body limit tested the limit of the note; the architecture test now sees double quotes, dynamic imports and `require`.
+
+**Statements of the chapter that were false or too strong, corrected.**
+
+- "The suggest graph gets no store that can write." It got the full merchant memory, which can write. The code changed to make the statement true: the graph now gets a memory with only the method that reads. The text also says that the graph writes its own trace.
+- "Level 1 cannot depend on the graph." The architecture test permits a file that a later level changed. The text now says what the test does check.
+- "`ai-off.test.ts` is the proof." Its first test never enters the suggest graph. The text now says what each of its two tests shows.
+- "SQLite is behind the port, thus a change is one file." SQL is in six files. Corrected.
+- "A test that is not written yet" for an edge that two tests cover. Corrected.
+- The verifier is independent only with the SQLite reader; "each path test fails" was four of nine; the cost estimate was below what the code permits (1,024 output tokens); the trace is written by the services, not by the engine; counts of the parts; two exercises that could not be finished as written.
+
+**Defects of the page, repaired.** On a wide screen the level strip, which stays at the top, covered the heading of each link target inside the part. The eight drawings added about 180 stops for the Tab key; an arrow with no description is now not a stop, and a selected box or arrow says so to a screen reader.
+
+**Not repaired, on purpose.** The parser of a statement refuses some real formats (a header in quotes, a Unicode minus, a comma for thousands); it fails safe. Budgets exist only for the month in which the server starts; the README says so. The architecture test checks imports, not purity: `Date.now()` in the domain passes. The git tags `studio-l1` to `studio-l4` are the code before these repairs.
+
+**Checked.** The application: `npm run check`, 169 tests in 20 files, recordings current; the build; the requests that stopped the server, on the real server. `tests.html`: 116 of 116. The page: a link to a section now stops below the strip; the count of Tab stops in the part.
+
+**What this means for the earlier "Checked" list.** That list was true and it was the author's list. It did not include one attack. The review found 13 defects of the code and about 20 statements of the text to correct, with all tests green.

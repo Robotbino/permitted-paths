@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'vitest';
 import type { Expense } from '../../shared/contracts.ts';
-import { StorageUnavailable } from '../errors.ts';
+import { StorageUnavailable, StoreRejected } from '../errors.ts';
 import { migrate } from './migrate.ts';
 import { seed } from './seed.ts';
 import { openDatabase, sqliteStores } from './sqlite.ts';
@@ -35,8 +35,9 @@ test('the database is the last line of defence: it refuses data that breaks a ru
   const db = openDatabase(':memory:');
   const stores = sqliteStores(db);
   seed(stores, '2026-03');
-  expect(() => stores.expenses.insert({ ...expense, amount_cents: 0 })).toThrow(StorageUnavailable); // CHECK (amount_cents > 0)
-  expect(() => stores.expenses.insert({ ...expense, category_id: 'no-such-category' })).toThrow(StorageUnavailable); // foreign key
+  // StoreRejected, not StorageUnavailable: a second attempt cannot succeed, thus the graph must not try again.
+  expect(() => stores.expenses.insert({ ...expense, amount_cents: 0 })).toThrow(StoreRejected); // CHECK (amount_cents > 0)
+  expect(() => stores.expenses.insert({ ...expense, category_id: 'no-such-category' })).toThrow(StoreRejected); // foreign key
   db.close();
 });
 

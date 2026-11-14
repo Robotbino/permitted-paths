@@ -36,6 +36,8 @@ export type WorldOptions = {
   /** What the memory already knows: [merchant name, category id]. */
   remembered?: Array<[string, string]>;
   dailyCap?: number;
+  /** The stand-in model waits this time before it answers, as a real model does. */
+  latencyMs?: number;
   /** Level 4: the largest number of model calls for one import. */
   importBudget?: number;
 };
@@ -111,7 +113,7 @@ export async function makeWorld(options: WorldOptions = {}): Promise<World> {
   }
   const memory = options.memory ? sqliteMerchantMemory(db) : undefined;
   for (const [name, category_id] of options.remembered ?? []) memory?.remember(merchantKey(name), category_id, '2026-03-01', 'run_seed');
-  const suggester = options.ai && options.ai !== 'off' ? fakeSuggester(options.ai) : undefined;
+  const suggester = options.ai && options.ai !== 'off' ? fakeSuggester(options.ai, options.latencyMs) : undefined;
   const app: App = {
     stores, clock: fixedClock(TODAY), ids: sequentialIds(), trace: memoryTrace(), ledger: sqliteLedgerReader(db), sleep: async () => {},
     memory, suggester, dailyCap: options.dailyCap, batches: memoryImportStore(), importBudget: options.importBudget,

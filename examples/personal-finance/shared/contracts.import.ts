@@ -3,10 +3,13 @@
 import { z } from 'zod';
 import type { Problem } from './contracts.ts';
 
+/** One import has this number of lines at most. The proposal and the decisions then fit in one request. */
+export const MAX_STATEMENT_LINES = 100;
+
 export const ImportRequest = z.strictObject({ csv: z.string().min(1).max(9000) });
 
 export const DecideRequest = z.strictObject({
-  decisions: z.array(z.strictObject({ line_no: z.number().int().min(1), category_id: z.string().min(1).max(40).nullable() })).max(200),
+  decisions: z.array(z.strictObject({ line_no: z.number().int().min(1), category_id: z.string().min(1).max(40).nullable() })).max(MAX_STATEMENT_LINES),
 });
 export type DecideRequest = z.infer<typeof DecideRequest>;
 

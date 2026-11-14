@@ -13,7 +13,7 @@
 // The orchestrator is code. It is not a model that plans. Each edge is a condition on the state.
 import { createHash } from 'node:crypto';
 import type { Problem } from '../../shared/contracts.ts';
-import { DecideRequest, ImportRequest, type ImportProposal, type ImportResult, type LineEnd, type LineOutcome, type LineSuggestion, type StatementLine } from '../../shared/contracts.import.ts';
+import { DecideRequest, ImportRequest, MAX_STATEMENT_LINES, type ImportProposal, type ImportResult, type LineEnd, type LineOutcome, type LineSuggestion, type StatementLine } from '../../shared/contracts.import.ts';
 import type { Clock, IdGen } from '../clock.ts';
 import { merchantKey } from '../domain/expense.ts';
 import { AppError } from '../errors.ts';
@@ -38,8 +38,8 @@ export type ImportDeps = {
   knows(merchant_key: string): boolean;
   suggestLine(merchant_name: string, withModel: boolean, parent_run_id: string): Promise<{ suggestion: LineSuggestion; reason: string }>;
   recordLine(line: StatementLine, category_id: string, idempotency_key: string, suggest_run_id: string | null, parent_run_id: string): Promise<LineOutcome>;
-  /** The largest number of model calls for one import. 0: the AI is off. */
-  modelBudget: number;
+  /** Asks the budget of the day for n model calls, for this import. Returns how many it gets. 0: the AI is off, or the limit is used. */
+  reserveModelCalls(n: number): number;
 };
 
 export type ImportState = {
@@ -77,7 +77,8 @@ const NODES: Node[] = [
       const unknown = merchants.filter(([key]) => !deps.knows(key));
       // The budget is decided here, one time, before any worker starts. Workers that run at the same
       // time cannot count each other, thus a worker is told if it has a model call or not.
-      const allowed = new Set(unknown.slice(0, deps.modelBudget).map(([key]) => key));
+      const granted = deps.reserveModelCalls(unknown.length);
+      const allowed = new Set(unknown.slice(0, granted).map(([key]) => key));
       const results = await mapPool(merchants, POOL_SIZE, ([key, name]) => deps.suggestLine(name, allowed.has(key), state.run_id));
       const suggestions: S['suggestions'] = {};
       merchants.forEach(([key], i) => { suggestions[key] = results[i]!.suggestion; });
@@ -175,6 +176,8 @@ async function run(deps: ImportDeps, state: S, startAt: string, parent_run_id: s
 export async function startImport(deps: ImportDeps, input: unknown): Promise<ImportProposal> {
   const request = ImportRequest.safeParse(input);
   if (!request.success) throw new AppError('SHAPE', [{ rule: 'R14', text: 'The request must have one field "csv" with 1 to 9000 characters.' }]);
+  const lineCount = request.data.csv.split(/\r?\n/).filter((row) => row.trim() !== '').length - 1;
+  if (lineCount > MAX_STATEMENT_LINES) throw new AppError('SHAPE', [{ rule: 'R14', text: 'The statement has ' + lineCount + ' lines. One import can have ' + MAX_STATEMENT_LINES + ' at most: divide the file.' }]);
   const run_id = deps.ids('run');
   const state = await run(deps, emptyState(run_id, batchIdOf(request.data.csv), request.data.csv), 'parse', null);
   // The checkpoint: the state at the node await_person, without the answer of this step.
@@ -189,7 +192,10 @@ export async function decideImport(deps: ImportDeps, batch_id: string, input: un
   const request = DecideRequest.safeParse(input);
   if (!request.success) throw new AppError('SHAPE', [{ rule: 'R14', text: 'The request must have a list "decisions" of { line_no, category_id }.' }]);
   const checkpoint = batch.checkpoint as S;
+  // The decisions of a batch are applied one time. A second request (the first answer was lost)
+  // gets the stored result. To decide the lines that still wait, import the statement again.
+  if (batch.status === 'DONE') return checkpoint.response as ImportResult;
   const state = await run(deps, { ...checkpoint, run_id: deps.ids('run'), decisions: request.data.decisions }, 'await_person', batch.run_id);
-  deps.batches.save({ ...batch, status: 'DONE' });
+  deps.batches.save({ ...batch, status: 'DONE', checkpoint: state });
   return state.response as ImportResult;
 }

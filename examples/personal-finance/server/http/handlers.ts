@@ -6,12 +6,29 @@ import { AppError } from '../errors.ts';
 import { ledgerReaderFromStores } from '../graph/verifier.ts';
 import { decideImport, startImport, type ImportDeps } from '../import/import.graph.ts';
 import { recordWorker, suggestWorker, type ImportStore } from '../import/line-worker.ts';
+import { modelBudget, type ModelBudget } from '../intelligence/model-budget.ts';
 import { suggestCategory, type SuggestDeps } from '../intelligence/suggest-category.graph.ts';
 import { monthSummary } from '../services/month-summary.ts';
 import { recordExpense, type RecordExpenseDeps } from '../services/record-expense.ts';
 
 /** All that the handlers can use. main.ts makes it one time. */
-export type App = RecordExpenseDeps & Pick<SuggestDeps, 'suggester'> & { dailyCap?: number; batches?: ImportStore; importBudget?: number };
+export type App = RecordExpenseDeps & Pick<SuggestDeps, 'suggester'> & { dailyCap?: number; budget?: ModelBudget; batches?: ImportStore; importBudget?: number };
+
+/** The one budget of model calls of the application. It is made at the first use. */
+function budgetOf(app: App): ModelBudget {
+  const trace = app.trace;
+  return (app.budget ??= modelBudget(app.dailyCap ?? 50, app.clock, trace ? (day) => trace.countSteps('ask_model', day) : undefined));
+}
+
+/** What the suggest graph gets. Look at what is absent: no store of expenses, and a memory that can only read. */
+function suggestDepsOf(app: App): SuggestDeps {
+  const memory = app.memory;
+  return {
+    listCategories: () => app.stores.categories.list(),
+    clock: app.clock, ids: app.ids, suggester: app.suggester, trace: app.trace, budget: budgetOf(app),
+    memory: memory ? { recall: (key) => memory.recall(key) } : undefined,
+  };
+}
 
 export type ApiRequest = { query: URLSearchParams; params: string[]; body: unknown };
 export type Reply = { status: number; body: unknown; headers?: Record<string, string> };
@@ -38,18 +55,14 @@ export const HANDLERS: Handler[] = [
     },
   },
 
-  // Level 3. A suggestion for the category. This handler gives the graph a function that lists the
-  // categories, the memory and the suggester. It gives no store that can write, thus the suggest
-  // graph cannot change the ledger. The answer is 200 also when there is no suggestion.
+  // Level 3. A suggestion for the category. The graph gets a function that lists the categories,
+  // a memory that can only read, the suggester and the budget (see suggestDepsOf). It gets no way
+  // to write the ledger or the memory. The answer is 200 also when there is no suggestion.
   {
     method: 'POST',
     path: '/api/expenses/suggest',
     async handle(app, request) {
-      const body = await suggestCategory(
-        { listCategories: () => app.stores.categories.list(), clock: app.clock, ids: app.ids, memory: app.memory, suggester: app.suggester, trace: app.trace, dailyCap: app.dailyCap ?? 50 },
-        request.body,
-      );
-      return { status: 200, body };
+      return { status: 200, body: await suggestCategory(suggestDepsOf(app), request.body) };
     },
   },
 
@@ -76,15 +89,14 @@ export const HANDLERS: Handler[] = [
 /** Level 4. The ports of the import orchestrator, made from the parts of the application. */
 function importDeps(app: App): ImportDeps {
   if (!app.batches) throw new AppError('NOT_FOUND');
-  const suggestDeps = { listCategories: () => app.stores.categories.list(), clock: app.clock, ids: app.ids, memory: app.memory, suggester: app.suggester, trace: app.trace, dailyCap: app.dailyCap ?? 50 };
-  // The budget of one import: not more than 20 model calls, and not more than what is left of the day.
-  const usedToday = app.trace ? app.trace.countSteps('ask_model', app.clock.now().slice(0, 10)) : suggestDeps.dailyCap;
+  const suggestDeps = suggestDepsOf(app);
   return {
     clock: app.clock, ids: app.ids, trace: app.trace, batches: app.batches,
     ledger: app.ledger ?? ledgerReaderFromStores(app.stores),
     knows: (merchant_key) => app.memory?.recall(merchant_key) != null,
     suggestLine: (merchant_name, withModel, parent) => suggestWorker(suggestDeps, merchant_name, withModel, parent),
     recordLine: (line, category_id, key, suggest_run_id, parent) => recordWorker(app, line, category_id, key, suggest_run_id, parent),
-    modelBudget: app.suggester ? Math.max(0, Math.min(app.importBudget ?? 20, suggestDeps.dailyCap - usedToday)) : 0,
+    // One import gets 20 model calls at most, and not more than what is left of the day. The calls are reserved now.
+    reserveModelCalls: (n) => (app.suggester ? budgetOf(app).reserve(Math.min(n, app.importBudget ?? 20)) : 0),
   };
 }

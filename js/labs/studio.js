@@ -73,11 +73,13 @@
   }
 
   /** Makes each arrow of a view a button (the pattern of the instrument "Watch one run"). */
-  function edgeButtons(view, def, names, onEdge) {
+  function edgeButtons(view, def, names, onEdge, described) {
     def.edges.forEach(function (edge) {
       var key = GE.edgeKey(edge), g = view.edge(key), path = g.querySelector('path');
       g.insertBefore(GE.s('path', { class: 'st-hit', d: path.getAttribute('d') }), path);
-      g.setAttribute('role', 'button'); g.setAttribute('tabindex', '0');
+      g.setAttribute('role', 'button'); g.setAttribute('aria-pressed', 'false');
+      // Only an arrow that the table describes is a stop for the Tab key. The others can still be selected with a pointer.
+      if (described[key]) g.setAttribute('tabindex', '0');
       g.setAttribute('aria-label', 'Connection from ' + names[edge.from] + ' to ' + names[edge.to] + (edge.label ? ': ' + edge.label : ''));
       g.addEventListener('click', function () { onEdge(key, edge); });
       g.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onEdge(key, edge); } });
@@ -99,7 +101,8 @@
     var host = h('div', { class: 'st-stage' });
     var view = GE.graphView(host, def, { interactive: true, minScale: 0.7, onNode: function (id) { select('node', id); } });
     view.svg.classList.add('st');
-    edgeButtons(view, def, names, function (k) { select('edge', k); });
+    edgeButtons(view, def, names, function (k) { select('edge', k); }, edgeRows);
+    def.nodes.forEach(function (node) { view.node(node.id).setAttribute('aria-pressed', 'false'); });
 
     var panel = h('div', { class: 'panel st-panel', 'aria-live': 'polite' });
     var options = [];
@@ -115,11 +118,12 @@
     }
 
     function select(kind, id) {
-      [].forEach.call(view.svg.querySelectorAll('.st-selected'), function (x) { x.classList.remove('st-selected'); });
+      [].forEach.call(view.svg.querySelectorAll('.st-selected'), function (x) { x.classList.remove('st-selected'); x.setAttribute('aria-pressed', 'false'); });
       selected = kind + ':' + id;
       var rows = (kind === 'node' ? nodeRows : edgeRows)[id] || [];
       var item = kind === 'node' ? def.nodes.filter(function (x) { return x.id === id; })[0] : def.edges.filter(function (x) { return GE.edgeKey(x) === id; })[0];
-      (kind === 'node' ? view.node(id) : view.edge(id)).classList.add('st-selected');
+      var chosen = kind === 'node' ? view.node(id) : view.edge(id);
+      chosen.classList.add('st-selected'); chosen.setAttribute('aria-pressed', 'true');
       GE.clear(panel);
       panel.appendChild(h('p', { class: 'st-kind' }, kind === 'node' ? 'Component' : 'Connection'));
       panel.appendChild(h('p', { class: 'panel-title' }, kind === 'node' ? names[id] : names[item.from] + ' → ' + names[item.to]));

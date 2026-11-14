@@ -10,6 +10,9 @@ export type ScreenState = {
   form: Form;
   /** The request key of the expense in the form. It stays the same for each try of the same expense. */
   idempotency_key: string;
+  /** The form changed after a request with this key was sent. The next request is then a different expense and needs a new key. */
+  edited_after_attempt: boolean;
+  attempted: boolean;
   status: 'idle' | 'saving' | 'saved' | 'failed' | 'confirm';
   problems: Problem[];
   last: RecordExpenseResult | null;
@@ -20,7 +23,7 @@ export type ScreenState = {
 
 export type Action =
   | { type: 'field'; name: keyof Form; value: string }
-  | { type: 'submit' }
+  | { type: 'submit'; key?: string }
   | { type: 'saved'; result: RecordExpenseResult; next_key: string }
   | { type: 'needs_confirmation'; problems: Problem[] }
   | { type: 'failed'; problems: Problem[] }
@@ -32,6 +35,8 @@ export function initialState(today: string, key: string): ScreenState {
   return {
     form: { amount_text: '', merchant_name: '', category_id: '', occurred_on: today, note: '' },
     idempotency_key: key,
+    edited_after_attempt: false,
+    attempted: false,
     status: 'idle',
     problems: [],
     last: null,
@@ -49,11 +54,14 @@ export function reduce(state: ScreenState, action: Action): ScreenState {
         form: { ...state.form, [action.name]: action.value },
         status: state.status === 'saving' ? 'saving' : 'idle',
         problems: [],
+        edited_after_attempt: state.attempted && action.name !== 'note',
         // A suggestion is for one merchant text. A different merchant text removes it.
         suggestion: action.name === 'merchant_name' ? null : state.suggestion,
       };
     case 'submit':
-      return { ...state, status: 'saving', problems: [] };
+      // The same form again: the same key, thus the server cannot record it two times.
+      // A changed form: App.tsx gives a new key, because it is a different expense.
+      return { ...state, status: 'saving', problems: [], idempotency_key: action.key ?? state.idempotency_key, attempted: true, edited_after_attempt: false };
     case 'saved':
       // Only a success gives a new key. A failure keeps the key, thus a second try cannot record a second expense.
       return {
@@ -62,6 +70,8 @@ export function reduce(state: ScreenState, action: Action): ScreenState {
         last: action.result,
         problems: [],
         idempotency_key: action.next_key,
+        attempted: false,
+        edited_after_attempt: false,
         suggestion: null,
         form: { ...state.form, amount_text: '', merchant_name: '', note: '' },
       };

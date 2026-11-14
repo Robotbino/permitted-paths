@@ -27,7 +27,11 @@
 .st-levels li.is-done .st-n::after { content: " \00B7 built"; }
 .st-levels li.is-now { background: var(--paper-2); box-shadow: inset 0 3px 0 var(--ink); }
 .st-levels li.is-now .st-n::after { content: " \00B7 you are here"; }
-@media (min-width: 56.01rem) { .js .st-levels { position: sticky; top: var(--top); } }
+@media (min-width: 56.01rem) {
+  .js .st-levels { position: sticky; top: var(--top); }
+  /* The strip stays at the top of the screen. A heading that a link goes to must stop below it, not under it. */
+  .js .is-studio [id] { scroll-margin-top: 6.5rem; }
+}
 @media (max-width: 56rem) {
   .st-levels ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .st-levels li:nth-child(3) { border-inline-start: 0; }

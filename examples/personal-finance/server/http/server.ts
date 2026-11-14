@@ -7,7 +7,8 @@ import type { ApiError, ErrorCode, Problem } from '../../shared/contracts.ts';
 import { AppError, DuplicateKey, STATUS_OF, StorageUnavailable } from '../errors.ts';
 import { HANDLERS, type App, type Reply } from './handlers.ts';
 
-const MAX_BODY_BYTES = 10_000;
+// 9000 characters of a statement can be 36 000 bytes of UTF-8. The limit is in bytes.
+export const MAX_BODY_BYTES = 40_000;
 const LOCAL_NAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
@@ -42,6 +43,15 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
   }
 }
 
+/** An Origin that is not a URL (for example the text "null") is a different site, not a defect. */
+function sameOrigin(origin: string, host: string | undefined): boolean {
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
+
 async function api(app: App, req: IncomingMessage, url: URL): Promise<Reply> {
   // The Host must be this computer. This stops a web page of a different site that
   // points a domain name at 127.0.0.1 (DNS rebinding).
@@ -49,7 +59,7 @@ async function api(app: App, req: IncomingMessage, url: URL): Promise<Reply> {
   if (!LOCAL_NAMES.has(host)) return fail(403, 'BAD_REQUEST', [{ rule: 'HTTP', text: 'The Host is not this computer.' }]);
   // A browser sends Origin with a POST. It must be the origin of this application.
   const origin = req.headers.origin;
-  if (origin && new URL(origin).host !== req.headers.host) return fail(403, 'BAD_REQUEST', [{ rule: 'HTTP', text: 'The Origin is a different site.' }]);
+  if (origin && !sameOrigin(origin, req.headers.host)) return fail(403, 'BAD_REQUEST', [{ rule: 'HTTP', text: 'The Origin is a different site.' }]);
 
   let params: string[] = [];
   const handler = HANDLERS.find((h) => {
@@ -72,7 +82,13 @@ async function api(app: App, req: IncomingMessage, url: URL): Promise<Reply> {
 /** Gives a file of the built web application. The same origin serves the page and the API, thus CORS is not necessary. */
 function staticFile(webDir: string, pathname: string): { type: string; data: Buffer } | null {
   const root = resolve(webDir);
-  let file = resolve(join(root, decodeURIComponent(pathname)));
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return null; // "%" with no valid code after it
+  }
+  let file = resolve(join(root, decoded));
   if (file !== root && !file.startsWith(root + sep)) return null; // a path that goes out of the folder
   if (!existsSync(file) || statSync(file).isDirectory()) file = join(root, 'index.html');
   if (!existsSync(file)) return null;
@@ -80,8 +96,25 @@ function staticFile(webDir: string, pathname: string): { type: string; data: Buf
 }
 
 export function createHttpServer(app: App, options: { webDir?: string } = {}): Server {
-  return createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    const url = new URL(req.url ?? '/', 'http://local');
+  // The listener must never let an error go out: an error that nobody handles stops the process.
+  // Thus all the work is in `handle`, and one `catch` here answers 500 for a defect.
+  return createServer((req: IncomingMessage, res: ServerResponse) => {
+    handle(req, res).catch((error) => {
+      console.error(error);
+      if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(fail(500, 'INTERNAL').body));
+    });
+  });
+
+  async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    let url: URL;
+    try {
+      url = new URL(req.url ?? '/', 'http://local');
+    } catch {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(fail(400, 'BAD_REQUEST', [{ rule: 'HTTP', text: 'The address of the request is not valid.' }]).body));
+      return;
+    }
     if (!url.pathname.startsWith('/api/')) {
       const file = req.method === 'GET' && options.webDir ? staticFile(options.webDir, url.pathname) : null;
       res.writeHead(file ? 200 : 404, { 'Content-Type': file ? file.type : 'text/plain' });
@@ -96,5 +129,5 @@ export function createHttpServer(app: App, options: { webDir?: string } = {}): S
     }
     res.writeHead(reply.status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...reply.headers });
     res.end(JSON.stringify(reply.body));
-  });
+  }
 }

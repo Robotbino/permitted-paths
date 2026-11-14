@@ -45,9 +45,12 @@ export function App() {
   async function submit(confirm_duplicate: boolean) {
     const cents = parseAmount(state.form.amount_text);
     if (cents === null) return;
-    dispatch({ type: 'submit' });
+    // A form that changed after an attempt is a different expense: it gets a new key.
+    // Without this, the old key gives "key conflict" for each try until the page loads again.
+    const key = state.edited_after_attempt ? newKey() : state.idempotency_key;
+    dispatch({ type: 'submit', key });
     const result = await postExpense({
-      idempotency_key: state.idempotency_key,
+      idempotency_key: key,
       amount_cents: cents,
       currency: 'ZAR',
       occurred_on: state.form.occurred_on,

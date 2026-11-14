@@ -17,6 +17,7 @@ import { AppError } from '../errors.ts';
 import { runGraph, type Graph, type GraphNode } from '../graph/engine.ts';
 import { collector, writeTrace, type TraceStore } from '../graph/trace.ts';
 import type { MerchantMemory } from './merchant-memory.ts';
+import type { ModelBudget } from './model-budget.ts';
 import { suggestionGate } from './suggestion-gate.ts';
 import type { CategorySuggester, SuggesterOutput } from './suggester.ts';
 
@@ -25,12 +26,15 @@ export type SuggestDeps = {
   listCategories(): Category[];
   clock: Clock;
   ids: IdGen;
-  memory?: MerchantMemory;
+  /** Only the method that reads. This graph cannot teach the memory: it has no way to call `remember`. */
+  memory?: Pick<MerchantMemory, 'recall'>;
   /** Absent: the AI is off, and the application works. */
   suggester?: CategorySuggester;
   trace?: TraceStore;
-  /** The largest number of model calls in one day. */
-  dailyCap: number;
+  /** The model calls of the day. A call is reserved here before it is made. */
+  budget: ModelBudget;
+  /** Level 4: the orchestrator of an import already reserved the call of this run. */
+  preapproved?: boolean;
   /** Level 4: the run that started this run as a worker. */
   parent_run_id?: string;
 };
@@ -76,17 +80,13 @@ const NODES: Node[] = [
   },
   {
     id: 'allow', type: 'code',
-    act(_state, { suggester, trace, clock, dailyCap }) {
+    act(_state, { suggester, budget, preapproved }) {
       if (!suggester) return { writes: { allowance: { allowed: false, reason: 'AI_OFF', calls_today: 0 } }, note: 'The AI is off.' };
-      // The cost control. The count comes from the trace. If the count cannot be read, the answer is "no".
-      let calls = dailyCap;
-      try {
-        calls = trace ? trace.countSteps('ask_model', clock.now().slice(0, 10)) : dailyCap;
-      } catch {
-        calls = dailyCap;
-      }
-      const allowed = calls < dailyCap;
-      return { writes: { allowance: { allowed, reason: allowed ? 'OK' : 'DAILY_CAP', calls_today: calls } }, result: allowed ? 'PASS' : 'FAIL', note: allowed ? 'Model call ' + (calls + 1) + ' of ' + dailyCap + ' today.' : 'The daily limit of ' + dailyCap + ' model calls is used.' };
+      // The cost control. The call is reserved now, before the model is asked, in one step that
+      // nothing can interrupt. Requests that arrive together cannot all see "the limit is not used".
+      const allowed = preapproved === true || budget.reserve(1) === 1;
+      const used = budget.usedToday();
+      return { writes: { allowance: { allowed, reason: allowed ? 'OK' : 'DAILY_CAP', calls_today: allowed ? used - 1 : used } }, result: allowed ? 'PASS' : 'FAIL', note: allowed ? 'Model call ' + used + ' of ' + budget.cap + ' today.' : 'The daily limit of ' + budget.cap + ' model calls is used.' };
     },
   },
   {
