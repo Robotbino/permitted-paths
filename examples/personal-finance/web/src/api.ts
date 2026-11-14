@@ -1,6 +1,7 @@
 // The client of the API. This is the only file of the web application that calls fetch.
 // The types come from shared/contracts.ts, the same file that the server uses.
 import type { ApiError, Category, MonthSummary, Problem, RecordExpenseRequest, RecordExpenseResult } from '../../shared/contracts.ts';
+import type { DecideRequest, ImportProposal, ImportResult } from '../../shared/contracts.import.ts';
 import type { SuggestResponse } from '../../shared/contracts.suggest.ts';
 
 export type ApiResult<T> = { ok: true; value: T } | { ok: false; status: number; code: string; problems: Problem[] };
@@ -31,3 +32,8 @@ export const postExpense = (request: RecordExpenseRequest) =>
 /** Level 3. Asks for a suggestion. It never records anything. A failure is "no suggestion", not an error for the person. */
 export const postSuggest = (merchant_name: string) =>
   call<SuggestResponse>('/api/expenses/suggest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ merchant_name }) });
+
+/** Level 4. The two steps of an import: the proposal, then the decisions of the person. */
+const json = (body: unknown): RequestInit => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+export const postImport = (csv: string) => call<ImportProposal>('/api/imports', json({ csv }));
+export const postDecisions = (batch_id: string, decisions: DecideRequest['decisions']) => call<ImportResult>('/api/imports/' + batch_id + '/decide', json({ decisions }));

@@ -31,6 +31,8 @@ export type SuggestDeps = {
   trace?: TraceStore;
   /** The largest number of model calls in one day. */
   dailyCap: number;
+  /** Level 4: the run that started this run as a worker. */
+  parent_run_id?: string;
 };
 
 export type SuggestState = {
@@ -152,7 +154,7 @@ export async function suggestCategory(deps: SuggestDeps, input: unknown): Promis
   const started_at = deps.clock.now();
   const checkpoints = collector<S>();
   const run = await runGraph(suggestCategoryGraph, initialSuggestState(run_id, input), deps, { onStep: checkpoints.onStep });
-  writeTrace(deps.trace, { id: run_id, graph: suggestCategoryGraph.name, started_at, ended_at: deps.clock.now(), result: run.state.response ? 'PASS' : 'FAIL', subject_id: null, parent_run_id: null }, run, checkpoints.events);
+  writeTrace(deps.trace, { id: run_id, graph: suggestCategoryGraph.name, started_at, ended_at: deps.clock.now(), result: run.state.response ? 'PASS' : 'FAIL', subject_id: null, parent_run_id: deps.parent_run_id ?? null }, run, checkpoints.events);
   if (run.state.response) return run.state.response;
   throw new AppError('SHAPE', run.state.rejection?.problems ?? [], run_id);
 }

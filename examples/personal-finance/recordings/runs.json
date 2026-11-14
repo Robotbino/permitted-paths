@@ -97,6 +97,13 @@
    "checked_by": [
     "structure"
    ]
+  },
+  "R14": {
+   "text": "Each line of an imported statement has exactly one end: recorded, duplicate, rejected or waiting.",
+   "kind": "cardinality",
+   "checked_by": [
+    "reconciler"
+   ]
   }
  },
  "graphs": {
@@ -638,6 +645,111 @@
     "response": null,
     "rejection": null
    }
+  },
+  "import-statement": {
+   "name": "import-statement",
+   "start": "parse",
+   "nodes": [
+    {
+     "id": "parse",
+     "type": "code",
+     "owns": [
+      "lines"
+     ]
+    },
+    {
+     "id": "classify",
+     "type": "code",
+     "owns": [
+      "suggestions",
+      "budget"
+     ]
+    },
+    {
+     "id": "await_person",
+     "type": "person",
+     "owns": [
+      "decision_problems"
+     ]
+    },
+    {
+     "id": "apply",
+     "type": "code",
+     "owns": [
+      "outcomes"
+     ]
+    },
+    {
+     "id": "reconcile",
+     "type": "code",
+     "owns": [
+      "reconciliation"
+     ]
+    },
+    {
+     "id": "respond",
+     "type": "code",
+     "owns": [
+      "response"
+     ]
+    },
+    {
+     "id": "reject",
+     "type": "code",
+     "owns": [
+      "rejection"
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "parse",
+     "to": "reject",
+     "label": "not a statement"
+    },
+    {
+     "from": "parse",
+     "to": "classify",
+     "label": ""
+    },
+    {
+     "from": "classify",
+     "to": "await_person",
+     "label": ""
+    },
+    {
+     "from": "await_person",
+     "to": "respond",
+     "label": "wait for the person"
+    },
+    {
+     "from": "await_person",
+     "to": "reject",
+     "label": "decisions FAIL"
+    },
+    {
+     "from": "await_person",
+     "to": "apply",
+     "label": "decisions PASS"
+    },
+    {
+     "from": "apply",
+     "to": "reconcile",
+     "label": ""
+    },
+    {
+     "from": "reconcile",
+     "to": "respond",
+     "label": ""
+    }
+   ],
+   "input": [
+    "run_id",
+    "batch_id",
+    "csv",
+    "decisions"
+   ],
+   "initial_state": {}
   }
  },
  "scenarios": [
@@ -3378,6 +3490,943 @@
       }
      }
     ]
+   }
+  },
+  {
+   "id": "import_statement",
+   "level": 4,
+   "title": "Import a statement of 14 lines; the person accepts each suggestion",
+   "world": {
+    "memory": true,
+    "ai": "answer",
+    "remembered": [
+     [
+      "Woolworths",
+      "groceries"
+     ]
+    ],
+    "importBudget": 4
+   },
+   "endpoint": "/api/imports",
+   "before": 0,
+   "request": {
+    "csv": "Date,Description,Amount\n2026-03-02,Woolworths,-642.35\n2026-03-03,Engen Garage,-850.00\n2026-03-05,Nando's Rosebank,-189.90\n2026-03-06,SALARY ACME LTD,28500.00\n2026-03-07,Woolworths,-311.20\n2026-03-09,\"Clicks, Sandton City\",-240.00\n2026-03-10,Uber Trip,-96.00\n2026-03-31,City Power Prepaid,-600.00\n2026-02-30,Checkers,-455.10\n2026-03-11,Zzyx Trading 4471,-1200.00\n2026-03-12,Showmax,-99.00\n2026-03-12,Steers Melville,-134.50\n2026-03-13,Shell Sandton,-720.00\n2026-03-13,Dis-Chem Pharmacy,-318.75\n"
+   },
+   "http": {
+    "status": 200,
+    "body": {
+     "batch_id": "imp-d40105f64f46",
+     "run_id": "run_0013",
+     "outcomes": [
+      {
+       "line_no": 1,
+       "end": "RECORDED",
+       "expense_id": "exp_0001",
+       "detail": "Recorded in groceries. Budget: WITHIN."
+      },
+      {
+       "line_no": 2,
+       "end": "RECORDED",
+       "expense_id": "exp_0002",
+       "detail": "Recorded in transport. Budget: WITHIN."
+      },
+      {
+       "line_no": 3,
+       "end": "RECORDED",
+       "expense_id": "exp_0003",
+       "detail": "Recorded in eating-out. Budget: WITHIN."
+      },
+      {
+       "line_no": 4,
+       "end": "REJECTED",
+       "expense_id": null,
+       "detail": "This line is money in. The application records only expenses."
+      },
+      {
+       "line_no": 5,
+       "end": "RECORDED",
+       "expense_id": "exp_0004",
+       "detail": "Recorded in groceries. Budget: WITHIN."
+      },
+      {
+       "line_no": 6,
+       "end": "RECORDED",
+       "expense_id": "exp_0005",
+       "detail": "Recorded in health. Budget: WITHIN."
+      },
+      {
+       "line_no": 7,
+       "end": "RECORDED",
+       "expense_id": "exp_0006",
+       "detail": "Recorded in transport. Budget: WITHIN."
+      },
+      {
+       "line_no": 8,
+       "end": "WAITING",
+       "expense_id": null,
+       "detail": "The person selected no category."
+      },
+      {
+       "line_no": 9,
+       "end": "REJECTED",
+       "expense_id": null,
+       "detail": "The date \"2026-02-30\" is not a real date in the form YYYY-MM-DD."
+      },
+      {
+       "line_no": 10,
+       "end": "WAITING",
+       "expense_id": null,
+       "detail": "The person selected no category."
+      },
+      {
+       "line_no": 11,
+       "end": "WAITING",
+       "expense_id": null,
+       "detail": "The person selected no category."
+      },
+      {
+       "line_no": 12,
+       "end": "WAITING",
+       "expense_id": null,
+       "detail": "The person selected no category."
+      },
+      {
+       "line_no": 13,
+       "end": "WAITING",
+       "expense_id": null,
+       "detail": "The person selected no category."
+      },
+      {
+       "line_no": 14,
+       "end": "WAITING",
+       "expense_id": null,
+       "detail": "The person selected no category."
+      }
+     ],
+     "counts": {
+      "RECORDED": 6,
+      "DUPLICATE": 0,
+      "REJECTED": 2,
+      "WAITING": 6
+     },
+     "reconciliation": {
+      "ok": true,
+      "problems": []
+     }
+    }
+   },
+   "rows_after": 6,
+   "memory_rows_added": 4,
+   "model_calls": 4,
+   "run": {
+    "id": "run_0013",
+    "graph": "import-statement",
+    "result": "PASS",
+    "path": [
+     "await_person",
+     "apply",
+     "reconcile",
+     "respond"
+    ],
+    "steps": [
+     {
+      "node": "await_person",
+      "type": "person",
+      "result": "PASS",
+      "note": "The person decided 6 lines.",
+      "edge": "await_person>apply",
+      "by": "code",
+      "writes": {
+       "decision_problems": []
+      }
+     },
+     {
+      "node": "apply",
+      "type": "code",
+      "result": "PASS",
+      "note": "14 lines have an end. 8 are not in the ledger.",
+      "edge": "apply>reconcile",
+      "by": "code",
+      "writes": {
+       "outcomes": [
+        {
+         "line_no": 1,
+         "end": "RECORDED",
+         "expense_id": "exp_0001",
+         "detail": "Recorded in groceries. Budget: WITHIN."
+        },
+        {
+         "line_no": 2,
+         "end": "RECORDED",
+         "expense_id": "exp_0002",
+         "detail": "Recorded in transport. Budget: WITHIN."
+        },
+        {
+         "line_no": 3,
+         "end": "RECORDED",
+         "expense_id": "exp_0003",
+         "detail": "Recorded in eating-out. Budget: WITHIN."
+        },
+        {
+         "line_no": 4,
+         "end": "REJECTED",
+         "expense_id": null,
+         "detail": "This line is money in. The application records only expenses."
+        },
+        {
+         "line_no": 5,
+         "end": "RECORDED",
+         "expense_id": "exp_0004",
+         "detail": "Recorded in groceries. Budget: WITHIN."
+        },
+        {
+         "line_no": 6,
+         "end": "RECORDED",
+         "expense_id": "exp_0005",
+         "detail": "Recorded in health. Budget: WITHIN."
+        },
+        {
+         "line_no": 7,
+         "end": "RECORDED",
+         "expense_id": "exp_0006",
+         "detail": "Recorded in transport. Budget: WITHIN."
+        },
+        {
+         "line_no": 8,
+         "end": "WAITING",
+         "expense_id": null,
+         "detail": "The person selected no category."
+        },
+        {
+         "line_no": 9,
+         "end": "REJECTED",
+         "expense_id": null,
+         "detail": "The date \"2026-02-30\" is not a real date in the form YYYY-MM-DD."
+        },
+        {
+         "line_no": 10,
+         "end": "WAITING",
+         "expense_id": null,
+         "detail": "The person selected no category."
+        },
+        {
+         "line_no": 11,
+         "end": "WAITING",
+         "expense_id": null,
+         "detail": "The person selected no category."
+        },
+        {
+         "line_no": 12,
+         "end": "WAITING",
+         "expense_id": null,
+         "detail": "The person selected no category."
+        },
+        {
+         "line_no": 13,
+         "end": "WAITING",
+         "expense_id": null,
+         "detail": "The person selected no category."
+        },
+        {
+         "line_no": 14,
+         "end": "WAITING",
+         "expense_id": null,
+         "detail": "The person selected no category."
+        }
+       ]
+      }
+     },
+     {
+      "node": "reconcile",
+      "type": "code",
+      "result": "PASS",
+      "note": "Each line has exactly one end, and the ledger agrees.",
+      "edge": "reconcile>respond",
+      "by": "code",
+      "writes": {
+       "reconciliation": {
+        "ok": true,
+        "problems": []
+       }
+      }
+     },
+     {
+      "node": "respond",
+      "type": "code",
+      "result": "PASS",
+      "note": "Answer with the end of each line.",
+      "edge": null,
+      "by": "code",
+      "writes": {
+       "response": {
+        "batch_id": "imp-d40105f64f46",
+        "run_id": "run_0013",
+        "outcomes": [
+         {
+          "line_no": 1,
+          "end": "RECORDED",
+          "expense_id": "exp_0001",
+          "detail": "Recorded in groceries. Budget: WITHIN."
+         },
+         {
+          "line_no": 2,
+          "end": "RECORDED",
+          "expense_id": "exp_0002",
+          "detail": "Recorded in transport. Budget: WITHIN."
+         },
+         {
+          "line_no": 3,
+          "end": "RECORDED",
+          "expense_id": "exp_0003",
+          "detail": "Recorded in eating-out. Budget: WITHIN."
+         },
+         {
+          "line_no": 4,
+          "end": "REJECTED",
+          "expense_id": null,
+          "detail": "This line is money in. The application records only expenses."
+         },
+         {
+          "line_no": 5,
+          "end": "RECORDED",
+          "expense_id": "exp_0004",
+          "detail": "Recorded in groceries. Budget: WITHIN."
+         },
+         {
+          "line_no": 6,
+          "end": "RECORDED",
+          "expense_id": "exp_0005",
+          "detail": "Recorded in health. Budget: WITHIN."
+         },
+         {
+          "line_no": 7,
+          "end": "RECORDED",
+          "expense_id": "exp_0006",
+          "detail": "Recorded in transport. Budget: WITHIN."
+         },
+         {
+          "line_no": 8,
+          "end": "WAITING",
+          "expense_id": null,
+          "detail": "The person selected no category."
+         },
+         {
+          "line_no": 9,
+          "end": "REJECTED",
+          "expense_id": null,
+          "detail": "The date \"2026-02-30\" is not a real date in the form YYYY-MM-DD."
+         },
+         {
+          "line_no": 10,
+          "end": "WAITING",
+          "expense_id": null,
+          "detail": "The person selected no category."
+         },
+         {
+          "line_no": 11,
+          "end": "WAITING",
+          "expense_id": null,
+          "detail": "The person selected no category."
+         },
+         {
+          "line_no": 12,
+          "end": "WAITING",
+          "expense_id": null,
+          "detail": "The person selected no category."
+         },
+         {
+          "line_no": 13,
+          "end": "WAITING",
+          "expense_id": null,
+          "detail": "The person selected no category."
+         },
+         {
+          "line_no": 14,
+          "end": "WAITING",
+          "expense_id": null,
+          "detail": "The person selected no category."
+         }
+        ],
+        "counts": {
+         "RECORDED": 6,
+         "DUPLICATE": 0,
+         "REJECTED": 2,
+         "WAITING": 6
+        },
+        "reconciliation": {
+         "ok": true,
+         "problems": []
+        }
+       }
+      }
+     }
+    ]
+   },
+   "first": {
+    "http": {
+     "status": 200,
+     "body": {
+      "batch_id": "imp-d40105f64f46",
+      "run_id": "run_0001",
+      "lines": [
+       {
+        "line_no": 1,
+        "raw": "2026-03-02,Woolworths,-642.35",
+        "occurred_on": "2026-03-02",
+        "merchant_name": "Woolworths",
+        "amount_cents": 64235,
+        "problem": null,
+        "suggestion": {
+         "category_id": "groceries",
+         "category_name": "Groceries",
+         "source": "memory",
+         "run_id": "run_0002"
+        }
+       },
+       {
+        "line_no": 2,
+        "raw": "2026-03-03,Engen Garage,-850.00",
+        "occurred_on": "2026-03-03",
+        "merchant_name": "Engen Garage",
+        "amount_cents": 85000,
+        "problem": null,
+        "suggestion": {
+         "category_id": "transport",
+         "category_name": "Transport",
+         "source": "model",
+         "run_id": "run_0003"
+        }
+       },
+       {
+        "line_no": 3,
+        "raw": "2026-03-05,Nando's Rosebank,-189.90",
+        "occurred_on": "2026-03-05",
+        "merchant_name": "Nando's Rosebank",
+        "amount_cents": 18990,
+        "problem": null,
+        "suggestion": {
+         "category_id": "eating-out",
+         "category_name": "Eating out",
+         "source": "model",
+         "run_id": "run_0004"
+        }
+       },
+       {
+        "line_no": 4,
+        "raw": "2026-03-06,SALARY ACME LTD,28500.00",
+        "occurred_on": null,
+        "merchant_name": null,
+        "amount_cents": null,
+        "problem": {
+         "rule": "R14",
+         "text": "This line is money in. The application records only expenses."
+        },
+        "suggestion": null
+       },
+       {
+        "line_no": 5,
+        "raw": "2026-03-07,Woolworths,-311.20",
+        "occurred_on": "2026-03-07",
+        "merchant_name": "Woolworths",
+        "amount_cents": 31120,
+        "problem": null,
+        "suggestion": {
+         "category_id": "groceries",
+         "category_name": "Groceries",
+         "source": "memory",
+         "run_id": "run_0002"
+        }
+       },
+       {
+        "line_no": 6,
+        "raw": "2026-03-09,\"Clicks, Sandton City\",-240.00",
+        "occurred_on": "2026-03-09",
+        "merchant_name": "Clicks, Sandton City",
+        "amount_cents": 24000,
+        "problem": null,
+        "suggestion": {
+         "category_id": "health",
+         "category_name": "Health",
+         "source": "model",
+         "run_id": "run_0005"
+        }
+       },
+       {
+        "line_no": 7,
+        "raw": "2026-03-10,Uber Trip,-96.00",
+        "occurred_on": "2026-03-10",
+        "merchant_name": "Uber Trip",
+        "amount_cents": 9600,
+        "problem": null,
+        "suggestion": {
+         "category_id": "transport",
+         "category_name": "Transport",
+         "source": "model",
+         "run_id": "run_0006"
+        }
+       },
+       {
+        "line_no": 8,
+        "raw": "2026-03-31,City Power Prepaid,-600.00",
+        "occurred_on": "2026-03-31",
+        "merchant_name": "City Power Prepaid",
+        "amount_cents": 60000,
+        "problem": null,
+        "suggestion": null
+       },
+       {
+        "line_no": 9,
+        "raw": "2026-02-30,Checkers,-455.10",
+        "occurred_on": null,
+        "merchant_name": null,
+        "amount_cents": null,
+        "problem": {
+         "rule": "R14",
+         "text": "The date \"2026-02-30\" is not a real date in the form YYYY-MM-DD."
+        },
+        "suggestion": null
+       },
+       {
+        "line_no": 10,
+        "raw": "2026-03-11,Zzyx Trading 4471,-1200.00",
+        "occurred_on": "2026-03-11",
+        "merchant_name": "Zzyx Trading 4471",
+        "amount_cents": 120000,
+        "problem": null,
+        "suggestion": null
+       },
+       {
+        "line_no": 11,
+        "raw": "2026-03-12,Showmax,-99.00",
+        "occurred_on": "2026-03-12",
+        "merchant_name": "Showmax",
+        "amount_cents": 9900,
+        "problem": null,
+        "suggestion": null
+       },
+       {
+        "line_no": 12,
+        "raw": "2026-03-12,Steers Melville,-134.50",
+        "occurred_on": "2026-03-12",
+        "merchant_name": "Steers Melville",
+        "amount_cents": 13450,
+        "problem": null,
+        "suggestion": null
+       },
+       {
+        "line_no": 13,
+        "raw": "2026-03-13,Shell Sandton,-720.00",
+        "occurred_on": "2026-03-13",
+        "merchant_name": "Shell Sandton",
+        "amount_cents": 72000,
+        "problem": null,
+        "suggestion": null
+       },
+       {
+        "line_no": 14,
+        "raw": "2026-03-13,Dis-Chem Pharmacy,-318.75",
+        "occurred_on": "2026-03-13",
+        "merchant_name": "Dis-Chem Pharmacy",
+        "amount_cents": 31875,
+        "problem": null,
+        "suggestion": null
+       }
+      ],
+      "budget": {
+       "unknown_merchants": 10,
+       "model_calls_allowed": 4,
+       "model_calls_made": 4
+      }
+     }
+    },
+    "run": {
+     "id": "run_0001",
+     "graph": "import-statement",
+     "result": "PASS",
+     "path": [
+      "parse",
+      "classify",
+      "await_person",
+      "respond"
+     ],
+     "steps": [
+      {
+       "node": "parse",
+       "type": "code",
+       "result": "PASS",
+       "note": "14 lines read. 2 cannot become an expense.",
+       "edge": "parse>classify",
+       "by": "code",
+       "writes": {
+        "lines": [
+         {
+          "line_no": 1,
+          "raw": "2026-03-02,Woolworths,-642.35",
+          "occurred_on": "2026-03-02",
+          "merchant_name": "Woolworths",
+          "amount_cents": 64235,
+          "problem": null
+         },
+         {
+          "line_no": 2,
+          "raw": "2026-03-03,Engen Garage,-850.00",
+          "occurred_on": "2026-03-03",
+          "merchant_name": "Engen Garage",
+          "amount_cents": 85000,
+          "problem": null
+         },
+         {
+          "line_no": 3,
+          "raw": "2026-03-05,Nando's Rosebank,-189.90",
+          "occurred_on": "2026-03-05",
+          "merchant_name": "Nando's Rosebank",
+          "amount_cents": 18990,
+          "problem": null
+         },
+         {
+          "line_no": 4,
+          "raw": "2026-03-06,SALARY ACME LTD,28500.00",
+          "occurred_on": null,
+          "merchant_name": null,
+          "amount_cents": null,
+          "problem": {
+           "rule": "R14",
+           "text": "This line is money in. The application records only expenses."
+          }
+         },
+         {
+          "line_no": 5,
+          "raw": "2026-03-07,Woolworths,-311.20",
+          "occurred_on": "2026-03-07",
+          "merchant_name": "Woolworths",
+          "amount_cents": 31120,
+          "problem": null
+         },
+         {
+          "line_no": 6,
+          "raw": "2026-03-09,\"Clicks, Sandton City\",-240.00",
+          "occurred_on": "2026-03-09",
+          "merchant_name": "Clicks, Sandton City",
+          "amount_cents": 24000,
+          "problem": null
+         },
+         {
+          "line_no": 7,
+          "raw": "2026-03-10,Uber Trip,-96.00",
+          "occurred_on": "2026-03-10",
+          "merchant_name": "Uber Trip",
+          "amount_cents": 9600,
+          "problem": null
+         },
+         {
+          "line_no": 8,
+          "raw": "2026-03-31,City Power Prepaid,-600.00",
+          "occurred_on": "2026-03-31",
+          "merchant_name": "City Power Prepaid",
+          "amount_cents": 60000,
+          "problem": null
+         },
+         {
+          "line_no": 9,
+          "raw": "2026-02-30,Checkers,-455.10",
+          "occurred_on": null,
+          "merchant_name": null,
+          "amount_cents": null,
+          "problem": {
+           "rule": "R14",
+           "text": "The date \"2026-02-30\" is not a real date in the form YYYY-MM-DD."
+          }
+         },
+         {
+          "line_no": 10,
+          "raw": "2026-03-11,Zzyx Trading 4471,-1200.00",
+          "occurred_on": "2026-03-11",
+          "merchant_name": "Zzyx Trading 4471",
+          "amount_cents": 120000,
+          "problem": null
+         },
+         {
+          "line_no": 11,
+          "raw": "2026-03-12,Showmax,-99.00",
+          "occurred_on": "2026-03-12",
+          "merchant_name": "Showmax",
+          "amount_cents": 9900,
+          "problem": null
+         },
+         {
+          "line_no": 12,
+          "raw": "2026-03-12,Steers Melville,-134.50",
+          "occurred_on": "2026-03-12",
+          "merchant_name": "Steers Melville",
+          "amount_cents": 13450,
+          "problem": null
+         },
+         {
+          "line_no": 13,
+          "raw": "2026-03-13,Shell Sandton,-720.00",
+          "occurred_on": "2026-03-13",
+          "merchant_name": "Shell Sandton",
+          "amount_cents": 72000,
+          "problem": null
+         },
+         {
+          "line_no": 14,
+          "raw": "2026-03-13,Dis-Chem Pharmacy,-318.75",
+          "occurred_on": "2026-03-13",
+          "merchant_name": "Dis-Chem Pharmacy",
+          "amount_cents": 31875,
+          "problem": null
+         }
+        ]
+       }
+      },
+      {
+       "node": "classify",
+       "type": "code",
+       "result": "PASS",
+       "note": "11 merchants. 1 from the memory, 4 model calls, 6 with no budget.",
+       "edge": "classify>await_person",
+       "by": "code",
+       "writes": {
+        "suggestions": {
+         "woolworths": {
+          "category_id": "groceries",
+          "category_name": "Groceries",
+          "source": "memory",
+          "run_id": "run_0002"
+         },
+         "engen garage": {
+          "category_id": "transport",
+          "category_name": "Transport",
+          "source": "model",
+          "run_id": "run_0003"
+         },
+         "nando s rosebank": {
+          "category_id": "eating-out",
+          "category_name": "Eating out",
+          "source": "model",
+          "run_id": "run_0004"
+         },
+         "clicks sandton city": {
+          "category_id": "health",
+          "category_name": "Health",
+          "source": "model",
+          "run_id": "run_0005"
+         },
+         "uber trip": {
+          "category_id": "transport",
+          "category_name": "Transport",
+          "source": "model",
+          "run_id": "run_0006"
+         },
+         "city power prepaid": null,
+         "zzyx trading 4471": null,
+         "showmax": null,
+         "steers melville": null,
+         "shell sandton": null,
+         "dis chem pharmacy": null
+        },
+        "budget": {
+         "unknown_merchants": 10,
+         "model_calls_allowed": 4,
+         "model_calls_made": 4
+        }
+       }
+      },
+      {
+       "node": "await_person",
+       "type": "person",
+       "result": "PASS",
+       "note": "The proposal waits for the person. The state is stored as a checkpoint.",
+       "edge": "await_person>respond",
+       "by": "code",
+       "writes": {}
+      },
+      {
+       "node": "respond",
+       "type": "code",
+       "result": "PASS",
+       "note": "Answer with the proposal.",
+       "edge": null,
+       "by": "code",
+       "writes": {
+        "response": {
+         "batch_id": "imp-d40105f64f46",
+         "run_id": "run_0001",
+         "lines": [
+          {
+           "line_no": 1,
+           "raw": "2026-03-02,Woolworths,-642.35",
+           "occurred_on": "2026-03-02",
+           "merchant_name": "Woolworths",
+           "amount_cents": 64235,
+           "problem": null,
+           "suggestion": {
+            "category_id": "groceries",
+            "category_name": "Groceries",
+            "source": "memory",
+            "run_id": "run_0002"
+           }
+          },
+          {
+           "line_no": 2,
+           "raw": "2026-03-03,Engen Garage,-850.00",
+           "occurred_on": "2026-03-03",
+           "merchant_name": "Engen Garage",
+           "amount_cents": 85000,
+           "problem": null,
+           "suggestion": {
+            "category_id": "transport",
+            "category_name": "Transport",
+            "source": "model",
+            "run_id": "run_0003"
+           }
+          },
+          {
+           "line_no": 3,
+           "raw": "2026-03-05,Nando's Rosebank,-189.90",
+           "occurred_on": "2026-03-05",
+           "merchant_name": "Nando's Rosebank",
+           "amount_cents": 18990,
+           "problem": null,
+           "suggestion": {
+            "category_id": "eating-out",
+            "category_name": "Eating out",
+            "source": "model",
+            "run_id": "run_0004"
+           }
+          },
+          {
+           "line_no": 4,
+           "raw": "2026-03-06,SALARY ACME LTD,28500.00",
+           "occurred_on": null,
+           "merchant_name": null,
+           "amount_cents": null,
+           "problem": {
+            "rule": "R14",
+            "text": "This line is money in. The application records only expenses."
+           },
+           "suggestion": null
+          },
+          {
+           "line_no": 5,
+           "raw": "2026-03-07,Woolworths,-311.20",
+           "occurred_on": "2026-03-07",
+           "merchant_name": "Woolworths",
+           "amount_cents": 31120,
+           "problem": null,
+           "suggestion": {
+            "category_id": "groceries",
+            "category_name": "Groceries",
+            "source": "memory",
+            "run_id": "run_0002"
+           }
+          },
+          {
+           "line_no": 6,
+           "raw": "2026-03-09,\"Clicks, Sandton City\",-240.00",
+           "occurred_on": "2026-03-09",
+           "merchant_name": "Clicks, Sandton City",
+           "amount_cents": 24000,
+           "problem": null,
+           "suggestion": {
+            "category_id": "health",
+            "category_name": "Health",
+            "source": "model",
+            "run_id": "run_0005"
+           }
+          },
+          {
+           "line_no": 7,
+           "raw": "2026-03-10,Uber Trip,-96.00",
+           "occurred_on": "2026-03-10",
+           "merchant_name": "Uber Trip",
+           "amount_cents": 9600,
+           "problem": null,
+           "suggestion": {
+            "category_id": "transport",
+            "category_name": "Transport",
+            "source": "model",
+            "run_id": "run_0006"
+           }
+          },
+          {
+           "line_no": 8,
+           "raw": "2026-03-31,City Power Prepaid,-600.00",
+           "occurred_on": "2026-03-31",
+           "merchant_name": "City Power Prepaid",
+           "amount_cents": 60000,
+           "problem": null,
+           "suggestion": null
+          },
+          {
+           "line_no": 9,
+           "raw": "2026-02-30,Checkers,-455.10",
+           "occurred_on": null,
+           "merchant_name": null,
+           "amount_cents": null,
+           "problem": {
+            "rule": "R14",
+            "text": "The date \"2026-02-30\" is not a real date in the form YYYY-MM-DD."
+           },
+           "suggestion": null
+          },
+          {
+           "line_no": 10,
+           "raw": "2026-03-11,Zzyx Trading 4471,-1200.00",
+           "occurred_on": "2026-03-11",
+           "merchant_name": "Zzyx Trading 4471",
+           "amount_cents": 120000,
+           "problem": null,
+           "suggestion": null
+          },
+          {
+           "line_no": 11,
+           "raw": "2026-03-12,Showmax,-99.00",
+           "occurred_on": "2026-03-12",
+           "merchant_name": "Showmax",
+           "amount_cents": 9900,
+           "problem": null,
+           "suggestion": null
+          },
+          {
+           "line_no": 12,
+           "raw": "2026-03-12,Steers Melville,-134.50",
+           "occurred_on": "2026-03-12",
+           "merchant_name": "Steers Melville",
+           "amount_cents": 13450,
+           "problem": null,
+           "suggestion": null
+          },
+          {
+           "line_no": 13,
+           "raw": "2026-03-13,Shell Sandton,-720.00",
+           "occurred_on": "2026-03-13",
+           "merchant_name": "Shell Sandton",
+           "amount_cents": 72000,
+           "problem": null,
+           "suggestion": null
+          },
+          {
+           "line_no": 14,
+           "raw": "2026-03-13,Dis-Chem Pharmacy,-318.75",
+           "occurred_on": "2026-03-13",
+           "merchant_name": "Dis-Chem Pharmacy",
+           "amount_cents": 31875,
+           "problem": null,
+           "suggestion": null
+          }
+         ],
+         "budget": {
+          "unknown_merchants": 10,
+          "model_calls_allowed": 4,
+          "model_calls_made": 4
+         }
+        }
+       }
+      }
+     ]
+    }
    }
   }
  ]

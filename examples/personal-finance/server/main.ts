@@ -9,6 +9,7 @@ import { periodOf } from './domain/expense.ts';
 import { sqliteTrace } from './graph/trace.ts';
 import { sqliteLedgerReader } from './graph/verifier.ts';
 import type { App } from './http/handlers.ts';
+import { sqliteImportStore } from './import/line-worker.ts';
 import { claudeSuggester } from './intelligence/claude-suggester.ts';
 import { sqliteMerchantMemory } from './intelligence/merchant-memory.ts';
 import { createHttpServer } from './http/server.ts';
@@ -27,6 +28,8 @@ const app: App = {
   memory: sqliteMerchantMemory(db),
   suggester: config.ai ? claudeSuggester(config.ai) : undefined,
   dailyCap: config.ai?.dailyCap,
+  // Level 4: the store of the import checkpoints.
+  batches: sqliteImportStore(db),
 };
 
 const webDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'web', 'dist');

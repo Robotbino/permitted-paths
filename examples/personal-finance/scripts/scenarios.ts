@@ -2,7 +2,10 @@
 // the HTTP status and the path through the execution graph.
 // Two things use this file: the path tests, and the recorder that makes recordings/runs.json
 // for the course page. The page replays what the real code did; it has no second implementation.
+import { readFileSync } from 'node:fs';
 import type { AddressInfo } from 'node:net';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Expense } from '../shared/contracts.ts';
 import { fixedClock, sequentialIds } from '../server/clock.ts';
 import { merchantKey } from '../server/domain/expense.ts';
@@ -11,12 +14,14 @@ import { memoryTrace, type RunRecord } from '../server/graph/trace.ts';
 import { sqliteLedgerReader } from '../server/graph/verifier.ts';
 import type { App } from '../server/http/handlers.ts';
 import { createHttpServer } from '../server/http/server.ts';
+import { memoryImportStore } from '../server/import/line-worker.ts';
 import { fakeSuggester, type FakeBehaviour } from '../server/intelligence/fake-suggester.ts';
 import { sqliteMerchantMemory } from '../server/intelligence/merchant-memory.ts';
 import { seed } from '../server/repositories/seed.ts';
 import { openDatabase, sqliteStores } from '../server/repositories/sqlite.ts';
 
 export const TODAY = '2026-03-14';
+export const STATEMENT = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'fixtures', 'statement-march.csv'), 'utf8').replace(/\r\n/g, '\n');
 const base = { amount_cents: 18500, currency: 'ZAR', occurred_on: TODAY, merchant_name: 'Woolworths', category_id: 'groceries' };
 
 /** A defect that the scenario puts into the world, to show a failure path. */
@@ -31,6 +36,8 @@ export type WorldOptions = {
   /** What the memory already knows: [merchant name, category id]. */
   remembered?: Array<[string, string]>;
   dailyCap?: number;
+  /** Level 4: the largest number of model calls for one import. */
+  importBudget?: number;
 };
 
 export type Scenario = {
@@ -38,7 +45,9 @@ export type Scenario = {
   level: number;
   title: string;
   world: WorldOptions;
-  endpoint: '/api/expenses' | '/api/expenses/suggest';
+  endpoint: '/api/expenses' | '/api/expenses/suggest' | '/api/imports';
+  /** Level 4: a second request that is made from the answer of the first (the decisions of the person). */
+  follow?: (first: any) => { path: string; body: unknown };
   /** Requests that go in before the request of the scenario, to the same endpoint. */
   before: unknown[];
   request: unknown;
@@ -76,6 +85,11 @@ export const SCENARIOS: Scenario[] = [
   suggest('suggest_memory_inactive', 'The memory names a category that is not active now', { ai: 'answer', remembered: [['Virgin Active', 'gym']] }, 'Virgin Active', ['gate1', 'recall', 'suggestion_gate', 'respond'], 'NOT_PERMITTED'),
   { id: 'record_with_memory', level: 3, title: 'A correct expense, in an application that has a memory', world: { memory: true, ai: 'answer' }, endpoint: '/api/expenses', before: [],
     request: { ...base, idempotency_key: 'key-memory-1', merchant_name: 'Engen Garage', category_id: 'transport' }, expect: { status: 201, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'project', 'verify', 'remember', 'respond'], rows: 1 } },
+  // Level 4: the import graph. Two requests: the proposal, then the decisions of the person.
+  { id: 'import_statement', level: 4, title: 'Import a statement of 14 lines; the person accepts each suggestion', world: { memory: true, ai: 'answer', remembered: [['Woolworths', 'groceries']], importBudget: 4 },
+    endpoint: '/api/imports', before: [], request: { csv: STATEMENT },
+    follow: (first) => ({ path: '/api/imports/' + first.batch_id + '/decide', body: { decisions: first.lines.map((l: any) => ({ line_no: l.line_no, category_id: l.suggestion?.category_id ?? null })) } }),
+    expect: { status: 200, path: ['await_person', 'apply', 'reconcile', 'respond'], rows: 6 } },
 ];
 
 export type World = { app: App; base: string; rows(): number; memoryRows(): number; modelCalls(): number; close(): Promise<void> };
@@ -100,7 +114,7 @@ export async function makeWorld(options: WorldOptions = {}): Promise<World> {
   const suggester = options.ai && options.ai !== 'off' ? fakeSuggester(options.ai) : undefined;
   const app: App = {
     stores, clock: fixedClock(TODAY), ids: sequentialIds(), trace: memoryTrace(), ledger: sqliteLedgerReader(db), sleep: async () => {},
-    memory, suggester, dailyCap: options.dailyCap,
+    memory, suggester, dailyCap: options.dailyCap, batches: memoryImportStore(), importBudget: options.importBudget,
   };
   const server = createHttpServer(app);
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
@@ -125,16 +139,25 @@ export async function send(world: World, path: string, body: unknown): Promise<E
   return { status: response.status, body: await response.json() };
 }
 
-export type ScenarioResult = { http: Exchange; run: RunRecord | null; rows: number; memory_rows: number; model_calls: number };
+export type ScenarioResult = { http: Exchange; run: RunRecord | null; rows: number; memory_rows: number; model_calls: number; first?: { http: Exchange; run: RunRecord | null } };
 
 export async function runScenario(scenario: Scenario): Promise<ScenarioResult> {
   const world = await makeWorld(scenario.world);
   try {
     for (const earlier of scenario.before) await send(world, scenario.endpoint, earlier);
     const before = { memory: world.memoryRows(), calls: world.modelCalls() };
-    const http = await send(world, scenario.endpoint, scenario.request);
-    const run_id: string | undefined = http.body.run_id ?? http.body.error?.run_id;
-    return { http, run: run_id ? (world.app.trace?.get(run_id) ?? null) : null, rows: world.rows(), memory_rows: world.memoryRows() - before.memory, model_calls: world.modelCalls() - before.calls };
+    let http = await send(world, scenario.endpoint, scenario.request);
+    const runOf = (x: Exchange) => {
+      const id: string | undefined = x.body.run_id ?? x.body.error?.run_id;
+      return id ? (world.app.trace?.get(id) ?? null) : null;
+    };
+    let first: ScenarioResult['first'];
+    if (scenario.follow) {
+      first = { http, run: runOf(http) };
+      const next = scenario.follow(http.body);
+      http = await send(world, next.path, next.body);
+    }
+    return { http, first, run: runOf(http), rows: world.rows(), memory_rows: world.memoryRows() - before.memory, model_calls: world.modelCalls() - before.calls };
   } finally {
     await world.close();
   }

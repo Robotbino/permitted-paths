@@ -60,13 +60,15 @@ function deepFreeze<T>(value: T): T {
 export type RunHooks<S> = {
   /** Called after each step with a copy of the state. The trace uses it for the checkpoints. */
   onStep?(step: Step, stateAfter: S): void;
+  /** Level 4: start at this node, not at graph.start. A run that waited for a person starts again from its checkpoint. */
+  startAt?: string;
 };
 
 export async function runGraph<S extends object, D>(graph: Graph<S, D>, initial: S, deps: D, hooks: RunHooks<S> = {}): Promise<Run<S>> {
   const byId = new Map(graph.nodes.map((n) => [n.id, n]));
   let state: S = structuredClone(initial);
   const steps: Step[] = [];
-  let current: string | null = graph.start;
+  let current: string | null = hooks.startAt ?? graph.start;
   const budget = graph.maxSteps ?? 40;
 
   while (current !== null) {

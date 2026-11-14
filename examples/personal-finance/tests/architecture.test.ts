@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { expect, test } from 'vitest';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SOURCE_DIRS = ['shared', 'server', 'web/src', 'scripts', 'tests'];
+const SOURCE_DIRS = ['shared', 'server', 'web/src', 'scripts', 'tests', 'fixtures'];
 
 type Entry = { level: number; modified?: number[]; role: string };
 const levels = JSON.parse(readFileSync(join(ROOT, 'levels.json'), 'utf8')) as { files: Record<string, Entry> };

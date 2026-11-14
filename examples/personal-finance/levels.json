@@ -32,7 +32,8 @@
       "role": "Composition root: makes all the parts and connects them.",
       "modified": [
         2,
-        3
+        3,
+        4
       ]
     },
     "server/config.ts": {
@@ -113,7 +114,8 @@
       "role": "The use case 'record an expense'. From level 2: a thin facade that runs the graph.",
       "modified": [
         2,
-        3
+        3,
+        4
       ]
     },
     "server/services/record-expense.test.ts": {
@@ -129,7 +131,8 @@
       "role": "One small function for each operation of the API.",
       "modified": [
         2,
-        3
+        3,
+        4
       ]
     },
     "server/http/server.ts": {
@@ -151,14 +154,16 @@
       "level": 1,
       "role": "Owns the screen state and calls the server.",
       "modified": [
-        3
+        3,
+        4
       ]
     },
     "web/src/api.ts": {
       "level": 1,
       "role": "The only file of the web application that calls fetch.",
       "modified": [
-        3
+        3,
+        4
       ]
     },
     "web/src/state.ts": {
@@ -190,7 +195,8 @@
       "level": 1,
       "role": "Mobile-first styles.",
       "modified": [
-        3
+        3,
+        4
       ]
     },
     "tests/architecture.test.ts": {
@@ -204,12 +210,16 @@
       "level": 2,
       "role": "The classes, relations, permitted values and rules R1 to R11, as data.",
       "modified": [
-        3
+        3,
+        4
       ]
     },
     "server/graph/engine.ts": {
       "level": 2,
-      "role": "The interpreter of an execution graph. Enforces the state contract."
+      "role": "The interpreter of an execution graph. Enforces the state contract.",
+      "modified": [
+        4
+      ]
     },
     "server/graph/engine.test.ts": {
       "level": 2,
@@ -273,14 +283,16 @@
       "level": 2,
       "role": "Named scenarios with the expected status and path.",
       "modified": [
-        3
+        3,
+        4
       ]
     },
     "scripts/record-runs.ts": {
       "level": 2,
       "role": "Records each scenario from the real code for the course page.",
       "modified": [
-        3
+        3,
+        4
       ]
     },
     "scripts/recordings.test.ts": {
@@ -317,7 +329,10 @@
     },
     "server/intelligence/suggest-category.graph.ts": {
       "level": 3,
-      "role": "The suggest graph: memory, cost control, model, gate. It cannot write the ledger."
+      "role": "The suggest graph: memory, cost control, model, gate. It cannot write the ledger.",
+      "modified": [
+        4
+      ]
     },
     "server/intelligence/suggest-category.paths.test.ts": {
       "level": 3,
@@ -334,6 +349,46 @@
     "tests/ai-off.test.ts": {
       "level": 3,
       "role": "Runs level 2 again with no model, a slow model and a broken model."
+    },
+    "shared/contracts.import.ts": {
+      "level": 4,
+      "role": "The contracts of an import: lines, suggestions, the four ends, the two answers."
+    },
+    "server/import/statement-parser.ts": {
+      "level": 4,
+      "role": "Text of a statement to lines. A bad line is a value, not an exception."
+    },
+    "server/import/pool.ts": {
+      "level": 4,
+      "role": "Runs work for many items, a limited number at the same time."
+    },
+    "server/import/line-worker.ts": {
+      "level": 4,
+      "role": "The workers: one suggest sub-run or one record sub-run. And the store of checkpoints."
+    },
+    "server/import/reconciler.ts": {
+      "level": 4,
+      "role": "The independent check of an import: each line has exactly one end (R14)."
+    },
+    "server/import/import.graph.ts": {
+      "level": 4,
+      "role": "The orchestrator graph: fan-out, one budget, a wait for the person, a resume."
+    },
+    "server/import/import.test.ts": {
+      "level": 4,
+      "role": "Parser, pool, reconciler by sabotage, and the whole import in two steps."
+    },
+    "server/repositories/migrations/004_imports.sql": {
+      "level": 4,
+      "role": "Table: import_batches (the checkpoints)."
+    },
+    "web/src/ImportReview.tsx": {
+      "level": 4,
+      "role": "The review screen of an import: the person decides each line."
+    },
+    "fixtures/statement-march.csv": {
+      "level": 4,
+      "role": "A fictional statement with good lines, a bad date and money in."
     }
   }
 }

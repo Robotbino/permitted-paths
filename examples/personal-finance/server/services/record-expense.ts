@@ -24,6 +24,8 @@ export type RecordExpenseDeps = {
   sleep?: (ms: number) => Promise<void>;
   /** Level 3. With a memory, the graph has one more node: remember. */
   memory?: MerchantMemory;
+  /** Level 4: the run that started this run as a worker. */
+  parent_run_id?: string;
 };
 
 // One run at a time. Two runs that interleave would make the verifier see the expense of the other run
@@ -50,7 +52,7 @@ async function runOnce(deps: RecordExpenseDeps, input: unknown): Promise<RecordE
   const { response, rejection, escalation, expense } = run.state;
   writeTrace(
     deps.trace,
-    { id: run_id, graph: graph.name, started_at, ended_at: deps.clock.now(), result: response ? 'PASS' : rejection ? 'FAIL' : 'ESCALATED', subject_id: (response?.expense ?? expense)?.id ?? null, parent_run_id: run.state.suggest_run_id },
+    { id: run_id, graph: graph.name, started_at, ended_at: deps.clock.now(), result: response ? 'PASS' : rejection ? 'FAIL' : 'ESCALATED', subject_id: (response?.expense ?? expense)?.id ?? null, parent_run_id: run.state.suggest_run_id ?? deps.parent_run_id ?? null },
     run,
     checkpoints.events,
   );

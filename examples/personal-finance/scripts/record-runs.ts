@@ -9,6 +9,7 @@ import { RULES } from '../shared/ontology.ts';
 import { describeGraph } from '../server/graph/engine.ts';
 import { recordExpenseGraph, recordExpenseGraphWithMemory } from '../server/graph/record-expense.graph.ts';
 import { initialRecordState } from '../server/graph/state.ts';
+import { importGraph } from '../server/import/import.graph.ts';
 import { initialSuggestState, suggestCategoryGraph } from '../server/intelligence/suggest-category.graph.ts';
 import { SCENARIOS, TODAY, runScenario } from './scenarios.ts';
 
@@ -17,7 +18,8 @@ const FILE = join(dirname(fileURLToPath(import.meta.url)), '..', 'recordings', '
 export async function record(): Promise<string> {
   const scenarios = [];
   for (const scenario of SCENARIOS) {
-    const { http, run, rows, memory_rows, model_calls } = await runScenario(scenario);
+    const { http, run, rows, memory_rows, model_calls, first } = await runScenario(scenario);
+    const steps = (r: NonNullable<typeof run>) => r.events.map(({ node, type, result, note, edge, by, writes }) => ({ node, type, result, note, edge, by, writes }));
     scenarios.push({
       id: scenario.id,
       level: scenario.level,
@@ -37,8 +39,10 @@ export async function record(): Promise<string> {
         path: run.events.map((e) => e.node),
         // The checkpoints are in the trace of the application. The recording keeps only the writes:
         // the page gets each checkpoint when it adds the writes to the initial state, step by step.
-        steps: run.events.map(({ node, type, result, note, edge, by, writes }) => ({ node, type, result, note, edge, by, writes })),
+        steps: steps(run),
       },
+      // Level 4: the first of two requests (the proposal, before the person decides).
+      ...(first ? { first: { http: first.http, run: first.run && { id: first.run.id, graph: first.run.graph, result: first.run.result, path: first.run.events.map((e) => e.node), steps: steps(first.run) } } } : {}),
     });
   }
   const recording = {
@@ -50,6 +54,8 @@ export async function record(): Promise<string> {
       // Level 3: the record graph of an application that has a merchant memory, and the suggest graph.
       'record-expense+memory': { ...describeGraph(recordExpenseGraphWithMemory), initial_state: initialRecordState('run_0000', null) },
       'suggest-category': { ...describeGraph(suggestCategoryGraph), initial_state: initialSuggestState('run_0000', null) },
+      // Level 4: the orchestrator graph.
+      'import-statement': { ...describeGraph(importGraph), initial_state: {} },
     },
     scenarios,
   };

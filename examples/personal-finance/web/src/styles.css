@@ -47,7 +47,14 @@ ul.recent { gap: 0.35rem; font-size: 0.9rem; }
 .state.over { color: var(--over); font-weight: 600; }
 li.changed { animation: changed 1.2s ease-out; }
 @keyframes changed { from { background: color-mix(in srgb, var(--ok) 25%, transparent); } to { background: transparent; } }
+textarea { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); font: 0.85rem/1.4 ui-monospace, Consolas, monospace; }
+ul.lines { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 0.75rem; font-size: 0.9rem; }
+ul.lines li { border-top: 1px solid var(--rule); padding-top: 0.5rem; }
+ul.lines li.bad { color: var(--muted); }
+.pick { align-items: center; margin-top: 0.35rem; }
+.pick select { min-width: 0; }
 @media (min-width: 48rem) {
+  .import { grid-column: 1 / -1; }
   main { grid-template-columns: 1fr 1fr; align-items: start; }
   main > h1, main > p { grid-column: 1 / -1; }
 }
