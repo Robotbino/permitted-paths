@@ -1,8 +1,8 @@
 // The expense: pure functions, no store, no HTTP.
-import type { Expense, RecordExpenseRequest } from '../../shared/contracts.ts';
+import { DEFAULT_ACCOUNT, type Expense, type RecordExpenseRequest } from '../../shared/contracts.ts';
 
 /** A request that passed the check of shape, without the fields that are only for the transport. */
-export type ExpenseProposal = Omit<RecordExpenseRequest, 'idempotency_key' | 'confirm_duplicate' | 'suggest_run_id'> & { merchant_key: string };
+export type ExpenseProposal = Omit<RecordExpenseRequest, 'idempotency_key' | 'confirm_duplicate' | 'suggest_run_id' | 'account'> & { merchant_key: string; account: string };
 
 /** "  Woolworths  Food " and "WOOLWORTHS FOOD" are the same merchant: "woolworths food". */
 export function merchantKey(name: string): string {
@@ -27,6 +27,7 @@ export function toProposal(request: RecordExpenseRequest): ExpenseProposal {
     merchant_key: merchantKey(request.merchant_name),
     category_id: request.category_id,
     note: request.note,
+    account: request.account ?? DEFAULT_ACCOUNT,
   };
 }
 
@@ -46,6 +47,7 @@ export function toExpense(proposal: ExpenseProposal, id: string, idempotency_key
     merchant_key: proposal.merchant_key,
     category_id: proposal.category_id,
     note: proposal.note ?? null,
+    account: proposal.account,
     created_at,
   };
 }
@@ -58,6 +60,7 @@ export function sameAsStored(stored: Expense, proposal: ExpenseProposal): boolea
     stored.currency === proposal.currency &&
     stored.merchant_key === proposal.merchant_key &&
     stored.category_id === proposal.category_id &&
-    stored.note === (proposal.note ?? null)
+    stored.note === (proposal.note ?? null) &&
+    stored.account === proposal.account
   );
 }

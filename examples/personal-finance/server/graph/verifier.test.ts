@@ -52,7 +52,7 @@ test('sabotage: a second row for the same expense, without the UNIQUE rule of th
   db.exec('CREATE TABLE copy AS SELECT * FROM expenses');
   db.exec('DROP TABLE expenses');
   db.exec('ALTER TABLE copy RENAME TO expenses'); // the copy has no UNIQUE constraint
-  db.exec("INSERT INTO expenses SELECT 'exp_2', idempotency_key, occurred_on, amount_cents, currency, merchant_name, merchant_key, category_id, note, created_at FROM expenses");
+  db.exec("INSERT INTO expenses SELECT 'exp_2', idempotency_key, occurred_on, amount_cents, currency, merchant_name, merchant_key, category_id, note, created_at, account FROM expenses");
   const result = verifyRecorded(ledger, 'key-0001', expense, proposal, reported);
   expect(result.problems[0]!.text).toContain('2 rows');
   expect(rules(result)).toContain('R10');
@@ -65,5 +65,5 @@ test('sabotage: the graph reports a wrong spent amount', () => {
 });
 
 test('the verifier has no method that writes', () => {
-  expect(Object.keys(world().ledger).sort()).toEqual(['amountsInMonth', 'rowsForKey']);
+  expect(Object.keys(world().ledger).sort()).toEqual(['amountsInMonth', 'incomeRowsForKey', 'rowsForKey']);
 });

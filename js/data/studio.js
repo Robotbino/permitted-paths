@@ -1,13 +1,15 @@
 /* studio.js: the data of the Practical Architecture Studio (part S).
    Added by this edition. It is not from the GE notes. Research date: 2026-11-14.
+   The person of the case study and each figure are fictional.
 
    The drawings are here. The text of each component and each connection (responsibility, data
    contract, file, test) is in the tables of index.html: the page shows the tables when there
    is no JavaScript, and the instrument reads the same tables, thus the text exists one time.
 
-   A node has `level`: the level of the reference application that introduced it (1 to 4).
-   The lens of a drawing makes the parts of a later level faint. In drawing F, `level` is the stage.
-   The source code and the recorded runs are in studio-files.js and studio-runs.js (generated). */
+   A node has `level`: the level of the reference application that introduced it (1 to 3).
+   The lens of a drawing makes the parts of a later level faint. In the drawing "deploy", `level` is the stage.
+   The source code and the recorded runs are in studio-files.js and studio-runs.js (generated).
+   The planning, pipeline and export functions of the application are in studio-domain.js (generated). */
 (function (GE) {
   'use strict';
   var S = GE.data.studio = {};
@@ -15,52 +17,108 @@
   S.repo = 'https://github.com/Robotbino/permitted-paths/blob/main/examples/personal-finance/';
 
   S.levels = [
-    { n: 1, name: 'Ordinary software', short: 'An application' },
-    { n: 2, name: 'Graph structure', short: 'An explicit graph' },
-    { n: 3, name: 'Intelligence layer', short: 'An optional model' },
-    { n: 4, name: 'Orchestration', short: 'Many runs' }
+    { n: 1, name: 'An ordinary application', short: 'Rules as code' },
+    { n: 2, name: 'Structured workflows', short: 'Explicit stages' },
+    { n: 3, name: 'A model inside permitted paths', short: 'A model proposes' }
   ];
 
   var n = function (id, x, y, label, level, extra) { return Object.assign({ id: id, x: x, y: y, label: label, level: level }, extra || {}); };
   var e = function (from, to, level, extra) { return Object.assign({ from: from, to: to, level: level }, extra || {}); };
   var D = S.drawings = {};
 
-  /* A. The system: the parts and the direction of each call. */
+  /* The system: the parts and the direction of each call. */
   D.system = {
-    title: 'The system', lens: 'Level', w: 1040, h: 500, label: 'The parts of the personal finance application and the calls between them.',
+    title: 'The parts of the application', lens: 'Level', w: 1040, h: 520, label: 'The parts of the personal finance application and the calls between them.',
     nodes: [
-      n('pc', 100, 150, 'You, on the PC\nbrowser', 1, { type: 'person' }),
-      n('phone', 100, 260, 'You, on the iPhone\nHome Screen', 1, { type: 'person' }),
-      n('web', 300, 205, 'Web application\nReact, reducer', 1, { type: 'code' }),
-      n('contracts', 410, 70, 'Shared contracts\nZod schemas', 1),
-      n('http', 520, 205, 'HTTP server\nhandlers', 1, { type: 'code' }),
-      n('svc', 740, 205, 'Services\nuse cases', 1, { type: 'code' }),
-      n('dom', 930, 100, 'Domain\npure rules', 1, { type: 'code' }),
-      n('repo', 930, 205, 'Repositories\nports', 1, { type: 'code' }),
-      n('db', 930, 320, 'SQLite file', 1, { shape: 'pill', w: 120 }),
-      n('graph', 740, 320, 'Execution graphs\nengine, gates, verifier', 2, { type: 'code' }),
-      n('trace', 740, 430, 'Trace\ncontext graph', 2, { type: 'code' }),
-      n('intel', 520, 320, 'Intelligence layer\nmemory, gate, prompt', 3, { type: 'code' }),
-      n('model', 300, 320, 'Claude API\noptional', 3, { type: 'model' }),
-      n('imp', 520, 430, 'Import orchestrator\nworkers, reconciler', 4, { type: 'code' })
+      n('you', 90, 205, 'Sam\nbrowser', 1, { type: 'person' }),
+      n('web', 260, 205, 'Web application\nReact, reducer', 1, { type: 'code' }),
+      n('contracts', 370, 70, 'Shared contracts\nZod schemas', 1),
+      n('http', 450, 205, 'HTTP server\nhandlers', 1, { type: 'code' }),
+      n('svc', 660, 205, 'Services\nuse cases', 1, { type: 'code' }),
+      n('dom', 900, 90, 'Domain and planning\npure functions', 1, { type: 'code' }),
+      n('repo', 900, 205, 'Repositories\nports', 1, { type: 'code' }),
+      n('db', 900, 320, 'SQLite file', 1, { shape: 'pill', w: 120 }),
+      n('flows', 660, 330, 'Workflows\nrecord, import', 2, { type: 'code' }),
+      n('trace', 660, 450, 'Trace\neach run, each step', 2, { type: 'code' }),
+      n('sheet', 900, 450, 'Spreadsheet\npaste-ready rows', 2, { type: 'person' }),
+      n('gate', 450, 330, 'Permitted-action gate\nallowlist, checks', 3, { type: 'code', shape: 'gate' }),
+      n('model', 230, 330, 'Model\noptional', 3, { type: 'model' })
     ],
     edges: [
-      e('pc', 'web', 1), e('phone', 'web', 1),
-      e('web', 'http', 1, { label: 'HTTP + JSON' }),
+      e('you', 'web', 1),
+      e('web', 'http', 1, { label: 'JSON' }),
       e('contracts', 'web', 1, { kind: 'ref', toSide: 't' }), e('contracts', 'http', 1, { kind: 'ref', toSide: 't' }),
       e('http', 'svc', 1, { label: 'calls' }),
-      e('svc', 'dom', 1, { fromSide: 't', toSide: 'l', via: [[740, 100]] }),
+      e('svc', 'dom', 1, { fromSide: 't', toSide: 'l', via: [[660, 90]], label: 'facts in, plan out', lx: 760, ly: 81 }),
       e('svc', 'repo', 1),
       e('repo', 'db', 1, { label: 'SQL' }),
-      e('svc', 'graph', 2, { label: 'runs' }),
-      e('graph', 'repo', 2, { fromSide: 'r', toSide: 'b', via: [[870, 320], [870, 262], [930, 262]] }),
-      e('graph', 'trace', 2, { label: 'each step' }),
-      e('http', 'intel', 3),
-      e('intel', 'model', 3, { label: 'merchant text' }),
-      e('intel', 'graph', 3, { label: 'same engine' }),
-      e('http', 'imp', 4, { fromSide: 'l', toSide: 'l', via: [[420, 205], [420, 430]] }),
-      e('imp', 'intel', 4, { label: 'suggest runs' }),
-      e('imp', 'graph', 4, { label: 'record runs', fromSide: 'r', toSide: 'b', via: [[640, 430], [640, 375], [700, 375]], to_: -40 })
+      e('svc', 'flows', 2, { label: 'runs' }),
+      e('flows', 'repo', 2, { fromSide: 'r', toSide: 'b', via: [[820, 330], [820, 262], [900, 262]] }),
+      e('flows', 'trace', 2, { label: 'each step' }),
+      e('flows', 'sheet', 2, { label: 'text to paste', fromSide: 'r', toSide: 'l', via: [[790, 360], [790, 450]], fo: 20, lx: 790, ly: 405 }),
+      e('http', 'gate', 3, { label: 'a sentence' }),
+      e('gate', 'model', 3, { kind: 'ref', label: 'text, names', fo: -14, to_: -14, lx: 340, ly: 300 }),
+      e('model', 'gate', 3, { label: 'a request', fo: 14, to_: 14, lx: 340, ly: 362 }),
+      e('gate', 'svc', 3, { label: 'after approval', fromSide: 't', toSide: 'b', via: [[480, 268], [630, 268]], fo: 30, to_: -30, lx: 555, ly: 259 })
+    ]
+  };
+
+  /* The domain model: what the application knows about money. The three pills are calculated, not stored. */
+  D.model = {
+    title: 'The domain model', lens: 'Level', w: 1040, h: 440, label: 'The things that the application knows, the relations between them, and the three figures that it calculates.',
+    nodes: [
+      n('cycle', 95, 80, 'Pay cycle\npayday to payday', 1),
+      n('income', 290, 80, 'Income', 1, { w: 90 }),
+      n('commitment', 475, 80, 'Commitment\namount, day', 1),
+      n('pot', 665, 80, 'Savings pot\ntarget, priority', 1),
+      n('headroom', 885, 80, 'Headroom\ncalculated', 1, { shape: 'pill', w: 140 }),
+      n('account', 95, 220, 'Account', 1),
+      n('txn', 380, 220, 'Transaction\ndate, cents, merchant', 1),
+      n('category', 650, 220, 'Category\nkind, class', 1),
+      n('spent', 885, 220, 'Spent this week\ncalculated', 1, { shape: 'pill', w: 160 }),
+      n('batch', 380, 360, 'Import batch\nfile hash, mapping, rows', 2),
+      n('cap', 885, 360, 'Weekly cap\ncalculated', 1, { shape: 'pill', w: 140 })
+    ],
+    edges: [
+      e('income', 'cycle', 1, { label: 'arrives in' }),
+      e('commitment', 'income', 1, { kind: 'ref', label: 'paid from' }),
+      e('txn', 'account', 1, { label: 'belongs to' }),
+      e('txn', 'cycle', 1, { label: 'falls in', fromSide: 't', toSide: 'b', via: [[380, 150], [95, 150]], lx: 240, ly: 141 }),
+      e('txn', 'category', 1, { label: 'is in' }),
+      e('batch', 'txn', 2, { label: 'gives, after a decision' }),
+      e('pot', 'headroom', 1, { kind: 'ref', label: 'funded from' }),
+      e('category', 'spent', 1, { label: 'free only' }),
+      e('headroom', 'cap', 1, { label: 'by days', fromSide: 'r', toSide: 'r', via: [[1005, 80], [1005, 360]], lx: 1005, ly: 150 }),
+      e('spent', 'cap', 1, { kind: 'ref', label: 'compared with' })
+    ]
+  };
+
+  /* The six layers of level 3: from a sentence to a change. */
+  D.layers = {
+    title: 'From a sentence to a change', lens: 'Level', w: 1040, h: 430, label: 'The six layers between a sentence of a person and a change of stored data.',
+    nodes: [
+      n('say', 85, 120, '1 Interaction\na sentence', 3, { type: 'person' }),
+      n('interpret', 270, 120, '2 Interpretation\nthe model', 3, { type: 'model' }),
+      n('gate', 465, 120, '3 Gate\nfour checks', 3, { type: 'code', shape: 'gate' }),
+      n('approve', 655, 120, 'The person\napproves', 3, { type: 'person' }),
+      n('service', 840, 120, '4 Service\nexecutes', 1, { type: 'code' }),
+      n('store', 960, 250, '5 Persistence', 1, { shape: 'pill', w: 130 }),
+      n('show', 840, 360, '6 Presentation\nfigures from code', 1, { type: 'code' }),
+      n('clarify', 270, 290, 'A question\n2 to 4 answers', 3, { shape: 'pill', w: 150 }),
+      n('rejected', 465, 290, 'Refused\nby name, recorded', 3, { shape: 'pill', w: 170 })
+    ],
+    edges: [
+      e('say', 'interpret', 3, { label: 'text' }),
+      e('interpret', 'gate', 3, { label: 'request' }),
+      e('interpret', 'clarify', 3, { label: 'not clear' }),
+      e('clarify', 'say', 3, { kind: 'ref', label: 'the person answers', fromSide: 'l', toSide: 'b', via: [[85, 290]], lx: 110, ly: 230 }),
+      e('gate', 'rejected', 3, { label: 'FAIL' }),
+      e('gate', 'approve', 3, { label: 'change' }),
+      e('gate', 'service', 3, { label: 'reads only', fromSide: 't', toSide: 't', via: [[465, 40], [840, 40]], lx: 650, ly: 31 }),
+      e('approve', 'service', 3, { label: 'yes' }),
+      e('service', 'store', 1, { fromSide: 'r', toSide: 't', via: [[960, 120]] }),
+      e('service', 'show', 1, { label: 'figures' }),
+      e('show', 'say', 1, { kind: 'ref', label: 'the person reads', fromSide: 'l', toSide: 'b', via: [[40, 360], [40, 200], [65, 200]], to_: -20, lx: 420, ly: 351 })
     ]
   };
 
@@ -135,123 +193,43 @@
     ]
   };
 
-  /* The import graph (level 4). The two worker nodes are outside the recorded graph: they are sub-runs. */
+  /* The import graph (level 2). The ids are the ids of the real graph (server/import/import.graph.ts). */
   D.importer = {
-    title: 'Import a statement', lens: 'Level', graph: 'import-statement', w: 1040, h: 380, label: 'The orchestrator graph that imports a statement.',
+    title: 'Import a file', lens: 'Level', graph: 'import-statement', w: 1040, h: 410, label: 'The workflow that imports a bank file.',
     nodes: [
-      n('parse', 90, 110, 'parse\nthe statement', 4, { type: 'code' }),
-      n('classify', 260, 110, 'classify\none budget', 4, { type: 'code' }),
-      n('await_person', 450, 110, 'await_person\ncheckpoint', 4, { type: 'person' }),
-      n('apply', 640, 110, 'apply\nline by line', 4, { type: 'code' }),
-      n('reconcile', 810, 110, 'reconcile\none end each', 4, { type: 'code', shape: 'gate' }),
-      n('respond', 960, 110, 'respond', 4, { shape: 'pill', w: 110 }),
-      n('reject', 90, 310, 'reject', 4, { shape: 'pill', w: 100 }),
-      n('w_suggest', 260, 250, 'Suggest graph\nfor each merchant, 3 at a time', 3, { type: 'model', outside: true }),
-      n('w_record', 640, 250, 'Record graph\nfor each decided line', 2, { type: 'code', outside: true })
+      n('inspect', 75, 110, 'inspect\nthe text', 2, { type: 'code', w: 110 }),
+      n('map', 210, 110, 'map\na layout', 2, { type: 'code', shape: 'gate', w: 116 }),
+      n('await_mapping', 210, 250, 'await_mapping\ncheckpoint', 2, { type: 'person', w: 124 }),
+      n('stage', 350, 110, 'stage\nrow states', 2, { type: 'code', w: 110 }),
+      n('classify', 490, 110, 'classify\none budget', 3, { type: 'code', w: 110 }),
+      n('await_person', 635, 110, 'await_person\ncheckpoint', 2, { type: 'person', w: 124 }),
+      n('apply', 780, 110, 'apply\nrow by row', 2, { type: 'code', w: 110 }),
+      n('reconcile', 925, 110, 'reconcile\none end each', 2, { type: 'code', shape: 'gate', w: 126 }),
+      n('export', 925, 240, 'export\ntext to paste', 2, { type: 'code', w: 116 }),
+      n('respond', 925, 350, 'respond', 2, { shape: 'pill', w: 110 }),
+      n('reject', 75, 350, 'reject', 2, { shape: 'pill', w: 100 })
     ],
     edges: [
-      e('parse', 'reject', 4, { label: 'not a statement' }),
-      e('parse', 'classify', 4),
-      e('classify', 'await_person', 4),
-      e('classify', 'w_suggest', 4, { kind: 'ref', label: 'workers', outside: true }),
-      e('await_person', 'respond', 4, { label: 'wait for the person', fromSide: 't', toSide: 't', via: [[450, 30], [960, 30]], lx: 705, ly: 21 }),
-      e('await_person', 'reject', 4, { label: 'decisions FAIL', fromSide: 'b', toSide: 'r', via: [[450, 310]], lx: 340, ly: 301 }),
-      e('await_person', 'apply', 4, { label: 'decisions PASS', lx: 545, ly: 68 }),
-      e('apply', 'w_record', 4, { kind: 'ref', label: 'workers', outside: true }),
-      e('apply', 'reconcile', 4),
-      e('reconcile', 'respond', 4)
+      e('inspect', 'reject', 2, { label: 'not a table', ly: 215 }),
+      e('inspect', 'map', 2),
+      e('map', 'reject', 2, { label: 'FAIL', fromSide: 'b', toSide: 'r', fo: -34, via: [[176, 170], [138, 170], [138, 342]], to_: -8, lx: 138, ly: 215 }),
+      e('map', 'await_mapping', 2, { label: 'no layout' }),
+      e('map', 'stage', 2, { label: 'PASS' }),
+      e('await_mapping', 'respond', 2, { label: 'wait for a mapping', fromSide: 'b', toSide: 'b', fo: 22, via: [[232, 392], [925, 392]], lx: 560, ly: 383 }),
+      e('await_mapping', 'reject', 2, { label: 'mapping FAIL', fromSide: 'b', toSide: 'r', fo: -22, via: [[188, 358]], to_: 8, lx: 188, ly: 300 }),
+      e('await_mapping', 'stage', 2, { label: 'mapping PASS', fromSide: 'r', toSide: 'b', via: [[350, 250]], lx: 312, ly: 241 }),
+      e('stage', 'classify', 2),
+      e('classify', 'await_person', 2),
+      e('await_person', 'respond', 2, { label: 'wait for the person', fromSide: 'b', toSide: 'l', fo: 22, via: [[657, 300], [820, 300], [820, 342]], to_: -8, lx: 738, ly: 291 }),
+      e('await_person', 'reject', 2, { label: 'decisions FAIL', fromSide: 'b', toSide: 'r', fo: -22, via: [[613, 200], [420, 200], [420, 374], [150, 374], [150, 366]], to_: 16, lx: 516, ly: 191 }),
+      e('await_person', 'apply', 2, { label: 'PASS' }),
+      e('apply', 'reconcile', 2),
+      e('reconcile', 'export', 2),
+      e('export', 'respond', 2)
     ]
   };
 
-  /* C. The knowledge graph: the classes of the ontology and their relations. level 9: in the ontology, not built. */
-  D.knowledge = {
-    title: 'What the application knows', lens: 'Level', w: 1040, h: 420, label: 'The classes of the ontology and the relations between them.',
-    nodes: [
-      n('Expense', 420, 200, 'Expense', 1),
-      n('Category', 700, 200, 'Category', 1),
-      n('Budget', 700, 70, 'Budget', 1),
-      n('Month', 930, 70, 'Month\nYYYY-MM', 1),
-      n('Merchant', 420, 340, 'Merchant', 3),
-      n('Rule', 930, 200, 'Rules R1 to R14', 2),
-      n('Person', 110, 70, 'Person', 9),
-      n('Account', 110, 200, 'Account', 9),
-      n('Recurring', 110, 340, 'RecurringExpense', 9),
-      n('Goal', 250, 70, 'SavingsGoal', 9),
-      n('Income', 250, 340, 'Income', 9)
-    ],
-    edges: [
-      e('Expense', 'Category', 1, { label: 'is in' }),
-      e('Budget', 'Category', 1, { label: 'limits' }),
-      e('Budget', 'Month', 1, { label: 'covers' }),
-      e('Expense', 'Merchant', 1, { label: 'is paid to' }),
-      e('Merchant', 'Category', 3, { label: 'is usually in', fromSide: 'r', toSide: 'b', via: [[700, 340]] }),
-      e('Rule', 'Category', 2, { kind: 'ref', label: 'constrain' }),
-      e('Person', 'Account', 9, { kind: 'ref', label: 'owns' }),
-      e('Expense', 'Account', 9, { kind: 'ref', label: 'is paid from' }),
-      e('Recurring', 'Expense', 9, { kind: 'ref', label: 'makes', fromSide: 't', toSide: 'l', via: [[110, 270], [300, 270], [300, 212]], to_: 12, lx: 205, ly: 261 }),
-      e('Goal', 'Account', 9, { kind: 'ref', label: 'is funded from' }),
-      e('Income', 'Account', 9, { kind: 'ref', label: 'is paid into', fromSide: 't', toSide: 'b', via: [[250, 285], [140, 285]], to_: 30, lx: 250, ly: 300 })
-    ]
-  };
-
-  /* D. The context graph: the history of one expense, from the test "the learning loop". */
-  D.context = {
-    title: 'The history of one expense', lens: 'Level', w: 1040, h: 400, label: 'What the trace knows about one expense: two runs, their steps, and what they made.',
-    nodes: [
-      n('ask', 100, 90, 'You type\nEngen Garage', 3, { type: 'person' }),
-      n('run1', 330, 90, 'Run run_0001\nsuggest-category, PASS', 3, { type: 'code' }),
-      n('ev1', 330, 230, '6 trace events\nask_model: transport', 3, { type: 'model' }),
-      n('decide', 560, 90, 'You select\nEating out', 3, { type: 'person' }),
-      n('run2', 790, 90, 'Run run_0002\nrecord-expense, PASS', 2, { type: 'code' }),
-      n('ev2', 790, 230, '9 trace events\na checkpoint after each', 2, { type: 'code' }),
-      n('exp', 960, 340, 'Expense\nexp_0001', 1, { w: 110 }),
-      n('mem', 620, 340, 'Memory row\nengen garage: eating-out', 3)
-    ],
-    edges: [
-      e('ask', 'run1', 3, { label: 'starts' }),
-      e('run1', 'ev1', 3, { label: 'has' }),
-      e('run1', 'decide', 3, { label: 'offers "Transport"', lx: 445, ly: 56 }),
-      e('decide', 'run2', 3, { label: 'starts' }),
-      e('run2', 'run1', 3, { kind: 'ref', label: 'parent_run_id', fromSide: 't', toSide: 't', via: [[790, 25], [330, 25]], lx: 560, ly: 16 }),
-      e('run2', 'ev2', 2, { label: 'has' }),
-      e('run2', 'exp', 2, { label: 'subject_id', fromSide: 'r', toSide: 't', via: [[960, 90]], lx: 990, ly: 215 }),
-      e('mem', 'run2', 3, { kind: 'ref', label: 'source_run_id', fromSide: 't', toSide: 'b', via: [[620, 180], [740, 180]], to_: -50, lx: 620, ly: 215 })
-    ]
-  };
-
-  /* E. The intelligence plane: what the system knows, as files and tables, and what uses each item. */
-  D.plane = {
-    title: 'The intelligence plane', lens: 'Level', w: 1040, h: 440, label: 'The knowledge of the system, and the part of the execution that uses each item.',
-    groups: [{ x: 14, y: 16, w: 1012, h: 180, label: 'INTELLIGENCE PLANE: WHAT THE SYSTEM KNOWS (FILES AND TABLES THAT A PERSON CAN READ)' }, { x: 14, y: 250, w: 1012, h: 176, label: 'EXECUTION: WHAT RUNS' }],
-    nodes: [
-      n('k_contracts', 110, 85, 'Contracts\nshared/contracts.ts', 1),
-      n('k_onto', 290, 85, 'Ontology\nrules R1 to R14', 2),
-      n('k_proc', 470, 85, 'Procedures\nthe three graphs', 2),
-      n('k_prompt', 640, 85, 'Prompt\nsuggest-category.md', 3),
-      n('k_memory', 800, 85, 'Merchant memory\na table', 3),
-      n('k_trace', 950, 85, 'Trace\nruns, events', 2),
-      n('k_cases', 575, 166, 'Scenarios and recordings', 2, { w: 210 }),
-      n('x_web', 110, 340, 'Web form\nHTTP server', 1, { type: 'code' }),
-      n('x_gates', 290, 340, 'Gates\nverifier', 2, { type: 'code' }),
-      n('x_engine', 470, 340, 'Graph engine', 2, { type: 'code' }),
-      n('x_model', 640, 340, 'Model call', 3, { type: 'model' }),
-      n('x_suggest', 800, 340, 'Suggest graph', 3, { type: 'code' }),
-      n('x_you', 950, 340, 'You', 1, { type: 'person' })
-    ],
-    edges: [
-      e('k_contracts', 'x_web', 1, { label: 'types, checks' }),
-      e('k_onto', 'x_gates', 2, { label: 'rule ids' }),
-      e('k_proc', 'x_engine', 2, { fromSide: 'l', toSide: 't', via: [[380, 85], [380, 250], [440, 250]], to_: -30, label: 'nodes, edges', lx: 380, ly: 225 }),
-      e('k_cases', 'x_engine', 2, { label: 'tests', fromSide: 'b', toSide: 't', via: [[575, 290], [500, 290]], to_: 30, lx: 540, ly: 281 }),
-      e('k_prompt', 'x_model', 3, { label: 'system prompt' }),
-      e('k_memory', 'x_suggest', 3, { label: 'asked first' }),
-      e('x_engine', 'k_trace', 2, { kind: 'ref', label: 'writes', fromSide: 'r', toSide: 'b', via: [[560, 340], [560, 222], [900, 222]], to_: -50, lx: 730, ly: 213 }),
-      e('k_trace', 'x_you', 2, { label: 'what happened' }),
-      e('x_you', 'k_memory', 3, { kind: 'ref', label: 'each recorded expense', fromSide: 'l', toSide: 'b', via: [[880, 340], [880, 265], [830, 265]], to_: 30, lx: 880, ly: 285 })
-    ]
-  };
-
-  /* F. Deployment. Here `level` is the stage: 1 the PC only, 2 a private path to the PC, 3 a small host. */
+  /* Deployment. Here `level` is the stage: 1 the PC only, 2 a private path to the PC, 3 a small host. */
   D.deploy = {
     title: 'Where it runs', lens: 'Stage', w: 1040, h: 420, label: 'Where the application runs on a PC and on an iPhone, in three stages.',
     stages: ['1 · PC only', '2 · Private path to the PC', '3 · A small host'],
@@ -295,81 +273,128 @@
       options: [{ value: 'yes', label: 'Yes, a suggestion is shown' }, { value: 'no', label: 'No suggestion; the form works as before' }],
       answer: function (sc) { return sc.http.body.suggestion ? 'yes' : 'no'; }
     },
-    importer: { drawing: 'importer', scenarios: ['import_statement'], twoSteps: true }
+    importer: { drawing: 'importer', scenarios: ['import_northbank', 'import_harbour_after', 'import_same_file_twice', 'import_unknown_layout', 'import_bad_mapping'], manySteps: true }
   };
 
-  /* The checks at the end of each level, and the exercises. Each is one question with a cause for each answer. */
+  /* The decision questions of the part. Each is one question with a cause for each answer. */
   S.checks = {
+    ba_scope: {
+      q: 'Sam says: "Can it also give me a financial health score?" What does the analyst do first?',
+      options: [
+        { text: 'Add it to the list. The person asked for it, thus it is a requirement.', why: 'A sentence of a person is evidence, not a requirement. A feature with no problem behind it costs work and can mislead.' },
+        { text: 'Ask which decision the score would change, and what it would be calculated from.', correct: true, why: 'If no decision changes, the feature has no job. If a decision does change, the job is that decision, and it probably needs a fact and not a score.' },
+        { text: 'Refuse it. A score is a game element, and game elements are out of scope.', why: 'A refusal with no question loses the need that is behind the request. First find the need; then decide.' }
+      ]
+    },
+    open_decision: {
+      q: 'The evidence does not decide a question that changes the architecture: is the truth in the application or in the spreadsheet? What does the engineer do?',
+      options: [
+        { text: 'Select the option that is easier to build, and continue.', why: 'It can be the correct option. With no record, nobody knows later that it was a choice, or what would change it.' },
+        { text: 'Build the two, and let a setting select.', why: 'Two sources of truth with a switch are two systems to test, and a third problem: what happens to the data when the setting changes.' },
+        { text: 'Write the two options with their costs, recommend the one that can be reversed, build the part that the two share, and leave the decision to the person.', correct: true, why: 'An open decision that is written down is a known risk. The decision stays with Sam. The code supports the export path, which keeps the second option possible.' }
+      ]
+    },
+    principle_asset: {
+      q: 'Sam asks: "Mark my car as a liability, like the book says." What does the application do?',
+      options: [
+        { text: 'It adds a list of assets and liabilities, with the definition of the book.', why: 'The definition of the book is one way to think. An accounting standard defines an asset in a different way. An application that classifies the property of a person gives an opinion that it is not qualified to give.' },
+        { text: 'It shows what the car costs in each pay cycle: the commitment, the fuel, the repairs.', correct: true, why: 'That is information from the ledger. What Sam does with it is Sam\'s decision.' },
+        { text: 'It lets a model decide, because the question is about meaning.', why: 'A model can sound certain about a question that has no single answer. The words are not the problem here; the authority is.' }
+      ]
+    },
+    behaviour_kind: {
+      q: '"You overspent on takeaways because you did not plan your meals." What kind of statement is this?',
+      options: [
+        { text: 'An observation.', why: 'The observation is only the first part: the amount in one category was more than in the cycle before. Code can calculate that.' },
+        { text: 'An interpretation that is presented as a fact.', correct: true, why: 'The cause is a guess. The application can give the observation and offer the cause as one of some possibilities. The person knows which one is true.' },
+        { text: 'A recommendation.', why: 'It recommends nothing. It gives a cause, and it gives it with a judgement of the person.' }
+      ]
+    },
+    l1_model_calc: {
+      q: 'Sam asks: "How much of this week\'s cap is left?" Which part gives the answer?',
+      options: [
+        { text: 'A model, with the transactions of the week in its prompt.', why: 'A model can subtract wrong, and it gives no sign when it does. The same question can get a different figure tomorrow.' },
+        { text: 'A pure function with a test: the cap minus the sum of the free spending of the block.', correct: true, why: 'It is arithmetic with one correct answer. At level 3 a model can select this question for the person. It still does not calculate the answer.' },
+        { text: 'The person, in the spreadsheet.', why: 'This is how the earlier tool worked. A figure that a person must copy goes out of date.' }
+      ]
+    },
     l1_state: {
-      q: 'The budget panel shows "R185.00 of R4 500.00". Which part of the application owns the number R185.00?',
+      q: 'The week view shows "R212.40 of R553.42". Which part of the application stores the number R212.40?',
       options: [
-        { text: 'The reducer of the web application. It adds each amount that the form sends.', why: 'The web application does not calculate money. After each record it asks the server again. A second device would have a different number.' },
-        { text: 'A column "spent" in the budgets table. The service adds to it on each save.', why: 'No table has that column. A stored total can disagree with the expenses; then one of the two is wrong and you do not know which.' },
-        { text: 'No part stores it. The store adds the expenses of the category and the month each time.', correct: true, why: 'Rule R10. The expenses are the truth, and "spent" is a question to them. Thus no code can make the two disagree.' }
+        { text: 'The web application. It adds each amount that the form sends.', why: 'The web application does not calculate money. A second device would have a different number.' },
+        { text: 'A column "spent" in a table of weeks. The import adds to it.', why: 'No table has that column. A stored total can disagree with the transactions; then one of the two is wrong and you do not know which.' },
+        { text: 'No part stores it. It is the sum of the transactions of the block, each time.', correct: true, why: 'The transactions are the truth, and "spent" is a question to them. Thus no code can make the two disagree.' }
       ]
     },
-    l1_layers: {
-      q: 'You must add the rule "an expense is not more than R50 000". Where does the rule go?',
+    l2_unknown_csv: {
+      q: 'A file arrives in a layout that the application does not know. What is the correct path?',
       options: [
-        { text: 'web/src/ExpenseForm.tsx, because the person must see the problem immediately.', why: 'A rule only in the form is not a rule: a request can come from a script, from the import, or from an old page. The form can show it, but it cannot own it.' },
-        { text: 'shared/money.ts and shared/contracts.ts: it is a limit on the value of one field.', correct: true, why: 'It reads only the request, thus it is a rule of shape (R1 has this form already). The web application and the server import the same file.' },
-        { text: 'server/domain/expense-rules.ts, because it is a business rule.', why: 'That file holds the rules that need facts from the store: today, the category, similar expenses. This rule needs no fact.' },
-        { text: 'server/repositories/sqlite.ts, as a check before the INSERT.', why: 'A repository stores and reads. If it also decides, a test with the memory store does not see the rule.' }
+        { text: 'An error: "this file is not supported".', why: 'Each new bank, and each change of a bank, is then a change of the code before the person can continue.' },
+        { text: 'Guess the columns from their content: a column with dates is the date.', why: 'A guess is correct most of the time. When it is wrong, each row has a wrong date or a wrong sign, and nothing says so.' },
+        { text: 'Stop, store the state, and ask for a mapping. Check the mapping with a dry run before a row is staged.', correct: true, why: 'An unknown layout is a question to the person. At level 3 a model can propose the mapping, and the same dry run checks it.' }
       ]
     },
-    l2_gate: {
-      q: 'A request has the correct shape, but its date is tomorrow. Which node gives FAIL?',
+    l2_twice: {
+      q: 'Sam imports the same file two times. What makes the ledger correct?',
       options: [
-        { text: 'Gate 1, because the date field is wrong.', why: 'Gate 1 gets only the request. It cannot know what "today" is, thus it cannot know that the date is in the future. The date is a real date, and that is all that Gate 1 checks.' },
-        { text: 'Gate 2, because the answer needs a fact that is not in the request.', correct: true, why: 'Rule R5 compares the date with today. Today is a fact from the clock, and load_facts reads it before Gate 2.' },
-        { text: 'The verifier, after the save.', why: 'The verifier checks that the ledger agrees with the graph. A request that Gate 2 refuses never gets to commit.' }
+        { text: 'The application remembers the name of each file.', why: 'A file can have a new name, and two different files can have the same name. The name says nothing about the rows.' },
+        { text: 'The request key of each row comes from its fingerprint, thus the ledger refuses a second row.', correct: true, why: 'The fingerprint is made from the account, the date, the amount, the description, and the position among equal rows. The same file gives the same keys.' },
+        { text: 'The person sees the duplicates in the list and removes them.', why: 'A person can do it for ten rows. The pipeline shows the duplicates, but the protection must not depend on attention.' }
       ]
     },
-    l2_missing: {
-      q: 'The path tests have nine scenarios. Which of these paths has no scenario, and no other test?',
+    l3_reject: {
+      q: 'A model answers with the capability "delete_transaction" and a correct transaction id. What stops it?',
       options: [
-        { text: 'The store fails one time during the save, then the save is good.', why: 'This is the scenario save_fails_once. It goes through commit, backoff and commit again.' },
-        { text: 'The store does not answer when dedupe looks for the request key.', correct: true, why: 'The edge dedupe to escalate exists, and no scenario uses it. The test "the graph is complete" lists it, with two more. An edge with no test is a path that nobody has seen work.' },
-        { text: 'A defect saves a different amount than the proposal.', why: 'This is the scenario ledger_mismatch. The verifier gives FAIL and the run goes to escalate.' }
+        { text: 'The prompt, which tells the model not to request it.', why: 'The model already did not obey the prompt. A prompt is a help, not a protection.' },
+        { text: 'Check 2 of the gate: the name is not in the allowlist. The request is refused by name and recorded.', correct: true, why: 'Rule R15. There is also no service for that name, thus there is no code path to protect.' },
+        { text: 'The person, who must approve each change.', why: 'The request never gets to the person. A person who must refuse dangerous requests each day will approve one by mistake.' }
+      ]
+    },
+    l3_amount: {
+      q: 'Why does the capability "recommend_allowance" take a percentage, and not the new cap in cents?',
+      options: [
+        { text: 'A percentage needs fewer tokens.', why: 'The difference in cost is nothing. The reason is authority.' },
+        { text: 'The application then calculates each amount from its own records, and the person approves a figure of the application.', correct: true, why: 'A model that gives cents can give wrong cents. A percentage in a small range is an opinion that the application can check and convert.' },
+        { text: 'Models cannot write large numbers.', why: 'They can. They can also write them wrong, and that is the reason.' }
       ]
     },
     l3_authority: {
       q: 'The model answers "groceries" for a merchant. What changed in the database at that moment?',
       options: [
-        { text: 'Nothing changed in the ledger and nothing in the memory. Only the trace has one more run.', correct: true, why: 'The suggest graph gets a function that lists categories, the memory to read, and the suggester. It gets no store that can write. The memory changes only when the person records an expense (R13).' },
-        { text: 'The merchant memory has a new row, thus the next request is faster.', why: 'If the model could teach the memory, a wrong answer would become "what the person usually selects". Only a recorded expense teaches the memory.' },
+        { text: 'Nothing in the ledger and nothing in the memory. Only the record of runs has one more line.', correct: true, why: 'The suggest graph gets a function that lists categories, the memory to read, and the suggester. It gets no store that can write. The memory changes only when the person records an expense (R13).' },
+        { text: 'The merchant memory has a new row, thus the next request is faster.', why: 'If the model could teach the memory, a wrong answer would become "what the person usually selects".' },
         { text: 'The expense has a draft row with the suggested category.', why: 'There is no draft. Until the person pushes Record, the server knows nothing about the expense.' }
       ]
     },
     l3_needs: {
-      q: 'A new requirement: "Show how much I spent on transport in March." Which part does this work?',
+      q: 'A new requirement: "Show how much I spent on transport in this pay cycle." Which part does this work?',
       options: [
-        { text: 'The model, with the March expenses in its prompt.', why: 'A model can add a column of numbers wrong, and you cannot see when it does. This question has one exact answer and SQL gives it.' },
-        { text: 'Code: one query with SUM, through the repository.', correct: true, why: 'It is arithmetic on data that the application owns. A model adds cost, time and a possible error, and it adds no ability.' },
+        { text: 'The model, with the transactions of the cycle in its prompt.', why: 'A model can add a column of numbers wrong, and you cannot see when it does. This question has one exact answer and SQL gives it.' },
+        { text: 'Code: one query with SUM, through the repository.', correct: true, why: 'It is arithmetic on data that the application owns. A model can select the question for the person (the capability analyse_spending). It adds no ability to the answer.' },
         { text: 'A new agent with a tool that reads the ledger.', why: 'An agent decides which steps to do. Here the steps are known before the request arrives: one query.' }
       ]
     },
-    l4_budget: {
-      q: 'A design where each worker counts for itself: three suggest workers start at the same moment, and each one reads "0 model calls today, the limit is 2" from the trace. How many model calls happen?',
+    orch_budget: {
+      q: 'A design where each worker counts for itself: three suggest workers start at the same moment, and each one reads "0 model calls today, the limit is 2". How many model calls happen?',
       options: [
-        { text: 'Two. The third worker sees that the limit is used.', why: 'Each worker read the count before any of them wrote its run to the trace. No worker can see the other two.' },
-        { text: 'Three. Thus a call is reserved in one step before it is made, and the orchestrator reserves for the whole import.', correct: true, why: 'The first version of this application had this defect, and a review found it: ten requests together made ten calls with a limit of two. Now model-budget.ts counts a call when it is reserved, and classify reserves the calls of an import before the workers start.' },
+        { text: 'Two. The third worker sees that the limit is used.', why: 'Each worker read the count before any of them wrote its run. No worker can see the other two.' },
+        { text: 'Three. Thus a call is reserved in one step before it is made, and the orchestrator reserves for the whole import.', correct: true, why: 'An earlier version of this application had this defect, and a review found it: ten requests together made ten calls with a limit of two.' },
         { text: 'None. The engine refuses parallel runs.', why: 'The engine runs one graph. The pool starts three runs of the suggest graph, and each is independent.' }
       ]
     },
-    l4_justified: {
-      q: 'A new requirement: "Tell me why I am over budget in March." Does it need the orchestration of level 4?',
+    orch_justified: {
+      q: 'A new requirement: "Tell me why I am over my cap this week." Does it need orchestration?',
       options: [
-        { text: 'Yes. One worker for each category, then an evaluator agent that checks the answer.', why: 'The queries take milliseconds, thus parallel workers gain nothing. An evaluator that checks numbers is a deterministic gate, which level 3 has.' },
-        { text: 'No. Code gets the numbers. A model can write the sentence around numbers that code puts in.', correct: true, why: 'If code inserts each figure, there is no figure of the model to check. This is a second use of level 3, or of level 1 with no model.' },
-        { text: 'Yes, because the question has the word "why".', why: 'The form of a question does not decide the architecture. The decision comes from a limit that you can name: many items, parallel calls, a wait, a budget.' }
+        { text: 'Yes. One worker for each category, then an evaluator agent that checks the answer.', why: 'The queries take milliseconds, thus parallel workers gain nothing. An evaluator that checks figures is a deterministic gate.' },
+        { text: 'No. Code gets the figures and the observations. A model can select the question; it writes no figure.', correct: true, why: 'If code puts each figure into the answer, there is no figure of the model to check.' },
+        { text: 'Yes, because the question has the word "why".', why: 'The form of a question does not decide the architecture. The decision comes from a limit that you can name: many items, parallel calls, one budget.' }
       ]
     },
     deploy_sync: {
-      q: 'You record an expense on the PC. The iPhone shows it one minute later. Where is the expense stored?',
+      q: 'You import a file on the PC. The iPhone shows the rows one minute later. Where are the rows stored?',
       options: [
-        { text: 'In the storage of the two browsers, which the browsers keep the same.', why: 'A browser does not share its storage with a different device. Storage of a browser is for that browser only.' },
-        { text: 'In the one database of the server. The two devices ask the same server.', correct: true, why: 'There is one copy of the truth, thus there is nothing to merge. The cost: no server, no data. Offline writes are postponed.' },
+        { text: 'In the storage of the two browsers, which the browsers keep the same.', why: 'A browser does not share its storage with a different device.' },
+        { text: 'In the one database of the server. The two devices ask the same server.', correct: true, why: 'There is one copy of the truth, thus there is nothing to merge. The cost: no server, no data.' },
         { text: 'In iCloud, because the iPhone installed the application.', why: 'A Home Screen web app is a web page with its own window. It has no connection to iCloud storage.' }
       ]
     }
@@ -379,48 +404,62 @@
   GE.data.gates.studio = {
     title: 'Gate of the studio: can you place each responsibility?',
     questions: [
-      { kind: 'assign', source: 'Studio, levels 1 to 4', at: 'ps-map',
-        prompt: 'A team builds an application that books a meeting room. Each sentence is a responsibility. Select the part of the architecture that owns it.',
-        hint: 'Ask what the part needs to read. Only the request? The current facts? What was stored after the write? What happened before?',
-        bins: ['Gate 1', 'Gate 2', 'Verifier', 'Trace'],
-        why: 'The four parts differ in what they read: the request, the facts, the stored result, the history.',
+      { kind: 'assign', source: 'Studio, the evidence register', at: 'ps-evidence',
+        prompt: 'A person wants a tool for the bookings of a small sports club. You have notes of what the person said and did. Select the kind of evidence of each line.',
+        hint: 'Explicit: the person said it, in those words. Inference: nobody said it, but the facts show it. Open: the evidence does not decide it. Challenged: it was said, and the facts do not support it.',
+        bins: ['Explicit', 'Strong inference', 'Open question', 'Challenged'],
+        why: 'A requirement comes from evidence. The four kinds differ in how much the evidence supports the sentence.',
         items: [
-          { text: 'The end time must be a real time in the form HH:MM.', bin: 'Gate 1', why: 'It reads only the request.' },
-          { text: 'The room must be free at that time.', bin: 'Gate 2', why: 'It needs a fact from the store: the bookings that exist now.' },
-          { text: 'After the save, the room has exactly one booking for that hour.', bin: 'Verifier', why: 'It reads what is stored after the write, with its own query.' },
-          { text: 'Which request was refused yesterday, and by which rule?', bin: 'Trace', why: 'It is a question about history. The bookings table has no row for a refused request.' },
-          { text: 'The room id must be text of 1 to 20 characters.', bin: 'Gate 1', why: 'It is the shape of one field.' },
-          { text: 'A person cannot book more than 3 rooms in one day.', bin: 'Gate 2', why: 'It needs the count of bookings of that person, a fact from the store.' }
+          { text: '"Members must book a court no more than seven days before."', bin: 'Explicit', why: 'The person said it as a rule.' },
+          { text: 'The paper list of the last month has three double bookings, all on Saturday morning.', bin: 'Strong inference', why: 'Nobody said "prevent double bookings". The list shows that it is the problem.' },
+          { text: '"We need an app with a chat assistant." The same person answers each booking by telephone and likes it.', bin: 'Challenged', why: 'It was said, but the behaviour does not support it. Ask what the assistant would do.' },
+          { text: 'Can a member book for a guest?', bin: 'Open question', why: 'Nothing in the notes decides it, and it changes the data model.' },
+          { text: '"It must work on my phone."', bin: 'Explicit', why: 'A direct statement.' },
+          { text: '"Any payment method must work", said one time, in answer to "what if a member has no card?"', bin: 'Challenged', why: 'An answer to a "what if" question is not a requirement. It has no case behind it.' }
         ] },
       { kind: 'choice', source: 'Studio, level 1', at: 'ps-level-1',
         prompt: 'A parking application stores prices as numbers such as 12.5 (rand). After a year, the monthly report is 3 cents different from the bank. What is the cause, and the repair?',
-        hint: 'Read what the studio says about 0.1 + 0.2.',
+        hint: 'Read how the pipeline changes "1 250,50" into cents.',
         options: [
           { text: 'Binary floats cannot hold most decimal fractions. Store integer cents.', correct: true, why: 'Each sum adds a very small error. Integer cents are exact, and text becomes cents by string operations.' },
           { text: 'The report rounds each line. Round only the total, to two decimals, at the end.', why: 'The error is in the stored values and in each addition, before a report rounds anything.' },
           { text: 'The database has too little precision. Use a column type with more digits.', why: 'More digits of a binary float are still a binary float.' },
           { text: 'Two requests changed the total at the same time. Add a lock around the update.', why: 'A race gives a difference of a full price, not of 3 cents.' }
         ] },
+      { kind: 'assign', source: 'Studio, level 2', at: 'ps-level-2',
+        prompt: 'A shop imports the delivery lists of its suppliers as CSV files. Each line is a problem. Select the stage of the pipeline that owns it.',
+        hint: 'Inspect reads the text. Map says what each column means. Normalise changes one value into the form of the application. Reconcile compares rows with each other and with what is stored.',
+        bins: ['Inspect', 'Map', 'Normalise', 'Reconcile'],
+        why: 'Each stage has one question. A problem that is solved in the wrong stage is solved again, in a different way, in a different stage.',
+        items: [
+          { text: 'One supplier uses a semicolon between the cells, a different one uses a tab.', bin: 'Inspect', why: 'It is about the text of the file, before any meaning.' },
+          { text: 'In a new file, the quantity is in a column named "Qty ord." and no known layout has that name.', bin: 'Map', why: 'Which column has which meaning is the mapping. A person gives it, or approves it.' },
+          { text: '"1.250,5" must become 1250.5 kilograms.', bin: 'Normalise', why: 'One value, changed by the decimal sign that the mapping names.' },
+          { text: 'The same delivery list arrives two times.', bin: 'Reconcile', why: 'It needs what is stored: the fingerprints of the rows that the application has.' },
+          { text: 'A delivery and its cancellation are in the same file.', bin: 'Reconcile', why: 'Two rows that cancel each other. Only a stage that sees more than one row can know.' },
+          { text: 'The date 04/05/2026: the fourth of May, or the fifth of April?', bin: 'Map', why: 'The format is part of the mapping. Normalise uses the format; it does not guess it.' }
+        ] },
       { kind: 'choice', source: 'Studio, level 2', at: 'ps-level-2',
         prompt: 'A phone sends "pay the invoice" and loses the connection before the answer. The person pushes the button again. Which design makes sure that one payment is recorded?',
         hint: 'What is the same in the two requests, and who makes it?',
         options: [
           { text: 'The server refuses a second request with the same amount in the same minute.', why: 'Two real payments of the same amount exist. The server cannot know which case it sees.' },
-          { text: 'The client sends one key for the action with each try. The store refuses a second row.', correct: true, why: 'The key is the identity of the intention. A replay gets the stored result. In the studio: idempotency_key, UNIQUE, the node dedupe.' },
+          { text: 'The client sends one key for the action with each try. The store refuses a second row.', correct: true, why: 'The key is the identity of the intention. A replay gets the stored result. In the studio: the request key, and for an imported row the fingerprint.' },
           { text: 'The button is disabled after the first push.', why: 'It helps the person and it protects nothing: the first request possibly never arrived, and a different page can send again.' },
           { text: 'The server waits for a confirmation of the client before it saves.', why: 'The confirmation can be lost in the same way. The problem moves; it does not go away.' }
         ] },
-      { kind: 'assign', source: 'Studio, levels 3 and 4', at: 'ps-level-3',
-        prompt: 'An application manages the stock of a small shop. Who does each of these: code, a model, or a person?',
-        hint: 'A model is for language and judgement where a small error is seen and corrected. Arithmetic and rules are code. A change that costs money needs a person.',
-        bins: ['Code', 'Model', 'Person'],
-        why: 'Code for what has one correct answer. A model for a proposal from messy text. A person for the decision.',
+      { kind: 'assign', source: 'Studio, level 3', at: 'ps-level-3',
+        prompt: 'An application manages the stock of a small shop, and a person can type a sentence. For each step, select the verb.',
+        hint: 'The model recommends. The application validates. The person approves. The application executes.',
+        bins: ['Recommend', 'Validate', 'Approve', 'Execute'],
+        why: 'Four verbs, three actors. A design that joins two verbs gives one actor an authority that it must not have.',
         items: [
-          { text: 'Add the quantities of each product in the stock list.', bin: 'Code', why: 'Arithmetic has one correct answer.' },
-          { text: 'Read "2 bx choc digestives 400g" on a supplier note and propose the product.', bin: 'Model', why: 'Messy text to a proposal. A gate checks that the product exists.' },
-          { text: 'Approve an order of R40 000 to a new supplier.', bin: 'Person', why: 'It spends money and cannot be undone easily.' },
-          { text: 'Refuse a sale when the stock is 0.', bin: 'Code', why: 'A rule against a current fact: a Gate 2.' },
-          { text: 'Decide that "choc digestives" always means product 1182 from now on.', bin: 'Person', why: 'It changes the memory of the system. In the studio, only a decision of the person teaches the memory.' }
+          { text: 'From "we are low on the chocolate biscuits", a request: reorder product 1182, quantity up by 20 percent.', bin: 'Recommend', why: 'A request in a fixed form. It is an opinion.' },
+          { text: 'Is "reorder" in the list of permitted capabilities?', bin: 'Validate', why: 'The allowlist. Code answers.' },
+          { text: 'Does product 1182 exist, and what does 20 percent more cost?', bin: 'Validate', why: 'The facts of the application, and a figure that the application calculates.' },
+          { text: '"Yes, order 24 boxes for R1 920."', bin: 'Approve', why: 'It spends money. A person says yes to the figure of the application.' },
+          { text: 'The order service writes the order row.', bin: 'Execute', why: 'The same service that the order form calls.' },
+          { text: 'The answer "product 9999" for a product that does not exist is refused.', bin: 'Validate', why: 'A value that the application cannot verify is not accepted.' }
         ] },
       { kind: 'choice', source: 'Studio, level 3', at: 'ps-key',
         prompt: 'A developer has a Max plan for the Claude apps. The developer wants the web application of a small product to call Claude for its users. What is correct?',
@@ -431,13 +470,13 @@
           { text: 'Use an API key from the Console, on the server only, with a spend limit.', correct: true, why: 'The API is the product for applications. The key stays in the environment of the server, and a workspace with a low limit is the last cost control.' },
           { text: 'Start Remote Control on the server and send the user requests to it.', why: 'Remote Control connects your own devices to your own Claude Code session. It is not an API.' }
         ] },
-      { kind: 'choice', source: 'Studio, level 4', at: 'ps-level-4',
+      { kind: 'choice', source: 'Studio, orchestration', at: 'ps-orchestration',
         prompt: 'A team wants "a planner agent, three worker agents and a judge agent" for a tool that renames 5 files by a fixed rule. What is the best answer?',
         hint: 'Which limit of a simpler level did the team name?',
         options: [
           { text: 'Build it, and measure if the judge agent finds errors.', why: 'The measurement comes after the cost. First name the limit that a simpler design has.' },
           { text: 'Use one agent, because three workers cost too much.', why: 'The rule is fixed, thus no model needs to decide anything.' },
-          { text: 'A script. A fixed rule is code.', correct: true, why: 'Level 1 is sufficient. Orchestration answers many items, parallel calls, a wait for a person, or one budget. None is here.' },
+          { text: 'A script. A fixed rule is code.', correct: true, why: 'Level 1 is sufficient. Orchestration answers many items, parallel calls, or one budget. None is here.' },
           { text: 'A graph with gates, because renames can fail.', why: 'A try and a clear error is enough for 5 files. Structure has a cost too.' }
         ] }
     ]

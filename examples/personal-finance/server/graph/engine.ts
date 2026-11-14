@@ -60,7 +60,7 @@ function deepFreeze<T>(value: T): T {
 export type RunHooks<S> = {
   /** Called after each step with a copy of the state. The trace uses it for the checkpoints. */
   onStep?(step: Step, stateAfter: S): void;
-  /** Level 4: start at this node, not at graph.start. A run that waited for a person starts again from its checkpoint. */
+  /** Level 3: start at this node, not at graph.start. A run that waited for a person starts again from its checkpoint. */
   startAt?: string;
 };
 

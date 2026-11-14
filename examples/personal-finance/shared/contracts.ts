@@ -2,22 +2,25 @@
 // thus the two sides cannot have different ideas of an expense.
 // A Zod schema is the check at run time. The TypeScript type comes from the schema.
 import { z } from 'zod';
+import { isRealDate } from './dates.ts';
 import { CURRENCIES, MAX_CENTS } from './money.ts';
+
+export { isRealDate };
+
+/** The account of an expense that names no account. */
+export const DEFAULT_ACCOUNT = 'main';
 
 /** A problem that a check found. An empty list of problems is PASS. */
 export type Problem = { rule: string; text: string };
 
-/** A real calendar date in the form YYYY-MM-DD. It is a local date: it has no time and no time zone. */
-export function isRealDate(text: string): boolean {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
-  if (!m) return false;
-  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-  const date = new Date(Date.UTC(y, mo - 1, d));
-  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
-}
-
 /** Text with no control character. The database does not give such text back the same, and then a replay looks like a different request. */
 const NO_CONTROL = /^[^\u0000-\u001f\u007f]*$/;
+
+/**
+ * The name of an account: 1 to 40 characters, in lower case, with single spaces. "Cheque" and "cheque " are one account.
+ * The name is part of the fingerprint of an imported row, thus two spellings of one account would record a row two times.
+ */
+export const AccountName = z.string().trim().min(1).max(40).regex(NO_CONTROL).transform((name) => name.toLowerCase().replace(/\s+/g, ' '));
 
 /** The request to record one expense. strictObject: a field that is not in the contract is a problem. */
 export const RecordExpenseRequest = z.strictObject({
@@ -31,6 +34,8 @@ export const RecordExpenseRequest = z.strictObject({
   confirm_duplicate: z.boolean().optional(),
   /** Level 3: the run of the suggest graph that the person saw. Only for the trace; it changes nothing in the expense. */
   suggest_run_id: z.string().max(40).optional(),
+  /** The account that the money left. The form does not send it; an import does. Without it, the account is 'main'. */
+  account: AccountName.optional(),
 });
 export type RecordExpenseRequest = z.infer<typeof RecordExpenseRequest>;
 
@@ -60,7 +65,14 @@ export function checkShape(input: unknown): ShapeResult {
   return { ok: false, problems };
 }
 
-export type Category = { id: string; name: string; active: boolean };
+/** What an entry of a category is: money that is used, money that goes to savings, or a move between own accounts. */
+export const CATEGORY_KINDS = ['consumption', 'savings', 'transfer'] as const;
+export type CategoryKind = (typeof CATEGORY_KINDS)[number];
+/** The class of the spending: a dated commitment, a planned essential, or free spending. */
+export const SPEND_CLASSES = ['fixed', 'variable', 'free'] as const;
+export type SpendClass = (typeof SPEND_CLASSES)[number];
+
+export type Category = { id: string; name: string; active: boolean; kind: CategoryKind; class: SpendClass };
 
 export type Budget = { id: string; category_id: string; period: string; limit_cents: number; currency: 'ZAR' };
 
@@ -74,6 +86,7 @@ export type Expense = {
   merchant_key: string; // the normalised merchant name
   category_id: string;
   note: string | null;
+  account: string; // the account that the money left
   created_at: string; // UTC time of the record, for the audit
 };
 

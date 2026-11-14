@@ -451,3 +451,31 @@ A structural audit of the page, then the corrections that do not change the cont
 **Checked.** The application: `npm run check`, 169 tests in 20 files, recordings current; the build; the requests that stopped the server, on the real server. `tests.html`: 116 of 116. The page: a link to a section now stops below the strip; the count of Tab stops in the part.
 
 **What this means for the earlier "Checked" list.** That list was true and it was the author's list. It did not include one attack. The review found 13 defects of the code and about 20 statements of the text to correct, with all tests green.
+
+## 2026-11-14: part S re-engineered, with three levels
+
+**What was asked.** Teach the path from an unclear real problem to a dependable application, on a personal budget: weekly allowances, statement files from the bank, a spreadsheet. With a business analysis and a system analysis that question each other, three levels (an ordinary application, structured workflows, AI-assisted workflows), permitted paths around a model that is not deterministic, a full data pipeline, and journeys with failures. The person and the requirements are fictional; nothing from the author's own files is in the repository.
+
+**What changed.**
+
+- *Three levels, not four.* Level 1: a pay-cycle plan (`shared/planning/`), pure functions with the rules BR1 to BR8. Level 2: the import of a statement as a pipeline (`shared/pipeline/`: inspect, map, check, normalise, reconcile) inside the import graph, and a paste-ready export (`shared/export/`). The application never writes a workbook; the spreadsheet as the source of truth is taught as an open decision. Level 3: requests in plain words, behind a capability allowlist of four names, a gate (R15 to R18), and approval by the person before any write (`server/intelligence/permitted/`, `server/services/assist*.ts`).
+- *The page runs the same code.* `sync-studio.py` now also bundles the shared code into `js/data/studio-domain.js` (`GE.domain`, no Zod, about 73 kB). The plan calculator, the pipeline bench and the insights in the page call these functions, and a test compares their results with the recordings of the server, to the cent.
+- *New instruments* in `js/labs/studio-live.js`: an evidence sort, the plan, the pipeline, insights, and a replay of requests in plain words that shows which of six layers decided.
+- *The chapter* has new sections: the evidence register, the two analyses and their decisions, one section for each level, principles from three books (marked where a detail is not confirmed), behaviour and responsible game elements, a journey with seven failures.
+- *The application* has 33 recorded scenarios (19 before) and new endpoints: `GET /api/plan`, `GET /api/weeks`, `POST /api/imports/:id/mapping`, `POST /api/assist` and `POST /api/assist/:id/decide`.
+
+**Adversarial review, and the repairs.** Seven reviewers looked for defects, and each finding went to a second agent to verify. The quota ran out during the verification; the seven findings that were not verified were checked again before a repair.
+
+- *Defects of the application, repaired, each with a test:* the daily limit of model calls mixed the local date and the UTC date; the audit record kept the text of the person when the model copied it into an input; hidden characters (word joiner, tag characters, a bidi mark) passed the check of plain text; a decision whose write happened but whose result was not stored said "Nothing is changed"; a FAILED approval said "Try again" but could not be tried again; a question with no text was accepted; a second equal row of a file passed as confirmed although the first was not recorded; a "remove" expression of a mapping could take seconds for each file (now one repeat sign and 10 entries at most); a known row that came again with a problem gave a false reconciliation FAIL; the account name of an import was case sensitive, so the same file could be recorded twice; the real model adapter could not send a name outside the allowlist, so the gate's check for it was tested only with the stand-in.
+- *Defects of the page, repaired:* the pipeline bench could not read a file with one signed amount column; weeks started at "Week 2"; an unreadable amount gave no message; a prediction could be changed after the run started; the deciding layer was shown by colour only; re-painting lost the focus; live regions spoke at each key press; arrows of a drawing could not all take the focus; a test said it played a recording to its end and did not. The ledger count now names expenses and income apart.
+- *Statements of the chapter corrected:* about 35, for example how a transfer pairs (only when the account that the money left is imported first), that a refund with no reversal mark is recorded as income, that the review cannot undo a pair, that income rows have no category and no verifier, which files hold the time limit, and counts and rule ranges.
+
+**Checked.** The application: `npm run check`, 697 tests in 52 files, 33 recordings current; the build. `node lab/bridge/test/run.mjs`: 28 of 28. `sync-studio.py --check`: PASS. `tests.html`: see below. A privacy scan of each changed file: no local path, name or key.
+
+**Not run, and other limits.**
+
+- No call to the real Claude API; the adapters are tested with a stand-in network.
+- Income rows are stored with no verifier, and income has no "same date, amount and source" rule.
+- A transfer pairs in one order only.
+- The web application has no screen for the plan or for requests in plain words; the tests send them through HTTP.
+- The generated source data is now about 880 kB, because the application has 160 files.

@@ -3,6 +3,7 @@
 // The methods are synchronous, because the two implementations are local.
 // A store on a network makes them asynchronous: that is a reason to design this file again.
 import type { Budget, Category, Expense } from '../../shared/contracts.ts';
+import type { Income, PlanSettings, SavingsPot, StoredCommitment } from '../../shared/contracts.plan.ts';
 
 export interface ExpenseStore {
   findByKey(idempotency_key: string): Expense | null;
@@ -13,6 +14,8 @@ export interface ExpenseStore {
   /** The sum of the expenses of one category in one month. This is the only source of "spent". */
   sumForCategory(category_id: string, period: string): number;
   listRecent(period: string, limit: number): Expense[];
+  /** The expenses from one date to a second date, the two dates included. The oldest is first. */
+  listBetween(from: string, toInclusive: string): Expense[];
 }
 
 export interface CategoryStore {
@@ -26,8 +29,31 @@ export interface BudgetStore {
   upsert(budget: Budget): void;
 }
 
+/** What the person told the application for the plan. The lists keep the order in which the items were added. */
+export interface PlanStore {
+  /** null: no settings are on record. */
+  getSettings(): PlanSettings | null;
+  setSettings(settings: PlanSettings): void;
+  listCommitments(): StoredCommitment[];
+  upsertCommitment(commitment: StoredCommitment): void;
+  listPots(): SavingsPot[];
+  upsertPot(pot: SavingsPot): void;
+}
+
+export interface IncomeStore {
+  /** Adds one income row. Throws DuplicateKey if the request key is already in the store. */
+  insert(income: Income): void;
+  findByKey(idempotency_key: string): Income | null;
+  /** The sum of the income from one date to a second date, the two dates included. */
+  sumBetween(from: string, toInclusive: string): number;
+  /** The oldest is first. */
+  listBetween(from: string, toInclusive: string): Income[];
+}
+
 export type Stores = {
   expenses: ExpenseStore;
   categories: CategoryStore;
   budgets: BudgetStore;
+  plan: PlanStore;
+  income: IncomeStore;
 };

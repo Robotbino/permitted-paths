@@ -54,8 +54,8 @@ export const RULES: Record<string, { text: string; kind: RuleKind; checked_by: R
   // Level 3.
   R12: { text: 'A suggestion names one active category of the store, or it says UNKNOWN.', kind: 'enumeration', checked_by: ['suggestion gate'] },
   R13: { text: 'Only an expense that the person records changes the ledger and the merchant memory. A suggestion changes nothing.', kind: 'cardinality', checked_by: ['structure'] },
-  // Level 4.
-  R14: { text: 'Each line of an imported statement has exactly one end: recorded, duplicate, rejected or waiting.', kind: 'cardinality', checked_by: ['reconciler'] },
+  // Level 3.
+  R14: { text: 'Each line of an imported statement has exactly one end: recorded, duplicate, rejected, waiting or paired.', kind: 'cardinality', checked_by: ['reconciler'] },
 };
 
 export const isRule = (id: string): boolean => id in RULES;

@@ -1,7 +1,7 @@
 /* studio.js: the instruments of the Practical Architecture Studio (part S).
    Added by this edition. It is not from the GE notes.
 
-   studioLevels    the strip of the four levels; it shows the level of the section on the screen
+   studioLevels    the strip of the levels; it shows the level of the section on the screen
    studioDiagram   a drawing where each component and each connection can be selected
    studioRun       replays a recording of the real application on its execution graph
    studioExplorer  the source files of the reference application, by level
@@ -15,6 +15,7 @@
   var h = GE.h;
   var S = GE.data.studio;
   var explorer = null; // the one explorer of the page; a file link opens a file in it
+  var TOP = S.levels.length; // the highest level of the reference application
 
   function levelTag(level, word) {
     if (level === 9) return h('span', { class: 'st-lv st-lv-0' }, 'In the ontology, not built');
@@ -74,15 +75,24 @@
 
   /** Makes each arrow of a view a button (the pattern of the instrument "Watch one run"). */
   function edgeButtons(view, def, names, onEdge, described) {
-    def.edges.forEach(function (edge) {
-      var key = GE.edgeKey(edge), g = view.edge(key), path = g.querySelector('path');
+    var groups = def.edges.map(function (edge) { return view.edge(GE.edgeKey(edge)); });
+    var anyDescribed = def.edges.some(function (edge) { return described[GE.edgeKey(edge)]; });
+    def.edges.forEach(function (edge, i) {
+      var key = GE.edgeKey(edge), g = groups[i], path = g.querySelector('path');
       g.insertBefore(GE.s('path', { class: 'st-hit', d: path.getAttribute('d') }), path);
       g.setAttribute('role', 'button'); g.setAttribute('aria-pressed', 'false');
-      // Only an arrow that the table describes is a stop for the Tab key. The others can still be selected with a pointer.
-      if (described[key]) g.setAttribute('tabindex', '0');
+      // An arrow that the table describes is a stop for the Tab key. Each arrow can have the focus:
+      // the arrow keys go from one arrow to the next, thus the Tab order stays short.
+      g.setAttribute('tabindex', described[key] || (!anyDescribed && i === 0) ? '0' : '-1');
       g.setAttribute('aria-label', 'Connection from ' + names[edge.from] + ' to ' + names[edge.to] + (edge.label ? ': ' + edge.label : ''));
       g.addEventListener('click', function () { onEdge(key, edge); });
-      g.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onEdge(key, edge); } });
+      g.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onEdge(key, edge); return; }
+        var move = ev.key === 'ArrowRight' || ev.key === 'ArrowDown' ? 1 : ev.key === 'ArrowLeft' || ev.key === 'ArrowUp' ? -1 : 0;
+        if (!move) return;
+        ev.preventDefault();
+        groups[(i + move + groups.length) % groups.length].focus();
+      });
     });
   }
 
@@ -107,23 +117,33 @@
     var panel = h('div', { class: 'panel st-panel', 'aria-live': 'polite' });
     var options = [];
     for (var i = low; i <= top; i++) options.push({ value: String(i), label: def.stages ? def.stages[i - 1] : word + ' ' + i });
-    var lens = top > low ? GE.segmented(word + ' shown in the drawing', options, String(level), function (v) { level = Number(v); applyLens(view, def, level); hint(); }) : null;
+    // After a change of the lens, the panel of a selected item is painted again: its tag depends on the level.
+    var lens = top > low ? GE.segmented(word + ' shown in the drawing', options, String(level), function (v) { level = Number(v); applyLens(view, def, level); if (selected) paintPanel(); else hint(); }) : null;
 
     function hint() {
       if (selected) return;
       GE.clear(panel);
       panel.appendChild(h('p', { class: 'panel-title' }, def.title));
-      panel.appendChild(h('p', { class: 'small' }, 'Select a box or an arrow. The panel then shows its responsibility, its data contract and its source file.'));
+      panel.appendChild(h('p', { class: 'small' }, 'Select a box or an arrow. The panel then shows its responsibility, its data contract and its source file. With the keyboard: the Tab key goes to the boxes and the main arrows; the arrow keys go from one arrow to the next.'));
       if (lens) panel.appendChild(h('p', { class: 'small muted' }, def.stages ? 'The drawing shows stage ' + level + '. A faint part belongs to a later stage.' : 'The drawing shows the application at level ' + level + '. A faint part does not exist yet at this level.'));
     }
 
     function select(kind, id) {
       [].forEach.call(view.svg.querySelectorAll('.st-selected'), function (x) { x.classList.remove('st-selected'); x.setAttribute('aria-pressed', 'false'); });
-      selected = kind + ':' + id;
-      var rows = (kind === 'node' ? nodeRows : edgeRows)[id] || [];
-      var item = kind === 'node' ? def.nodes.filter(function (x) { return x.id === id; })[0] : def.edges.filter(function (x) { return GE.edgeKey(x) === id; })[0];
+      selected = { kind: kind, id: id };
       var chosen = kind === 'node' ? view.node(id) : view.edge(id);
       chosen.classList.add('st-selected'); chosen.setAttribute('aria-pressed', 'true');
+      paintPanel();
+      seen[kind + ':' + id] = true;
+      if (Object.keys(seen).length >= 3) GE.trace.lab('studioDiagram:' + key, chapter);
+      if (window.matchMedia('(max-width: 78rem)').matches) panel.scrollIntoView({ block: 'nearest', behavior: GE.reduced() ? 'auto' : 'smooth' });
+    }
+
+    /** The panel of the selected item, for the level that the lens shows now. */
+    function paintPanel() {
+      var kind = selected.kind, id = selected.id;
+      var rows = (kind === 'node' ? nodeRows : edgeRows)[id] || [];
+      var item = kind === 'node' ? def.nodes.filter(function (x) { return x.id === id; })[0] : def.edges.filter(function (x) { return GE.edgeKey(x) === id; })[0];
       GE.clear(panel);
       panel.appendChild(h('p', { class: 'st-kind' }, kind === 'node' ? 'Component' : 'Connection'));
       panel.appendChild(h('p', { class: 'panel-title' }, kind === 'node' ? names[id] : names[item.from] + ' → ' + names[item.to]));
@@ -137,9 +157,6 @@
         dl.appendChild(h('dt', null, row[0])); dl.appendChild(dd);
       });
       panel.appendChild(dl);
-      seen[selected] = true;
-      if (Object.keys(seen).length >= 3) GE.trace.lab('studioDiagram:' + key, chapter);
-      if (window.matchMedia('(max-width: 78rem)').matches) panel.scrollIntoView({ block: 'nearest', behavior: GE.reduced() ? 'auto' : 'smooth' });
     }
 
     var drawer = h('details', { class: 'drawer st-table-drawer' }, h('summary', null, 'The same content as a table ', h('span', { class: 'tag' }, 'each component and each connection')), h('div', { class: 'drawer-body' }, tables));
@@ -163,7 +180,7 @@
     var byId = {};
     R.scenarios.forEach(function (sc) { byId[sc.id] = sc; });
     var list = conf.scenarios.map(function (id) { return byId[id]; }).filter(Boolean);
-    var scenario = list[0], player = null, prediction = null, state = {}, owners = {};
+    var scenario = list[0], player = null, prediction = null, locked = null, state = {}, owners = {};
 
     var pick = h('select', { class: 'st-select', 'aria-label': 'The scenario', onchange: function () { scenario = byId[pick.value]; reset(); } },
       list.map(function (sc) { return h('option', { value: sc.id }, sc.title); }));
@@ -181,7 +198,7 @@
 
     function steps() {
       // An import has two requests. The page plays the first run, then the second.
-      var first = conf.twoSteps && scenario.first ? scenario.first.run.steps : [];
+      var first = conf.manySteps && scenario.first ? scenario.first.run.steps : [];
       return first.concat(scenario.run.steps);
     }
     function graphOf() { return R.graphs[scenario.run.graph]; }
@@ -197,15 +214,15 @@
 
     function reset() {
       if (player) player.stop();
-      player = null; prediction = null;
+      player = null; prediction = null; locked = null;
       view.reset();
-      applyLens(view, def, scenario.level > 2 || conf.drawing !== 'record' ? 4 : 2);
+      applyLens(view, def, scenario.level > 2 || conf.drawing !== 'record' ? TOP : 2);
       GE.clear(log); GE.clear(out); GE.clear(setup);
       var g = graphOf();
       owners = {}; state = Object.assign({}, g.initial_state);
       g.input.forEach(function (f) { owners[f] = 'input'; });
       g.nodes.forEach(function (node) { node.owns.forEach(function (f) { owners[f] = node.id; }); });
-      if (conf.twoSteps) state = {};
+      if (conf.manySteps) state = {};
       else { state.run_id = scenario.run.id; state.request = scenario.request; }
       var world = scenario.world || {};
       var notes = [];
@@ -215,20 +232,27 @@
       else if (world.ai) notes.push('The model is a stand-in that is told to: ' + world.ai.replace(/_/g, ' ') + '.');
       if (world.remembered) notes.push('The memory already knows: ' + world.remembered.map(function (m) { return m[0] + ' is ' + m[1]; }).join('; ') + '.');
       setup.appendChild(h('p', { class: 'small' }, h('strong', null, 'The request: '), h('code', null, 'POST ' + scenario.endpoint)));
-      setup.appendChild(h('pre', { class: 'st-json' }, h('code', null, conf.twoSteps ? '{ "csv": "Date,Description,Amount … 14 lines" }' : JSON.stringify(scenario.request, null, 1))));
+      if (scenario.prepared) notes.unshift(scenario.prepared);
+      var shown = scenario.request;
+      if (conf.manySteps && shown && typeof shown.csv === 'string') { var csvLines = shown.csv.split('\n').filter(Boolean); shown = Object.assign({}, shown, { csv: csvLines.slice(0, 3).join('\n') + '\n… ' + csvLines.length + ' lines' }); }
+      setup.appendChild(h('pre', { class: 'st-json', tabindex: '0' }, h('code', null, JSON.stringify(shown, null, 1))));
       if (notes.length) setup.appendChild(h('p', { class: 'small' }, notes.join(' ')));
       paintState(null);
-      if (seg) { seg.set(null, true); playBtn.disabled = true; stepBtn.disabled = true; } else { playBtn.disabled = false; stepBtn.disabled = false; }
+      if (seg) { lock(false); seg.set(null, true); playBtn.disabled = true; stepBtn.disabled = true; } else { playBtn.disabled = false; stepBtn.disabled = false; }
     }
+    function lock(on) { [].forEach.call(seg.el.children, function (b) { b.disabled = on; }); }
 
     function start(play) {
       if (!player) {
+        // The prediction is fixed at the first step. "Start again" or a new scenario frees it.
+        if (seg) { locked = prediction; lock(true); }
         var all = steps();
-        var secondAt = conf.twoSteps && scenario.first ? scenario.first.run.steps.length : -1;
+        var secondAt = conf.manySteps && scenario.first ? scenario.first.run.steps.length : -1;
+        var second = scenario.exchanges && scenario.exchanges[1] ? scenario.exchanges[1].path : '';
         player = GE.player(view, all, {
           speed: 420,
           onStep: function (step, i) {
-            if (i === secondAt) log.appendChild(h('li', { class: 'st-break' }, 'The person reads the proposal and decides. The second request starts the graph again at the checkpoint.'));
+            if (i === secondAt) log.appendChild(h('li', { class: 'st-break' }, (/\/mapping$/.test(second) ? 'The run stored its state and stopped. The person gives a mapping.' : 'The run stored its state and stopped. The person reads the proposal and decides.') + ' The second request (POST ' + second + ') starts the graph again at the checkpoint.'));
             Object.assign(state, step.writes);
             paintState(Object.keys(step.writes));
             log.appendChild(h('li', { class: step.result === 'FAIL' ? 'is-fail' : null }, h('span', { class: 'mono' }, step.node), ' ', GE.stamp(step.result), ' ', step.note));
@@ -247,11 +271,15 @@
       if (body.error && body.error.problems.length) out.appendChild(h('ul', { class: 'small' }, body.error.problems.map(function (p) { return h('li', null, h('strong', null, p.rule), ' ', p.text); })));
       if (body.budget && body.budget.state) out.appendChild(h('p', { class: 'small' }, 'Budget after: ' + body.budget.state + ', ' + body.budget.spent_cents + ' cents spent' + (body.budget.limit_cents ? ' of ' + body.budget.limit_cents : '') + '.'));
       if (body.reason) out.appendChild(h('p', { class: 'small' }, 'Reason: ', h('span', { class: 'mono' }, body.reason), body.suggestion ? '. Suggestion: ' + body.suggestion.category_name + ', from the ' + body.suggestion.source + '.' : '. No suggestion.'));
-      if (body.counts) out.appendChild(h('p', { class: 'small' }, 'Ends of the 14 lines: ' + Object.keys(body.counts).map(function (k) { return k + ' ' + body.counts[k]; }).join(', ') + '. Reconciliation: ' + (body.reconciliation.ok ? 'PASS' : 'FAIL') + '.'));
-      out.appendChild(h('p', { class: 'small' }, 'Rows in the ledger after the run: ' + scenario.rows_after + '. Model calls in this request: ' + scenario.model_calls + '. Rows added to the memory: ' + scenario.memory_rows_added + '.'));
+      if (body.counts) out.appendChild(h('p', { class: 'small' }, 'The end of each line: ' + Object.keys(body.counts).map(function (k) { return k + ' ' + body.counts[k]; }).join(', ') + '. Reconciliation: ' + (body.reconciliation.ok ? 'PASS' : 'FAIL') + '. WAITING: a line with no decision, or a line that the pipeline holds.'));
+      if (body.step === 'review') out.appendChild(h('p', { class: 'small' }, 'The mapping passed its check. The run now waits for the person with ' + (body.rows_total || body.lines.length) + ' lines: ' + Object.keys(body.summary).filter(function (k) { return body.summary[k]; }).map(function (k) { return body.summary[k] + ' ' + k; }).join(', ') + '. Nothing is recorded yet.'));
+      if (body.notes && body.notes.length) out.appendChild(h('ul', { class: 'small' }, body.notes.map(function (t) { return h('li', null, t); })));
+      // The ledger is the expense store and the income store together. An older recording has only the expenses.
+      var ledger = typeof scenario.income_rows_after === 'number' ? 'Rows in the ledger after the run: ' + scenario.rows_after + ' expenses and ' + scenario.income_rows_after + ' income.' : 'Expense rows in the ledger after the run: ' + scenario.rows_after + '.';
+      out.appendChild(h('p', { class: 'small' }, ledger + ' Model calls in this request: ' + scenario.model_calls + '. Rows added to the memory: ' + scenario.memory_rows_added + '.'));
       if (right) {
-        var label = function (v) { return conf.options.filter(function (o) { return o.value === v; })[0].label; };
-        out.appendChild(h('p', null, 'Your prediction: ', h('strong', null, label(prediction)), '. ', GE.stamp(prediction === right ? 'PASS' : 'FAIL'), prediction === right ? '' : ' The run did this: ' + label(right) + '. Read the steps above to find the node that decided.'));
+        var label = function (v) { var o = conf.options.filter(function (x) { return x.value === v; })[0]; return o ? o.label : String(v); };
+        out.appendChild(h('p', null, 'Your prediction: ', h('strong', null, label(locked)), '. ', GE.stamp(locked === right ? 'PASS' : 'FAIL'), locked === right ? '' : ' The run did this: ' + label(right) + '. Read the steps above to find the node that decided.'));
       }
       GE.trace.lab('studioRun:' + el.dataset.replay, chapter);
     }
@@ -272,11 +300,11 @@
     var F = GE.data.studioFiles;
     if (!F) return;
     var fallback = [].slice.call(el.children);
-    var level = 4, showTests = false, current = 'server/services/record-expense.ts';
+    var level = TOP, showTests = false, current = 'shared/planning/plan.ts';
     var isTest = function (p) { return /\.test\.ts$/.test(p) || p.indexOf('tests/') === 0; };
     var listEl = h('nav', { class: 'st-files', 'aria-label': 'The files of the reference application' });
     var viewer = h('div', { class: 'st-viewer' });
-    var seg = GE.segmented('Level', S.levels.map(function (l) { return { value: String(l.n), label: 'Level ' + l.n }; }), '4', function (v) { level = Number(v); paintList(); });
+    var seg = GE.segmented('Level', S.levels.map(function (l) { return { value: String(l.n), label: 'Level ' + l.n }; }), String(TOP), function (v) { level = Number(v); paintList(); });
     var tests = h('input', { type: 'checkbox', id: 'st-tests', onchange: function () { showTests = tests.checked; paintList(); } });
 
     function paintList() {
@@ -294,7 +322,7 @@
         listEl.appendChild(h('ul', null, groups[dir].map(function (path) {
           var f = F.files[path]; count++;
           var mark = f.level === level ? h('span', { class: 'st-mark st-new' }, 'new') : f.modified.indexOf(level) > -1 ? h('span', { class: 'st-mark st-mod' }, 'changed') : null;
-          return h('li', null, h('button', { type: 'button', class: 'st-filebtn', 'aria-pressed': String(path === current), onclick: function () { show(path, false); } }, h('span', { class: 'mono' }, fileName(path)), mark));
+          return h('li', null, h('button', { type: 'button', class: 'st-filebtn', 'data-path': path, 'aria-pressed': String(path === current), onclick: function () { show(path, false); } }, h('span', { class: 'mono' }, fileName(path)), mark));
         })));
       });
       listEl.insertBefore(h('p', { class: 'small muted' }, count + ' files at level ' + level + '. "new" and "changed" are for this level.'), listEl.firstChild);
@@ -304,14 +332,14 @@
       var f = F.files[path];
       if (!f) return;
       current = path;
-      [].forEach.call(listEl.querySelectorAll('.st-filebtn'), function (b) { b.setAttribute('aria-pressed', 'false'); });
-      paintList();
+      // The list is not built again: the button that the person used keeps the focus.
+      [].forEach.call(listEl.querySelectorAll('.st-filebtn'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.path === path)); });
       GE.clear(viewer);
       var later = f.modified.filter(function (m) { return m > f.level; });
       viewer.appendChild(h('div', { class: 'pcode-bar' }, h('span', { class: 'pcode-name mono' }, path), h('a', { class: 'small', href: S.repo + path, target: '_blank', rel: 'noopener' }, 'Open in the repository')));
       viewer.appendChild(h('p', { class: 'ptags' }, levelTag(f.level), later.map(function (m) { return h('span', { class: 'st-lv st-lv-' + m }, 'changed at level ' + m); })));
       viewer.appendChild(h('p', { class: 'small' }, f.role));
-      if (later.length) viewer.appendChild(h('p', { class: 'small muted' }, 'The page shows the file as it is now. To see it at level ' + f.level + ': ', h('code', null, 'git show studio-l' + f.level + ':examples/personal-finance/' + path)));
+      if (later.length) viewer.appendChild(h('p', { class: 'small muted' }, 'The page shows the file as it is now, with the changes of the later level.'));
       viewer.appendChild(h('pre', { tabindex: '0', 'aria-label': 'The text of ' + path }, h('code', null, f.text)));
       if (scroll) el.scrollIntoView({ block: 'start', behavior: GE.reduced() ? 'auto' : 'smooth' });
     }
@@ -319,10 +347,12 @@
     explorer = {
       has: function (path) { return !!F.files[path]; },
       open: function (path) {
-        level = 4; seg.set('4', true);
+        level = TOP; seg.set(String(TOP), true);
         if (isTest(path)) { showTests = true; tests.checked = true; }
         // The explorer is in this part. Go to its section, then show the file.
         if (location.hash !== '#ps-explorer') location.hash = '#ps-explorer';
+        current = path;
+        paintList(); // the level or the tests can have changed
         show(path, true);
       }
     };

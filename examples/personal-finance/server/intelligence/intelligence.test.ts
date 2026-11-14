@@ -2,13 +2,17 @@
 // The adapter is tested with a stand-in client. No test calls the real API.
 import Anthropic from '@anthropic-ai/sdk';
 import { describe, expect, test } from 'vitest';
+import type { Category } from '../../shared/contracts.ts';
 import { seed } from '../repositories/seed.ts';
 import { openDatabase, sqliteStores } from '../repositories/sqlite.ts';
 import { buildSystemPrompt, claudeSuggester, type MessagesClient } from './claude-suggester.ts';
 import { memoryMerchantMemory, sqliteMerchantMemory, type MerchantMemory } from './merchant-memory.ts';
 import { suggestionGate } from './suggestion-gate.ts';
 
-const categories = [{ id: 'groceries', name: 'Groceries', active: true }, { id: 'gym', name: 'Gym (closed)', active: false }];
+const categories: Category[] = [
+  { id: 'groceries', name: 'Groceries', active: true, kind: 'consumption', class: 'variable' },
+  { id: 'gym', name: 'Gym (closed)', active: false, kind: 'consumption', class: 'free' },
+];
 
 describe('the suggestion gate (R12)', () => {
   test('an active category is accepted', () => {

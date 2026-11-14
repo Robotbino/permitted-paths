@@ -12,6 +12,9 @@ const KEYWORDS: Array<[word: string, category_id: string]> = [
   ['eskom', 'utilities'], ['city power', 'utilities'], ['telkom', 'utilities'],
   ['dis-chem', 'health'], ['clicks', 'health'], ['pharmacy', 'health'],
   ['ster-kinekor', 'entertainment'], ['showmax', 'entertainment'],
+  // Words of the fictional merchants in the sample statements (shared/pipeline/samples.ts).
+  ['market', 'groceries'], ['fuel', 'transport'], ['grill', 'eating-out'], ['rentals', 'rent'],
+  ['fibre', 'utilities'], ['electricity', 'utilities'], ['dental', 'health'], ['books', 'entertainment'], ['streaming', 'entertainment'],
 ];
 
 export function fakeSuggester(behaviour: FakeBehaviour = 'answer', latencyMs = 0): CategorySuggester & { calls: SuggesterInput[] } {

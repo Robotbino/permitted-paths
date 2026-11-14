@@ -33,9 +33,9 @@ export type SuggestDeps = {
   trace?: TraceStore;
   /** The model calls of the day. A call is reserved here before it is made. */
   budget: ModelBudget;
-  /** Level 4: the orchestrator of an import already reserved the call of this run. */
+  /** Level 3: the orchestrator of an import already reserved the call of this run. */
   preapproved?: boolean;
-  /** Level 4: the run that started this run as a worker. */
+  /** Level 3: the run that started this run as a worker. */
   parent_run_id?: string;
 };
 

@@ -76,7 +76,7 @@ export function App() {
       <p className="muted">Studio example. Fictional data only.</p>
       <ExpenseForm state={state} categories={categories} dispatch={dispatch} onSubmit={submit} onMerchantDone={() => void askSuggestion()} />
       <BudgetPanel summary={state.summary} highlight={state.status === 'saved' && state.last ? state.last.expense.category_id : null} />
-      {/* Level 4. After an import, the month is read again from the server. */}
+      {/* Level 3. After an import, the month is read again from the server. */}
       <ImportReview categories={categories} onRecorded={() => void loadSummary(period)} />
     </main>
   );

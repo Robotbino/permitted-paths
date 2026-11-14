@@ -1,8 +1,9 @@
-// One test for each defect that an adversarial review found after level 4.
+// One test for each defect that an adversarial review found after level 3.
 // Each test failed before its fix. The 155 tests that existed then did not see these defects:
 // they tested the paths that the author thought about.
 import { expect, test } from 'vitest';
-import { STATEMENT, makeWorld, send } from '../scripts/scenarios.ts';
+import { makeWorld, send } from '../scripts/scenarios.ts';
+import { HARBOUR_ACCOUNT, NORTHBANK_ACCOUNT, NORTHBANK_SAMPLE } from '../shared/pipeline/samples.ts';
 import { fixedClock } from '../server/clock.ts';
 import { merchantKey } from '../server/domain/expense.ts';
 import { modelBudget } from '../server/intelligence/model-budget.ts';
@@ -62,7 +63,7 @@ test('the daily limit holds when the trace cannot be saved', async () => {
 test('an import and the form share one budget', async () => {
   const world = await makeWorld({ memory: true, ai: 'answer', dailyCap: 5, importBudget: 4 });
   try {
-    const proposal = await send(world, '/api/imports', { csv: STATEMENT });
+    const proposal = await send(world, '/api/imports', { csv: NORTHBANK_SAMPLE, account: NORTHBANK_ACCOUNT });
     expect(proposal.body.budget.model_calls_allowed).toBe(4);
     const one = await send(world, '/api/expenses/suggest', { merchant_name: 'Gautrain' });
     const two = await send(world, '/api/expenses/suggest', { merchant_name: 'Telkom' });
@@ -73,14 +74,26 @@ test('an import and the form share one budget', async () => {
 });
 
 test('the budget: a reservation is counted immediately; a new day starts again; a limit that is not a number gives no calls', () => {
-  let today = '2026-03-14';
-  const clock = { ...fixedClock('2026-03-14'), today: () => today };
+  let now = '2026-03-14T10:00:00.000Z';
+  const clock = { ...fixedClock('2026-03-14'), now: () => now };
   const budget = modelBudget(3, clock, () => 1); // the trace says: 1 call already today
   expect([budget.reserve(1), budget.reserve(5), budget.reserve(1), budget.usedToday()]).toEqual([1, 1, 0, 3]);
-  today = '2026-03-15';
+  now = '2026-03-15T10:00:00.000Z';
   expect(budget.reserve(2)).toBe(2);
   expect(modelBudget(Number.NaN, clock).reserve(1)).toBe(0);
   expect(modelBudget(3, clock, () => { throw new Error('no trace'); }).reserve(1)).toBe(0); // the count cannot be read: no calls
+});
+
+test('the budget counts one UTC day, also when the local date is a different day', () => {
+  // West of UTC: local 2026-02-03, but already 2026-02-04 in UTC. The stored records say: the cap is used on 2026-02-04.
+  const saved = (day: string) => (day === '2026-02-04' ? 3 : 0);
+  expect(modelBudget(3, fixedClock('2026-02-03', '2026-02-04T01:00:00.000Z'), saved).reserve(1)).toBe(0);
+  // East of UTC: local 2026-02-04, still 2026-02-03 in UTC. The day rolls when the UTC day changes, not at local midnight.
+  let now = '2026-02-03T22:30:00.000Z';
+  const east = modelBudget(3, { today: () => '2026-02-04', now: () => now }, (day) => (day === '2026-02-03' ? 3 : 0));
+  expect(east.reserve(1)).toBe(0);
+  now = '2026-02-04T08:00:00.000Z';
+  expect(east.reserve(1)).toBe(1);
 });
 
 test('the suggest graph gets a memory that can only read', async () => {
@@ -115,12 +128,13 @@ test('a memory of one merchant is not suggested for a different merchant', async
   }
 });
 
-const statementOf = (lines: number, merchant = 'Shop') => 'Date,Description,Amount\n' + Array.from({ length: lines }, (_, i) => '2026-03-0' + ((i % 9) + 1) + ',' + merchant + ' ' + i + ',-' + (i + 1) + '.00').join('\n');
+// A statement in the layout of the fictional Harbour Bank: one signed amount and a Type column.
+const statementOf = (lines: number, merchant = 'Shop') => 'Date,Type,Description,Amount\n' + Array.from({ length: lines }, (_, i) => '2026-03-0' + ((i % 9) + 1) + ',PURCHASE,' + merchant + ' ' + i + ',-' + (i + 1) + '.00').join('\n');
 
 test('a statement that the application accepts can also be decided: 100 lines', async () => {
   const world = await makeWorld({ memory: true, ai: 'off' });
   try {
-    const proposal = await send(world, '/api/imports', { csv: statementOf(100) });
+    const proposal = await send(world, '/api/imports', { csv: statementOf(100), account: HARBOUR_ACCOUNT });
     expect([proposal.status, proposal.body.lines.length]).toEqual([200, 100]);
     const result = await send(world, '/api/imports/' + proposal.body.batch_id + '/decide', { decisions: proposal.body.lines.map((l: { line_no: number }) => ({ line_no: l.line_no, category_id: 'groceries' })) });
     expect([result.status, result.body.counts.RECORDED, result.body.reconciliation.ok]).toEqual([200, 100, true]);
@@ -132,11 +146,11 @@ test('a statement that the application accepts can also be decided: 100 lines', 
 test('a statement that is too long is refused at the first step, with a message that says what to do', async () => {
   const world = await makeWorld({ memory: true, ai: 'off' });
   try {
-    const refused = await send(world, '/api/imports', { csv: statementOf(101) });
+    const refused = await send(world, '/api/imports', { csv: statementOf(101), account: HARBOUR_ACCOUNT });
     expect(refused.status).toBe(400);
     expect(refused.body.error.problems[0].text).toContain('101 lines');
     // Characters of more than one byte: 7 000 characters are more than 10 000 bytes, and still one request.
-    const accents = await send(world, '/api/imports', { csv: statementOf(90, 'Café Zoë Müller Señor Crêpe Ñandú Åsa Örebro Ülker Éclair') });
+    const accents = await send(world, '/api/imports', { csv: statementOf(90, 'Café Zoë Müller Señor Crêpe Ñandú Åsa Örebro Ülker Éclair'), account: HARBOUR_ACCOUNT });
     expect(accents.status).toBe(200);
   } finally {
     await world.close();
@@ -146,10 +160,10 @@ test('a statement that is too long is refused at the first step, with a message 
 test('a second decide request gets the stored result, and does not report a reconciliation that is not true', async () => {
   const world = await makeWorld({ memory: true, ai: 'off' });
   try {
-    const proposal = await send(world, '/api/imports', { csv: statementOf(2) });
+    const proposal = await send(world, '/api/imports', { csv: statementOf(2), account: HARBOUR_ACCOUNT });
     const path = '/api/imports/' + proposal.body.batch_id + '/decide';
-    const first = await send(world, path, { decisions: [{ line_no: 1, category_id: 'groceries' }, { line_no: 2, category_id: 'groceries' }] });
-    const again = await send(world, path, { decisions: [{ line_no: 1, category_id: 'transport' }] }); // different decisions, after the batch is done
+    const first = await send(world, path, { decisions: [{ line_no: 2, category_id: 'groceries' }, { line_no: 3, category_id: 'groceries' }] }); // line 1 of the file is the header
+    const again = await send(world, path, { decisions: [{ line_no: 2, category_id: 'transport' }] }); // different decisions, after the batch is done
     expect(again.body).toEqual(first.body); // before the fix: reconciliation.ok was false, with "Line 2 is WAITING, but the ledger has a row"
     expect(world.rows()).toBe(2);
   } finally {

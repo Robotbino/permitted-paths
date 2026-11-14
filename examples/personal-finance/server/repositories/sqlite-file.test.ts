@@ -10,7 +10,7 @@ import { openDatabase, sqliteStores } from './sqlite.ts';
 
 const expense: Expense = {
   id: 'exp_1', idempotency_key: 'key-0001', occurred_on: '2026-03-14', amount_cents: 18500, currency: 'ZAR',
-  merchant_name: 'Woolworths', merchant_key: 'woolworths', category_id: 'groceries', note: null, created_at: '2026-03-14T10:00:00.000Z',
+  merchant_name: 'Woolworths', merchant_key: 'woolworths', category_id: 'groceries', note: null, account: 'main', created_at: '2026-03-14T10:00:00.000Z',
 };
 
 test('the data stays after the database closes and opens again', () => {

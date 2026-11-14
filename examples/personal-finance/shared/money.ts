@@ -20,6 +20,20 @@ export function parseAmount(text: string): number | null {
   return whole * 100 + fraction;
 }
 
+/**
+ * A percentage of an amount, in cents, as an integer. Half a cent goes away from 0, thus +10% and -10%
+ * of one amount are the same number of cents. The arithmetic uses integers only: no value is a fraction of a cent.
+ */
+export function percentOf(cents: number, percent: number): number {
+  if (!Number.isSafeInteger(cents) || !Number.isSafeInteger(percent) || !Number.isSafeInteger(cents * percent * 2)) throw new RangeError('The amount and the percentage must be whole numbers.');
+  const product = cents * percent;
+  const size = Math.abs(product);
+  // (2 * size + 100) / 200, with the remainder removed: the nearest cent, and a half goes up.
+  const twice = 2 * size + 100;
+  const nearest = (twice - (twice % 200)) / 200;
+  return product < 0 ? -nearest : nearest;
+}
+
 /** Cents to text for a person: 125000 -> "R1 250.00". No Intl, thus the result is the same on each device. */
 export function formatMoney(cents: number, currency: Currency = 'ZAR'): string {
   const sign = cents < 0 ? '-' : '';
