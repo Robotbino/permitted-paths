@@ -1,6 +1,7 @@
 // The client of the API. This is the only file of the web application that calls fetch.
 // The types come from shared/contracts.ts, the same file that the server uses.
 import type { ApiError, Category, MonthSummary, Problem, RecordExpenseRequest, RecordExpenseResult } from '../../shared/contracts.ts';
+import type { SuggestResponse } from '../../shared/contracts.suggest.ts';
 
 export type ApiResult<T> = { ok: true; value: T } | { ok: false; status: number; code: string; problems: Problem[] };
 
@@ -26,3 +27,7 @@ export const getCategories = () => call<Category[]>('/api/categories');
 export const getSummary = (period: string) => call<MonthSummary>('/api/summary?period=' + period);
 export const postExpense = (request: RecordExpenseRequest) =>
   call<RecordExpenseResult>('/api/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) });
+
+/** Level 3. Asks for a suggestion. It never records anything. A failure is "no suggestion", not an error for the person. */
+export const postSuggest = (merchant_name: string) =>
+  call<SuggestResponse>('/api/expenses/suggest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ merchant_name }) });

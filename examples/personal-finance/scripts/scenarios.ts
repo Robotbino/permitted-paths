@@ -5,11 +5,14 @@
 import type { AddressInfo } from 'node:net';
 import type { Expense } from '../shared/contracts.ts';
 import { fixedClock, sequentialIds } from '../server/clock.ts';
+import { merchantKey } from '../server/domain/expense.ts';
 import { StorageUnavailable } from '../server/errors.ts';
 import { memoryTrace, type RunRecord } from '../server/graph/trace.ts';
 import { sqliteLedgerReader } from '../server/graph/verifier.ts';
 import type { App } from '../server/http/handlers.ts';
 import { createHttpServer } from '../server/http/server.ts';
+import { fakeSuggester, type FakeBehaviour } from '../server/intelligence/fake-suggester.ts';
+import { sqliteMerchantMemory } from '../server/intelligence/merchant-memory.ts';
 import { seed } from '../server/repositories/seed.ts';
 import { openDatabase, sqliteStores } from '../server/repositories/sqlite.ts';
 
@@ -19,46 +22,67 @@ const base = { amount_cents: 18500, currency: 'ZAR', occurred_on: TODAY, merchan
 /** A defect that the scenario puts into the world, to show a failure path. */
 export type Fault = 'none' | 'save_fails_once' | 'save_always_fails' | 'save_wrong_cents';
 
+/** The world of a scenario. Level 2 has no memory and no model. Level 3 has a memory, and a model if `ai` is not 'off'. */
+export type WorldOptions = {
+  fault?: Fault;
+  memory?: boolean;
+  /** 'off': no suggester. The other values are behaviours of the stand-in model. */
+  ai?: 'off' | FakeBehaviour;
+  /** What the memory already knows: [merchant name, category id]. */
+  remembered?: Array<[string, string]>;
+  dailyCap?: number;
+};
+
 export type Scenario = {
   id: string;
   level: number;
   title: string;
-  fault: Fault;
-  /** Requests that go in before the request of the scenario. */
+  world: WorldOptions;
+  endpoint: '/api/expenses' | '/api/expenses/suggest';
+  /** Requests that go in before the request of the scenario, to the same endpoint. */
   before: unknown[];
   request: unknown;
-  expect: { status: number; path: string[]; rows: number };
+  expect: { status: number; path: string[]; rows: number; reason?: string };
 };
 
 const OK_PATH = ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'project', 'verify', 'respond'];
+const record = (s: Omit<Scenario, 'level' | 'endpoint' | 'world' | 'before'> & { fault?: Fault; before?: unknown[] }): Scenario => ({
+  level: 2, endpoint: '/api/expenses', world: { fault: s.fault ?? 'none' }, before: s.before ?? [], id: s.id, title: s.title, request: s.request, expect: s.expect,
+});
+const suggest = (id: string, title: string, world: WorldOptions, merchant_name: string, path: string[], reason: string, before: unknown[] = []): Scenario => ({
+  id, level: 3, title, world: { memory: true, ...world }, endpoint: '/api/expenses/suggest', before, request: { merchant_name }, expect: { status: 200, path, rows: 0, reason },
+});
 
 export const SCENARIOS: Scenario[] = [
-  { id: 'valid', level: 2, title: 'A correct expense: R185.00 at Woolworths', fault: 'none', before: [],
-    request: { ...base, idempotency_key: 'key-valid-1' }, expect: { status: 201, path: OK_PATH, rows: 1 } },
-  { id: 'bad_shape', level: 2, title: 'The amount is 185.5: not an integer number of cents', fault: 'none', before: [],
-    request: { ...base, idempotency_key: 'key-shape-1', amount_cents: 185.5 }, expect: { status: 400, path: ['gate1', 'reject'], rows: 0 } },
-  { id: 'inactive_category', level: 2, title: 'The category "Gym (closed)" is not active', fault: 'none', before: [],
-    request: { ...base, idempotency_key: 'key-rule-1', merchant_name: 'Virgin Active', category_id: 'gym' }, expect: { status: 422, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'reject'], rows: 0 } },
-  { id: 'over_budget', level: 2, title: 'R4 600.00 of groceries, with a budget of R4 500.00', fault: 'none', before: [],
-    request: { ...base, idempotency_key: 'key-over-1', amount_cents: 460_000, merchant_name: 'Makro' }, expect: { status: 201, path: OK_PATH, rows: 1 } },
-  { id: 'duplicate_submit', level: 2, title: 'The same request arrives a second time (the phone lost the first answer)', fault: 'none',
-    before: [{ ...base, idempotency_key: 'key-dup-1' }],
-    request: { ...base, idempotency_key: 'key-dup-1' }, expect: { status: 200, path: ['gate1', 'dedupe', 'respond'], rows: 1 } },
-  { id: 'similar_expense', level: 2, title: 'A new request with the same date, amount and merchant', fault: 'none',
-    before: [{ ...base, idempotency_key: 'key-sim-1' }],
-    request: { ...base, idempotency_key: 'key-sim-2' }, expect: { status: 409, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'reject'], rows: 1 } },
-  { id: 'save_fails_once', level: 2, title: 'The store fails one time during the save', fault: 'save_fails_once', before: [],
-    request: { ...base, idempotency_key: 'key-retry-1' }, expect: { status: 201, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'backoff', 'commit', 'project', 'verify', 'respond'], rows: 1 } },
-  { id: 'store_down', level: 2, title: 'The store fails each time during the save', fault: 'save_always_fails', before: [],
-    request: { ...base, idempotency_key: 'key-down-1' }, expect: { status: 503, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'backoff', 'commit', 'escalate'], rows: 0 } },
-  { id: 'ledger_mismatch', level: 2, title: 'A defect saves R186.00, not R185.00', fault: 'save_wrong_cents', before: [],
-    request: { ...base, idempotency_key: 'key-wrong-1' }, expect: { status: 500, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'project', 'verify', 'escalate'], rows: 1 } },
+  // Level 2: the record graph.
+  record({ id: 'valid', title: 'A correct expense: R185.00 at Woolworths', request: { ...base, idempotency_key: 'key-valid-1' }, expect: { status: 201, path: OK_PATH, rows: 1 } }),
+  record({ id: 'bad_shape', title: 'The amount is 185.5: not an integer number of cents', request: { ...base, idempotency_key: 'key-shape-1', amount_cents: 185.5 }, expect: { status: 400, path: ['gate1', 'reject'], rows: 0 } }),
+  record({ id: 'inactive_category', title: 'The category "Gym (closed)" is not active', request: { ...base, idempotency_key: 'key-rule-1', merchant_name: 'Virgin Active', category_id: 'gym' }, expect: { status: 422, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'reject'], rows: 0 } }),
+  record({ id: 'over_budget', title: 'R4 600.00 of groceries, with a budget of R4 500.00', request: { ...base, idempotency_key: 'key-over-1', amount_cents: 460_000, merchant_name: 'Makro' }, expect: { status: 201, path: OK_PATH, rows: 1 } }),
+  record({ id: 'duplicate_submit', title: 'The same request arrives a second time (the phone lost the first answer)', before: [{ ...base, idempotency_key: 'key-dup-1' }], request: { ...base, idempotency_key: 'key-dup-1' }, expect: { status: 200, path: ['gate1', 'dedupe', 'respond'], rows: 1 } }),
+  record({ id: 'similar_expense', title: 'A new request with the same date, amount and merchant', before: [{ ...base, idempotency_key: 'key-sim-1' }], request: { ...base, idempotency_key: 'key-sim-2' }, expect: { status: 409, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'reject'], rows: 1 } }),
+  record({ id: 'save_fails_once', title: 'The store fails one time during the save', fault: 'save_fails_once', request: { ...base, idempotency_key: 'key-retry-1' }, expect: { status: 201, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'backoff', 'commit', 'project', 'verify', 'respond'], rows: 1 } }),
+  record({ id: 'store_down', title: 'The store fails each time during the save', fault: 'save_always_fails', request: { ...base, idempotency_key: 'key-down-1' }, expect: { status: 503, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'backoff', 'commit', 'escalate'], rows: 0 } }),
+  record({ id: 'ledger_mismatch', title: 'A defect saves R186.00, not R185.00', fault: 'save_wrong_cents', request: { ...base, idempotency_key: 'key-wrong-1' }, expect: { status: 500, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'project', 'verify', 'escalate'], rows: 1 } }),
+
+  // Level 3: the suggest graph. The model is a stand-in, thus the recordings need no network and no key.
+  suggest('suggest_from_model', 'A merchant that the memory does not know: Engen Garage', { ai: 'answer' }, 'Engen Garage', ['gate1', 'recall', 'allow', 'ask_model', 'suggestion_gate', 'respond'], 'FROM_MODEL'),
+  suggest('suggest_from_memory', 'A merchant that the person categorised before: Woolworths', { ai: 'answer', remembered: [['Woolworths', 'groceries']] }, 'woolworths', ['gate1', 'recall', 'suggestion_gate', 'respond'], 'FROM_MEMORY'),
+  suggest('suggest_ai_off', 'The AI is off: the server has no API key', { ai: 'off' }, 'Engen Garage', ['gate1', 'recall', 'allow', 'respond'], 'AI_OFF'),
+  suggest('suggest_model_down', 'The model does not answer in the permitted time', { ai: 'timeout' }, 'Engen Garage', ['gate1', 'recall', 'allow', 'ask_model', 'respond'], 'MODEL_UNAVAILABLE'),
+  suggest('suggest_not_permitted', 'The model answers with a category that does not exist', { ai: 'not_permitted' }, 'Engen Garage', ['gate1', 'recall', 'allow', 'ask_model', 'suggestion_gate', 'respond'], 'NOT_PERMITTED'),
+  suggest('suggest_unknown', 'The model does not know the merchant', { ai: 'answer' }, 'Zzyx Trading 4471', ['gate1', 'recall', 'allow', 'ask_model', 'suggestion_gate', 'respond'], 'MODEL_DOES_NOT_KNOW'),
+  suggest('suggest_daily_cap', 'The daily limit of model calls is used', { ai: 'answer', dailyCap: 1 }, 'Shell Sandton', ['gate1', 'recall', 'allow', 'respond'], 'DAILY_CAP', [{ merchant_name: 'Engen Garage' }]),
+  suggest('suggest_memory_inactive', 'The memory names a category that is not active now', { ai: 'answer', remembered: [['Virgin Active', 'gym']] }, 'Virgin Active', ['gate1', 'recall', 'suggestion_gate', 'respond'], 'NOT_PERMITTED'),
+  { id: 'record_with_memory', level: 3, title: 'A correct expense, in an application that has a memory', world: { memory: true, ai: 'answer' }, endpoint: '/api/expenses', before: [],
+    request: { ...base, idempotency_key: 'key-memory-1', merchant_name: 'Engen Garage', category_id: 'transport' }, expect: { status: 201, path: ['gate1', 'dedupe', 'load_facts', 'gate2', 'commit', 'project', 'verify', 'remember', 'respond'], rows: 1 } },
 ];
 
-export type World = { app: App; base: string; rows(): number; close(): Promise<void> };
+export type World = { app: App; base: string; rows(): number; memoryRows(): number; modelCalls(): number; close(): Promise<void> };
 
 /** A new world for one scenario: SQLite in memory, a fixed clock, sequential ids, no real wait, a real HTTP server. */
-export async function makeWorld(fault: Fault, extend: (app: App) => void = () => {}): Promise<World> {
+export async function makeWorld(options: WorldOptions = {}): Promise<World> {
+  const fault = options.fault ?? 'none';
   const db = openDatabase(':memory:');
   const stores = sqliteStores(db);
   seed(stores, TODAY.slice(0, 7));
@@ -71,16 +95,22 @@ export async function makeWorld(fault: Fault, extend: (app: App) => void = () =>
       insert(fault === 'save_wrong_cents' ? { ...expense, amount_cents: expense.amount_cents + 100 } : expense);
     };
   }
+  const memory = options.memory ? sqliteMerchantMemory(db) : undefined;
+  for (const [name, category_id] of options.remembered ?? []) memory?.remember(merchantKey(name), category_id, '2026-03-01', 'run_seed');
+  const suggester = options.ai && options.ai !== 'off' ? fakeSuggester(options.ai) : undefined;
   const app: App = {
     stores, clock: fixedClock(TODAY), ids: sequentialIds(), trace: memoryTrace(), ledger: sqliteLedgerReader(db), sleep: async () => {},
+    memory, suggester, dailyCap: options.dailyCap,
   };
-  extend(app);
   const server = createHttpServer(app);
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+  const count = (table: string) => Number((db.prepare('SELECT COUNT(*) AS n FROM ' + table).get() as { n: number }).n);
   return {
     app,
     base: 'http://127.0.0.1:' + (server.address() as AddressInfo).port,
-    rows: () => Number((db.prepare('SELECT COUNT(*) AS n FROM expenses').get() as { n: number }).n),
+    rows: () => count('expenses'),
+    memoryRows: () => count('merchant_memory'),
+    modelCalls: () => suggester?.calls.length ?? 0,
     close: async () => {
       await new Promise((done) => server.close(done));
       db.close();
@@ -95,15 +125,16 @@ export async function send(world: World, path: string, body: unknown): Promise<E
   return { status: response.status, body: await response.json() };
 }
 
-export type ScenarioResult = { http: Exchange; run: RunRecord | null; rows: number };
+export type ScenarioResult = { http: Exchange; run: RunRecord | null; rows: number; memory_rows: number; model_calls: number };
 
 export async function runScenario(scenario: Scenario): Promise<ScenarioResult> {
-  const world = await makeWorld(scenario.fault);
+  const world = await makeWorld(scenario.world);
   try {
-    for (const earlier of scenario.before) await send(world, '/api/expenses', earlier);
-    const http = await send(world, '/api/expenses', scenario.request);
+    for (const earlier of scenario.before) await send(world, scenario.endpoint, earlier);
+    const before = { memory: world.memoryRows(), calls: world.modelCalls() };
+    const http = await send(world, scenario.endpoint, scenario.request);
     const run_id: string | undefined = http.body.run_id ?? http.body.error?.run_id;
-    return { http, run: run_id ? (world.app.trace?.get(run_id) ?? null) : null, rows: world.rows() };
+    return { http, run: run_id ? (world.app.trace?.get(run_id) ?? null) : null, rows: world.rows(), memory_rows: world.memoryRows() - before.memory, model_calls: world.modelCalls() - before.calls };
   } finally {
     await world.close();
   }

@@ -2,7 +2,7 @@
 import type { Expense, RecordExpenseRequest } from '../../shared/contracts.ts';
 
 /** A request that passed the check of shape, without the fields that are only for the transport. */
-export type ExpenseProposal = Omit<RecordExpenseRequest, 'idempotency_key' | 'confirm_duplicate'> & { merchant_key: string };
+export type ExpenseProposal = Omit<RecordExpenseRequest, 'idempotency_key' | 'confirm_duplicate' | 'suggest_run_id'> & { merchant_key: string };
 
 /** "  Woolworths  Food " and "WOOLWORTHS FOOD" are the same merchant: "woolworths food". */
 export function merchantKey(name: string): string {

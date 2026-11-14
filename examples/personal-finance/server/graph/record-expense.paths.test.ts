@@ -3,7 +3,7 @@
 import { describe, expect, test } from 'vitest';
 import { SCENARIOS, runScenario } from '../../scripts/scenarios.ts';
 import { describeGraph } from './engine.ts';
-import { recordExpenseGraph } from './record-expense.graph.ts';
+import { recordExpenseGraph, recordExpenseGraphWithMemory } from './record-expense.graph.ts';
 import { RECORD_OWNERS } from './state.ts';
 
 const scenarios = SCENARIOS.filter((s) => s.level === 2);
@@ -46,7 +46,9 @@ test('the graph is complete: each node is on a path of a scenario, each edge tar
   const graph = describeGraph(recordExpenseGraph);
   const ids = graph.nodes.map((n) => n.id);
   for (const edge of graph.edges) expect(ids, edge.from + '>' + edge.to).toContain(edge.to);
-  expect(Object.values(RECORD_OWNERS).filter((owner) => owner !== 'input' && !ids.includes(owner))).toEqual([]);
+  // Each owner in the state contract is a node of the graph. (Level 3 added the node `remember` to the graph with a memory.)
+  const allIds = describeGraph(recordExpenseGraphWithMemory).nodes.map((n) => n.id);
+  expect(Object.values(RECORD_OWNERS).filter((owner) => owner !== 'input' && !allIds.includes(owner))).toEqual([]);
 
   const visited = new Set<string>();
   const usedEdges = new Set<string>();

@@ -11,13 +11,14 @@ import { budgetStatus } from '../domain/budget.ts';
 import { periodOf, sameAsStored, toExpense } from '../domain/expense.ts';
 import { onlyNeedsConfirmation } from '../domain/expense-rules.ts';
 import { DuplicateKey, StorageUnavailable } from '../errors.ts';
+import type { MerchantMemory } from '../intelligence/merchant-memory.ts';
 import type { Stores } from '../repositories/ports.ts';
 import type { Graph, GraphNode } from './engine.ts';
 import { gate1, gate2 } from './gates.ts';
 import { RECORD_OWNERS, type RecordExpenseState as S, type RecordFacts } from './state.ts';
 import { verifyRecorded, type LedgerReader } from './verifier.ts';
 
-export type RecordGraphDeps = { stores: Stores; clock: Clock; ids: IdGen; ledger: LedgerReader; sleep(ms: number): Promise<void> };
+export type RecordGraphDeps = { stores: Stores; clock: Clock; ids: IdGen; ledger: LedgerReader; sleep(ms: number): Promise<void>; memory?: MerchantMemory };
 type Node = GraphNode<S, RecordGraphDeps>;
 
 export const MAX_ATTEMPTS = 2;
@@ -43,7 +44,7 @@ const NODES: Node[] = [
     id: 'gate1', type: 'code',
     act(state) {
       const g = gate1(state.request);
-      return { writes: { proposal: g.proposal, idempotency_key: g.idempotency_key, confirmed: g.confirmed, gate1_problems: g.problems }, result: g.problems.length ? 'FAIL' : 'PASS', note: g.problems.length ? 'Shape: ' + g.problems.map((p) => p.rule).join(', ') + '.' : 'The shape is correct.' };
+      return { writes: { proposal: g.proposal, idempotency_key: g.idempotency_key, confirmed: g.confirmed, suggest_run_id: g.suggest_run_id, gate1_problems: g.problems }, result: g.problems.length ? 'FAIL' : 'PASS', note: g.problems.length ? 'Shape: ' + g.problems.map((p) => p.rule).join(', ') + '.' : 'The shape is correct.' };
     },
   },
   {
@@ -157,6 +158,21 @@ const NODES: Node[] = [
   },
 ];
 
+// Level 3. After a verified save, the application remembers the category that the person selected
+// for this merchant. The node is after `verify`: only an expense that is in the ledger teaches the memory.
+// A failure of the memory does not change the result of the expense.
+const REMEMBER: Node = {
+  id: 'remember', type: 'code',
+  act(state, { memory, clock }) {
+    try {
+      memory!.remember(state.expense!.merchant_key, state.expense!.category_id, clock.today(), state.run_id);
+      return { writes: { memory_update: 'REMEMBERED' }, note: 'Remembered: "' + state.expense!.merchant_key + '" is in "' + state.expense!.category_id + '".' };
+    } catch {
+      return { writes: { memory_update: 'UNAVAILABLE' }, result: 'FAIL', note: 'The memory did not save. The expense is recorded.' };
+    }
+  },
+};
+
 export const recordExpenseGraph: Graph<S, RecordGraphDeps> = {
   name: 'record-expense',
   start: 'gate1',
@@ -183,4 +199,13 @@ export const recordExpenseGraph: Graph<S, RecordGraphDeps> = {
     { from: 'verify', to: 'respond', label: 'ledger agrees', when: (s) => s.verification?.ok === true },
     { from: 'verify', to: 'escalate', label: 'ledger does not agree' },
   ],
+};
+
+/** Level 3: the same graph with one more node, `remember`, between `verify` and `respond`. */
+export const recordExpenseGraphWithMemory: Graph<S, RecordGraphDeps> = {
+  ...recordExpenseGraph,
+  nodes: [...NODES, REMEMBER],
+  edges: recordExpenseGraph.edges.flatMap((e) =>
+    e.from === 'verify' && e.to === 'respond' ? [{ ...e, to: 'remember' }, { from: 'remember', to: 'respond' }] : [e],
+  ),
 };

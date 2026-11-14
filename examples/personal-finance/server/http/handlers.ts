@@ -3,11 +3,12 @@
 // It contains no business rule.
 import { periodOf } from '../domain/expense.ts';
 import { AppError } from '../errors.ts';
+import { suggestCategory, type SuggestDeps } from '../intelligence/suggest-category.graph.ts';
 import { monthSummary } from '../services/month-summary.ts';
 import { recordExpense, type RecordExpenseDeps } from '../services/record-expense.ts';
 
 /** All that the handlers can use. main.ts makes it one time. */
-export type App = RecordExpenseDeps;
+export type App = RecordExpenseDeps & Pick<SuggestDeps, 'suggester'> & { dailyCap?: number };
 
 export type ApiRequest = { query: URLSearchParams; params: string[]; body: unknown };
 export type Reply = { status: number; body: unknown; headers?: Record<string, string> };
@@ -31,6 +32,21 @@ export const HANDLERS: Handler[] = [
       const result = await recordExpense(app, request.body);
       // 201: a new expense. 200: a replay of a request that already recorded its expense.
       return { status: result.replayed ? 200 : 201, body: result };
+    },
+  },
+
+  // Level 3. A suggestion for the category. This handler gives the graph a function that lists the
+  // categories, the memory and the suggester. It gives no store that can write, thus the suggest
+  // graph cannot change the ledger. The answer is 200 also when there is no suggestion.
+  {
+    method: 'POST',
+    path: '/api/expenses/suggest',
+    async handle(app, request) {
+      const body = await suggestCategory(
+        { listCategories: () => app.stores.categories.list(), clock: app.clock, ids: app.ids, memory: app.memory, suggester: app.suggester, trace: app.trace, dailyCap: app.dailyCap ?? 50 },
+        request.body,
+      );
+      return { status: 200, body };
     },
   },
 

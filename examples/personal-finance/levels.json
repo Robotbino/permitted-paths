@@ -19,7 +19,8 @@
       "level": 1,
       "role": "The data contracts of the web application and the server, and the check of shape.",
       "modified": [
-        2
+        2,
+        3
       ]
     },
     "shared/contracts.test.ts": {
@@ -30,12 +31,16 @@
       "level": 1,
       "role": "Composition root: makes all the parts and connects them.",
       "modified": [
-        2
+        2,
+        3
       ]
     },
     "server/config.ts": {
       "level": 1,
-      "role": "Reads the settings from the environment."
+      "role": "Reads the settings from the environment.",
+      "modified": [
+        3
+      ]
     },
     "server/clock.ts": {
       "level": 1,
@@ -50,7 +55,10 @@
     },
     "server/domain/expense.ts": {
       "level": 1,
-      "role": "The expense as pure functions: proposal, merchant key, month."
+      "role": "The expense as pure functions: proposal, merchant key, month.",
+      "modified": [
+        3
+      ]
     },
     "server/domain/budget.ts": {
       "level": 1,
@@ -104,7 +112,8 @@
       "level": 1,
       "role": "The use case 'record an expense'. From level 2: a thin facade that runs the graph.",
       "modified": [
-        2
+        2,
+        3
       ]
     },
     "server/services/record-expense.test.ts": {
@@ -119,7 +128,8 @@
       "level": 1,
       "role": "One small function for each operation of the API.",
       "modified": [
-        2
+        2,
+        3
       ]
     },
     "server/http/server.ts": {
@@ -139,23 +149,38 @@
     },
     "web/src/App.tsx": {
       "level": 1,
-      "role": "Owns the screen state and calls the server."
+      "role": "Owns the screen state and calls the server.",
+      "modified": [
+        3
+      ]
     },
     "web/src/api.ts": {
       "level": 1,
-      "role": "The only file of the web application that calls fetch."
+      "role": "The only file of the web application that calls fetch.",
+      "modified": [
+        3
+      ]
     },
     "web/src/state.ts": {
       "level": 1,
-      "role": "The screen state and its pure reducer."
+      "role": "The screen state and its pure reducer.",
+      "modified": [
+        3
+      ]
     },
     "web/src/state.test.ts": {
       "level": 1,
-      "role": "Proves that a retry keeps the request key."
+      "role": "Proves that a retry keeps the request key.",
+      "modified": [
+        3
+      ]
     },
     "web/src/ExpenseForm.tsx": {
       "level": 1,
-      "role": "The form. Shows state, sends actions."
+      "role": "The form. Shows state, sends actions.",
+      "modified": [
+        3
+      ]
     },
     "web/src/BudgetPanel.tsx": {
       "level": 1,
@@ -163,15 +188,24 @@
     },
     "web/src/styles.css": {
       "level": 1,
-      "role": "Mobile-first styles."
+      "role": "Mobile-first styles.",
+      "modified": [
+        3
+      ]
     },
     "tests/architecture.test.ts": {
       "level": 1,
-      "role": "Checks the boundaries between the folders and the levels."
+      "role": "Checks the boundaries between the folders and the levels.",
+      "modified": [
+        3
+      ]
     },
     "shared/ontology.ts": {
       "level": 2,
-      "role": "The classes, relations, permitted values and rules R1 to R11, as data."
+      "role": "The classes, relations, permitted values and rules R1 to R11, as data.",
+      "modified": [
+        3
+      ]
     },
     "server/graph/engine.ts": {
       "level": 2,
@@ -183,11 +217,17 @@
     },
     "server/graph/state.ts": {
       "level": 2,
-      "role": "The typed state of the record graph and the owner of each field."
+      "role": "The typed state of the record graph and the owner of each field.",
+      "modified": [
+        3
+      ]
     },
     "server/graph/gates.ts": {
       "level": 2,
-      "role": "Gate 1 (shape) and Gate 2 (sense), by name."
+      "role": "Gate 1 (shape) and Gate 2 (sense), by name.",
+      "modified": [
+        3
+      ]
     },
     "server/graph/verifier.ts": {
       "level": 2,
@@ -199,19 +239,31 @@
     },
     "server/graph/trace.ts": {
       "level": 2,
-      "role": "The trace of each run with checkpoints: the context graph."
+      "role": "The trace of each run with checkpoints: the context graph.",
+      "modified": [
+        3
+      ]
     },
     "server/graph/trace.test.ts": {
       "level": 2,
-      "role": "Proves the trace on two stores, and that it never fails an expense."
+      "role": "Proves the trace on two stores, and that it never fails an expense.",
+      "modified": [
+        3
+      ]
     },
     "server/graph/record-expense.graph.ts": {
       "level": 2,
-      "role": "The execution graph: eleven nodes, their edges, three ends."
+      "role": "The execution graph: eleven nodes, their edges, three ends.",
+      "modified": [
+        3
+      ]
     },
     "server/graph/record-expense.paths.test.ts": {
       "level": 2,
-      "role": "For each scenario: status, exact path, rows in the ledger."
+      "role": "For each scenario: status, exact path, rows in the ledger.",
+      "modified": [
+        3
+      ]
     },
     "server/repositories/migrations/002_trace.sql": {
       "level": 2,
@@ -219,15 +271,69 @@
     },
     "scripts/scenarios.ts": {
       "level": 2,
-      "role": "Named scenarios with the expected status and path."
+      "role": "Named scenarios with the expected status and path.",
+      "modified": [
+        3
+      ]
     },
     "scripts/record-runs.ts": {
       "level": 2,
-      "role": "Records each scenario from the real code for the course page."
+      "role": "Records each scenario from the real code for the course page.",
+      "modified": [
+        3
+      ]
     },
     "scripts/recordings.test.ts": {
       "level": 2,
       "role": "Proves that the recordings are current and repeatable."
+    },
+    "shared/contracts.suggest.ts": {
+      "level": 3,
+      "role": "The contract of \"suggest a category\": the request, the reasons, the response."
+    },
+    "server/intelligence/suggester.ts": {
+      "level": 3,
+      "role": "The port of the model: what it gets and what it can give back."
+    },
+    "server/intelligence/fake-suggester.ts": {
+      "level": 3,
+      "role": "A predictable stand-in for the model, for tests and recordings."
+    },
+    "server/intelligence/claude-suggester.ts": {
+      "level": 3,
+      "role": "The real model: one Claude API call with a structured output. The only file that imports the SDK."
+    },
+    "server/intelligence/prompts/suggest-category.md": {
+      "level": 3,
+      "role": "The prompt, as a file that a person can read and change."
+    },
+    "server/intelligence/suggestion-gate.ts": {
+      "level": 3,
+      "role": "Checks a suggestion against the permitted categories (R12)."
+    },
+    "server/intelligence/merchant-memory.ts": {
+      "level": 3,
+      "role": "What the person confirmed for each merchant. Asked before the model."
+    },
+    "server/intelligence/suggest-category.graph.ts": {
+      "level": 3,
+      "role": "The suggest graph: memory, cost control, model, gate. It cannot write the ledger."
+    },
+    "server/intelligence/suggest-category.paths.test.ts": {
+      "level": 3,
+      "role": "Paths of the suggest graph; a suggestion never writes; the learning loop."
+    },
+    "server/intelligence/intelligence.test.ts": {
+      "level": 3,
+      "role": "The gate, the memory and the adapter of the real model, each alone."
+    },
+    "server/repositories/migrations/003_merchant_memory.sql": {
+      "level": 3,
+      "role": "Table: merchant_memory."
+    },
+    "tests/ai-off.test.ts": {
+      "level": 3,
+      "role": "Runs level 2 again with no model, a slow model and a broken model."
     }
   }
 }

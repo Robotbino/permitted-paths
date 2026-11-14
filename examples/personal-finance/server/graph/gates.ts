@@ -9,13 +9,13 @@ import { isRule } from '../../shared/ontology.ts';
 import { toProposal, type ExpenseProposal } from '../domain/expense.ts';
 import { checkRules, type ExpenseFacts } from '../domain/expense-rules.ts';
 
-export type Gate1Result = { problems: Problem[]; proposal: ExpenseProposal | null; idempotency_key: string | null; confirmed: boolean };
+export type Gate1Result = { problems: Problem[]; proposal: ExpenseProposal | null; idempotency_key: string | null; confirmed: boolean; suggest_run_id: string | null };
 
 /** Gate 1: shape. It cannot read the store, because it does not get one. */
 export function gate1(request: unknown): Gate1Result {
   const shape = checkShape(request);
-  if (!shape.ok) return { problems: named(shape.problems), proposal: null, idempotency_key: null, confirmed: false };
-  return { problems: [], proposal: toProposal(shape.value), idempotency_key: shape.value.idempotency_key, confirmed: shape.value.confirm_duplicate === true };
+  if (!shape.ok) return { problems: named(shape.problems), proposal: null, idempotency_key: null, confirmed: false, suggest_run_id: null };
+  return { problems: [], proposal: toProposal(shape.value), idempotency_key: shape.value.idempotency_key, confirmed: shape.value.confirm_duplicate === true, suggest_run_id: shape.value.suggest_run_id ?? null };
 }
 
 /** Gate 2: sense. The facts are an argument, thus the same facts always give the same answer. */

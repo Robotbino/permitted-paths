@@ -14,6 +14,7 @@ export type RecordExpenseState = {
   proposal: ExpenseProposal | null;
   idempotency_key: string | null;
   confirmed: boolean;
+  suggest_run_id: string | null; // level 3: the suggest run that the person saw before this request
   gate1_problems: Problem[];
   // dedupe
   dedupe: 'NEW' | 'REPLAY' | 'CONFLICT' | 'UNAVAILABLE' | null;
@@ -32,6 +33,8 @@ export type RecordExpenseState = {
   budget_after: BudgetStatus | null;
   // verify
   verification: { ok: boolean; problems: Problem[] } | null;
+  // remember (level 3; the node is in the graph only when the application has a merchant memory)
+  memory_update: 'REMEMBERED' | 'UNAVAILABLE' | null;
   // the three ends
   response: RecordExpenseResult | null;
   rejection: { code: 'SHAPE' | 'RULE' | 'NEEDS_CONFIRMATION' | 'KEY_CONFLICT'; problems: Problem[] } | null;
@@ -44,6 +47,7 @@ export const RECORD_OWNERS: { [K in keyof RecordExpenseState]: string } = {
   proposal: 'gate1',
   idempotency_key: 'gate1',
   confirmed: 'gate1',
+  suggest_run_id: 'gate1',
   gate1_problems: 'gate1',
   dedupe: 'dedupe',
   replay: 'dedupe',
@@ -55,6 +59,7 @@ export const RECORD_OWNERS: { [K in keyof RecordExpenseState]: string } = {
   waited_ms: 'backoff',
   budget_after: 'project',
   verification: 'verify',
+  memory_update: 'remember',
   response: 'respond',
   rejection: 'reject',
   escalation: 'escalate',
@@ -63,10 +68,10 @@ export const RECORD_OWNERS: { [K in keyof RecordExpenseState]: string } = {
 export function initialRecordState(run_id: string, request: unknown): RecordExpenseState {
   return {
     run_id, request,
-    proposal: null, idempotency_key: null, confirmed: false, gate1_problems: [],
+    proposal: null, idempotency_key: null, confirmed: false, suggest_run_id: null, gate1_problems: [],
     dedupe: null, replay: null, facts: null, gate2_problems: [],
     commit: null, expense: null, attempts: 0, waited_ms: 0,
-    budget_after: null, verification: null,
+    budget_after: null, verification: null, memory_update: null,
     response: null, rejection: null, escalation: null,
   };
 }

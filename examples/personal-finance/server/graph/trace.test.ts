@@ -52,7 +52,7 @@ describe.each([['memory', () => memoryTrace()], ['sqlite', () => sqliteTrace(ope
 
 test('a trace store that fails does not fail the expense', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-  const broken: TraceStore = { save: () => { throw new Error('disk full'); }, get: () => null, forSubject: () => [] };
+  const broken: TraceStore = { save: () => { throw new Error('disk full'); }, get: () => null, forSubject: () => [], countSteps: () => 0 };
   const d = deps(broken);
   const result = await recordExpense(d, request);
   expect(result.expense.id).toBe('exp_0001');
@@ -62,7 +62,7 @@ test('a trace store that fails does not fail the expense', async () => {
 });
 
 test('GET /api/runs/<id> gives the trace of the run that the response names', async () => {
-  const world = await makeWorld('none');
+  const world = await makeWorld();
   try {
     const created = await send(world, '/api/expenses', request);
     const run = (await (await fetch(world.base + '/api/runs/' + created.body.run_id)).json()) as { events: { node: string }[] };

@@ -7,7 +7,7 @@ export const CLASSES = {
   Expense: { implemented: true, text: 'Money that went out, on one date, to one merchant, in one category.' },
   Category: { implemented: true, text: 'A group of expenses. Active or not active.' },
   Budget: { implemented: true, text: 'The limit of one category for one month.' },
-  Merchant: { implemented: false, text: 'The receiver of an expense. At level 1 and 2 it is text on the expense.' },
+  Merchant: { implemented: true, text: 'The receiver of an expense. At level 1 and 2 it is text on the expense. Level 3 gives it a memory.' },
   Person: { implemented: false, text: 'The owner of the data. The application has one person, thus it has no table for persons.' },
   Account: { implemented: false, text: 'Where the money is. Not necessary for the slice.' },
   Income: { implemented: false, text: 'Money that came in. Not in the slice.' },
@@ -19,6 +19,7 @@ export const CLASSES = {
 export const RELATIONS = [
   ['Expense', 'is in', 'Category'],
   ['Expense', 'is paid to', 'Merchant'],
+  ['Merchant', 'is usually in', 'Category'], // level 3: the merchant memory
   ['Budget', 'limits', 'Category'],
   ['Budget', 'covers', 'Month'],
   ['Person', 'owns', 'Account'],
@@ -35,7 +36,7 @@ export const VALUES = {
 } as const;
 
 export type RuleKind = 'shape' | 'value' | 'enumeration' | 'typed relation' | 'cardinality' | 'derived value';
-export type RuleCheck = 'gate1' | 'gate2' | 'dedupe' | 'schema' | 'verifier' | 'function';
+export type RuleCheck = 'gate1' | 'gate2' | 'dedupe' | 'schema' | 'verifier' | 'function' | 'suggestion gate' | 'structure';
 
 /** The rules. `checked_by` is the part of the application that enforces the rule. */
 export const RULES: Record<string, { text: string; kind: RuleKind; checked_by: RuleCheck[] }> = {
@@ -50,6 +51,9 @@ export const RULES: Record<string, { text: string; kind: RuleKind; checked_by: R
   R9: { text: 'A category has one budget at most for a month, and the limit is more than 0.', kind: 'cardinality', checked_by: ['schema'] },
   R10: { text: 'The spent amount of a budget is the sum of its expenses in its month. No table stores it.', kind: 'derived value', checked_by: ['verifier'] },
   R11: { text: 'Over budget is a state of the budget. It is not a FAIL: the expense is recorded.', kind: 'enumeration', checked_by: ['function'] },
+  // Level 3.
+  R12: { text: 'A suggestion names one active category of the store, or it says UNKNOWN.', kind: 'enumeration', checked_by: ['suggestion gate'] },
+  R13: { text: 'Only an expense that the person records changes the ledger and the merchant memory. A suggestion changes nothing.', kind: 'cardinality', checked_by: ['structure'] },
 };
 
 export const isRule = (id: string): boolean => id in RULES;

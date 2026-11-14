@@ -7,8 +7,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RULES } from '../shared/ontology.ts';
 import { describeGraph } from '../server/graph/engine.ts';
-import { recordExpenseGraph } from '../server/graph/record-expense.graph.ts';
+import { recordExpenseGraph, recordExpenseGraphWithMemory } from '../server/graph/record-expense.graph.ts';
 import { initialRecordState } from '../server/graph/state.ts';
+import { initialSuggestState, suggestCategoryGraph } from '../server/intelligence/suggest-category.graph.ts';
 import { SCENARIOS, TODAY, runScenario } from './scenarios.ts';
 
 const FILE = join(dirname(fileURLToPath(import.meta.url)), '..', 'recordings', 'runs.json');
@@ -16,19 +17,22 @@ const FILE = join(dirname(fileURLToPath(import.meta.url)), '..', 'recordings', '
 export async function record(): Promise<string> {
   const scenarios = [];
   for (const scenario of SCENARIOS) {
-    const { http, run, rows } = await runScenario(scenario);
+    const { http, run, rows, memory_rows, model_calls } = await runScenario(scenario);
     scenarios.push({
       id: scenario.id,
       level: scenario.level,
       title: scenario.title,
-      fault: scenario.fault,
+      world: scenario.world,
+      endpoint: scenario.endpoint,
       before: scenario.before.length,
       request: scenario.request,
       http,
       rows_after: rows,
+      memory_rows_added: memory_rows,
+      model_calls,
       run: run && {
         id: run.id,
-        graph: run.graph,
+        graph: run.graph === 'record-expense' && scenario.world.memory ? 'record-expense+memory' : run.graph,
         result: run.result,
         path: run.events.map((e) => e.node),
         // The checkpoints are in the trace of the application. The recording keeps only the writes:
@@ -41,7 +45,12 @@ export async function record(): Promise<string> {
     about: 'Recorded by "npm run record-runs" from the real code. Fixed clock, sequential ids, SQLite in memory. Do not edit.',
     today: TODAY,
     rules: RULES,
-    graphs: { [recordExpenseGraph.name]: { ...describeGraph(recordExpenseGraph), initial_state: initialRecordState('run_0000', null) } },
+    graphs: {
+      'record-expense': { ...describeGraph(recordExpenseGraph), initial_state: initialRecordState('run_0000', null) },
+      // Level 3: the record graph of an application that has a merchant memory, and the suggest graph.
+      'record-expense+memory': { ...describeGraph(recordExpenseGraphWithMemory), initial_state: initialRecordState('run_0000', null) },
+      'suggest-category': { ...describeGraph(suggestCategoryGraph), initial_state: initialSuggestState('run_0000', null) },
+    },
     scenarios,
   };
   return JSON.stringify(recording, null, 1) + '\n';

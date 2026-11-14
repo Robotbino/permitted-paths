@@ -31,3 +31,24 @@ test('the reducer does not change the state that it gets', () => {
   reduce(filled, { type: 'submit' });
   expect(JSON.stringify(filled)).toBe(before);
 });
+
+// Level 3: the suggestion.
+const suggestion = { suggestion: { category_id: 'groceries', category_name: 'Groceries', source: 'model' as const }, reason: 'FROM_MODEL' as const, run_id: 'run_0001' };
+
+test('a suggestion does not change the form; only the person accepts it', () => {
+  const offered = reduce(filled, { type: 'suggestion', for_merchant: 'Woolworths', response: suggestion });
+  expect(offered.form.category_id).toBe('');
+  expect(offered.suggestion).toMatchObject({ category_id: 'groceries', run_id: 'run_0001' });
+  expect(reduce(offered, { type: 'accept_suggestion' }).form.category_id).toBe('groceries');
+});
+
+test('a late suggestion for a different merchant text is ignored, and a new merchant text removes the suggestion', () => {
+  expect(reduce(filled, { type: 'suggestion', for_merchant: 'Woolw', response: suggestion }).suggestion).toBeNull();
+  const offered = reduce(filled, { type: 'suggestion', for_merchant: 'Woolworths', response: suggestion });
+  expect(reduce(offered, { type: 'field', name: 'merchant_name', value: 'Engen' }).suggestion).toBeNull();
+  expect(reduce(offered, { type: 'field', name: 'amount_text', value: '190' }).suggestion).not.toBeNull();
+});
+
+test('an answer with no suggestion changes nothing', () => {
+  expect(reduce(filled, { type: 'suggestion', for_merchant: 'Woolworths', response: { suggestion: null, reason: 'AI_OFF', run_id: 'run_0002' } })).toBe(filled);
+});

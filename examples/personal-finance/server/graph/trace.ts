@@ -22,6 +22,8 @@ export interface TraceStore {
   get(id: string): RunRecord | null;
   /** The runs that recorded or touched one subject, the oldest first. */
   forSubject(subject_id: string): RunRecord[];
+  /** Level 3: how many times a node ran in the runs that started on one day ("2026-03-14"). The cost control reads it. */
+  countSteps(node: string, day: string): number;
 }
 
 export function memoryTrace(): TraceStore {
@@ -30,6 +32,7 @@ export function memoryTrace(): TraceStore {
     save: (run) => void runs.set(run.id, structuredClone(run)),
     get: (id) => runs.get(id) ?? null,
     forSubject: (subject_id) => [...runs.values()].filter((r) => r.subject_id === subject_id),
+    countSteps: (node, day) => [...runs.values()].filter((r) => r.started_at.startsWith(day)).reduce((n, r) => n + r.events.filter((e) => e.node === node).length, 0),
   };
 }
 
@@ -60,6 +63,7 @@ export function sqliteTrace(db: DatabaseSync): TraceStore {
       return row ? load({ ...row }) : null;
     },
     forSubject: (subject_id) => db.prepare('SELECT * FROM runs WHERE subject_id = ? ORDER BY started_at, id').all(subject_id).map((row) => load({ ...row })),
+    countSteps: (node, day) => Number(db.prepare("SELECT COUNT(*) AS n FROM trace_events e JOIN runs r ON r.id = e.run_id WHERE e.node = ? AND r.started_at LIKE ? || '%'").get(node, day)!.n),
   };
 }
 

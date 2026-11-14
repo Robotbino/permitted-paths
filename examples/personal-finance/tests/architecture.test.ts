@@ -81,6 +81,11 @@ test('only server/config.ts reads the environment', () => {
   expect(readers).toEqual(['server/config.ts']);
 });
 
+test('only the adapter of the real model imports the SDK of the model', () => {
+  const users = files.filter((f) => isCode(f) && !isTest(f) && importsOf(f).packages.some((p) => p.startsWith('@anthropic-ai/')));
+  expect(users.filter((f) => f !== 'server/intelligence/claude-suggester.ts')).toEqual([]);
+});
+
 test('a file does not import a file of a later level', () => {
   const broken: string[] = [];
   for (const file of files.filter((f) => isCode(f) && !isTest(f))) {

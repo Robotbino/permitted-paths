@@ -9,10 +9,12 @@ type Props = {
   categories: Category[];
   dispatch: (action: Action) => void;
   onSubmit: (confirm_duplicate: boolean) => void;
+  /** Level 3: the person left the merchant field. */
+  onMerchantDone: () => void;
 };
 
-export function ExpenseForm({ state, categories, dispatch, onSubmit }: Props) {
-  const { form, status, problems, last } = state;
+export function ExpenseForm({ state, categories, dispatch, onSubmit, onMerchantDone }: Props) {
+  const { form, status, problems, last, suggestion } = state;
   const cents = parseAmount(form.amount_text);
   const ready = cents !== null && cents > 0 && form.merchant_name.trim() !== '' && form.category_id !== '' && status !== 'saving';
   const field = (name: keyof typeof form) => (event: { target: { value: string } }) => dispatch({ type: 'field', name, value: event.target.value });
@@ -32,7 +34,7 @@ export function ExpenseForm({ state, categories, dispatch, onSubmit }: Props) {
       </label>
       <label>
         Merchant
-        <input placeholder="Woolworths" maxLength={80} value={form.merchant_name} onChange={field('merchant_name')} />
+        <input placeholder="Woolworths" maxLength={80} value={form.merchant_name} onChange={field('merchant_name')} onBlur={onMerchantDone} />
       </label>
       <label>
         Category
@@ -45,6 +47,17 @@ export function ExpenseForm({ state, categories, dispatch, onSubmit }: Props) {
           ))}
         </select>
       </label>
+      {/* Level 3. A suggestion is a button that the person can push. The form does not change by itself. */}
+      {suggestion && suggestion.category_id !== form.category_id && (
+        <p className="suggestion">
+          <span>
+            Suggestion: <strong>{suggestion.category_name}</strong> <span className="muted">({suggestion.source === 'memory' ? 'you selected it before' : 'from the model'})</span>
+          </span>
+          <button type="button" className="secondary small" onClick={() => dispatch({ type: 'accept_suggestion' })}>
+            Use it
+          </button>
+        </p>
+      )}
       <label>
         Date
         <input type="date" value={form.occurred_on} onChange={field('occurred_on')} />

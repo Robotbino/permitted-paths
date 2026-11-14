@@ -28,6 +28,8 @@ input[aria-invalid='true'] { border-color: var(--over); }
 button { width: 100%; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 600; cursor: pointer; }
 button:disabled { opacity: 0.45; cursor: default; }
 button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); margin-top: 0.5rem; }
+button.small { width: auto; min-height: 2.75rem; padding: 0 1rem; margin: 0; flex: none; }
+.suggestion { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin: -0.25rem 0 0.75rem; padding: 0.5rem 0.75rem; border: 1px dashed var(--rule); border-radius: 8px; font-size: 0.9rem; }
 :focus-visible { outline: 3px solid var(--near); outline-offset: 2px; }
 .problems { margin: 0.75rem 0 0; padding: 0.75rem 0.75rem 0.75rem 1.75rem; border-left: 3px solid var(--over); background: color-mix(in srgb, var(--over) 8%, transparent); }
 .problems.ask { border-color: var(--near); background: color-mix(in srgb, var(--near) 10%, transparent); }

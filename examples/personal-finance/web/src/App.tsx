@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import type { Category } from '../../shared/contracts.ts';
 import { parseAmount } from '../../shared/money.ts';
-import { getCategories, getSummary, postExpense } from './api.ts';
+import { getCategories, getSummary, postExpense, postSuggest } from './api.ts';
 import { BudgetPanel } from './BudgetPanel.tsx';
 import { ExpenseForm } from './ExpenseForm.tsx';
 import { initialState, reduce } from './state.ts';
@@ -32,6 +32,15 @@ export function App() {
     if (/^\d{4}-\d{2}$/.test(period)) void loadSummary(period);
   }, [period, loadSummary]);
 
+  // Level 3. Ask for a suggestion when the person leaves the merchant field. If the call fails,
+  // or the answer has no suggestion, nothing happens: the form works as before.
+  async function askSuggestion() {
+    const merchant = state.form.merchant_name;
+    if (merchant.trim() === '' || state.suggestion?.for_merchant === merchant) return;
+    const result = await postSuggest(merchant);
+    if (result.ok) dispatch({ type: 'suggestion', for_merchant: merchant, response: result.value });
+  }
+
   async function submit(confirm_duplicate: boolean) {
     const cents = parseAmount(state.form.amount_text);
     if (cents === null) return;
@@ -45,6 +54,7 @@ export function App() {
       category_id: state.form.category_id,
       ...(state.form.note ? { note: state.form.note } : {}),
       ...(confirm_duplicate ? { confirm_duplicate: true } : {}),
+      ...(state.suggestion ? { suggest_run_id: state.suggestion.run_id } : {}),
     });
     if (result.ok) {
       dispatch({ type: 'saved', result: result.value, next_key: newKey() });
@@ -60,7 +70,7 @@ export function App() {
     <main>
       <h1>Personal finance</h1>
       <p className="muted">Studio example. Fictional data only.</p>
-      <ExpenseForm state={state} categories={categories} dispatch={dispatch} onSubmit={submit} />
+      <ExpenseForm state={state} categories={categories} dispatch={dispatch} onSubmit={submit} onMerchantDone={() => void askSuggestion()} />
       <BudgetPanel summary={state.summary} highlight={state.status === 'saved' && state.last ? state.last.expense.category_id : null} />
     </main>
   );

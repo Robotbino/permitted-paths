@@ -7,10 +7,11 @@ import type { RecordExpenseResult } from '../../shared/contracts.ts';
 import type { Clock, IdGen } from '../clock.ts';
 import { AppError, StorageUnavailable } from '../errors.ts';
 import { runGraph } from '../graph/engine.ts';
-import { recordExpenseGraph } from '../graph/record-expense.graph.ts';
+import { recordExpenseGraph, recordExpenseGraphWithMemory } from '../graph/record-expense.graph.ts';
 import { initialRecordState, type RecordExpenseState } from '../graph/state.ts';
 import { collector, writeTrace, type TraceStore } from '../graph/trace.ts';
 import { ledgerReaderFromStores, type LedgerReader } from '../graph/verifier.ts';
+import type { MerchantMemory } from '../intelligence/merchant-memory.ts';
 import type { Stores } from '../repositories/ports.ts';
 
 export type RecordExpenseDeps = {
@@ -21,6 +22,8 @@ export type RecordExpenseDeps = {
   trace?: TraceStore;
   ledger?: LedgerReader;
   sleep?: (ms: number) => Promise<void>;
+  /** Level 3. With a memory, the graph has one more node: remember. */
+  memory?: MerchantMemory;
 };
 
 // One run at a time. Two runs that interleave would make the verifier see the expense of the other run
@@ -37,16 +40,17 @@ async function runOnce(deps: RecordExpenseDeps, input: unknown): Promise<RecordE
   const run_id = deps.ids('run');
   const started_at = deps.clock.now();
   const checkpoints = collector<RecordExpenseState>();
+  const graph = deps.memory ? recordExpenseGraphWithMemory : recordExpenseGraph;
   const run = await runGraph(
-    recordExpenseGraph,
+    graph,
     initialRecordState(run_id, input),
-    { stores: deps.stores, clock: deps.clock, ids: deps.ids, ledger: deps.ledger ?? ledgerReaderFromStores(deps.stores), sleep: deps.sleep ?? ((ms) => new Promise((done) => setTimeout(done, ms))) },
+    { stores: deps.stores, clock: deps.clock, ids: deps.ids, ledger: deps.ledger ?? ledgerReaderFromStores(deps.stores), sleep: deps.sleep ?? ((ms) => new Promise((done) => setTimeout(done, ms))), memory: deps.memory },
     { onStep: checkpoints.onStep },
   );
   const { response, rejection, escalation, expense } = run.state;
   writeTrace(
     deps.trace,
-    { id: run_id, graph: recordExpenseGraph.name, started_at, ended_at: deps.clock.now(), result: response ? 'PASS' : rejection ? 'FAIL' : 'ESCALATED', subject_id: (response?.expense ?? expense)?.id ?? null, parent_run_id: null },
+    { id: run_id, graph: graph.name, started_at, ended_at: deps.clock.now(), result: response ? 'PASS' : rejection ? 'FAIL' : 'ESCALATED', subject_id: (response?.expense ?? expense)?.id ?? null, parent_run_id: run.state.suggest_run_id },
     run,
     checkpoints.events,
   );

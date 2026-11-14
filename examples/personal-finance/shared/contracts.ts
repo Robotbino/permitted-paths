@@ -26,6 +26,8 @@ export const RecordExpenseRequest = z.strictObject({
   category_id: z.string().min(1).max(40),
   note: z.string().max(200).optional(),
   confirm_duplicate: z.boolean().optional(),
+  /** Level 3: the run of the suggest graph that the person saw. Only for the trace; it changes nothing in the expense. */
+  suggest_run_id: z.string().max(40).optional(),
 });
 export type RecordExpenseRequest = z.infer<typeof RecordExpenseRequest>;
 
