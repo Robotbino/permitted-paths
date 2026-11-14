@@ -1,0 +1,134 @@
+/* studio.css: the Practical Architecture Studio (part S). It uses only the tokens of tokens.css.
+   Part S borrows the head, the contents list, the code blocks and the marks of part L (phone-lab.css). */
+
+/* ---- the mark of a level: on each section, each file and each component ---- */
+.st-lv { display: inline-flex; align-items: center; gap: 0.4em; font-family: var(--font-mono); font-size: var(--t-2xs); font-weight: 600; letter-spacing: 0.04em; line-height: 1.2; padding: 0.25em 0.55em; border: 1px solid var(--ink-2); border-radius: var(--radius); color: var(--ink); background: var(--paper); white-space: nowrap; }
+/* The level is also a number of bars, thus colour is not the signal. */
+.st-lv::before { content: ""; flex: none; height: 0.7em; width: 0.9em; background: repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 4px); }
+.st-lv-1::before { width: 2px; }
+.st-lv-2::before { width: 6px; }
+.st-lv-3::before { width: 10px; }
+.st-lv-4::before { width: 14px; }
+.st-lv-0 { border-style: dashed; color: var(--ink-2); font-weight: 400; }
+.st-lv-0::before { display: none; }
+.chapter > .st-kicker { margin: var(--s8) 0 calc(-1 * var(--s6)); max-width: none; }
+.chapter > .st-kicker + h2 { margin-top: var(--s6); }
+
+/* ---- the strip of the four levels ---- */
+.st-levels { max-width: none !important; margin: 0 0 var(--s6); background: var(--paper); border-block: 1px solid var(--rule); z-index: 3; }
+.st-levels ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.st-levels li { margin: 0; border-inline-start: 1px solid var(--rule); }
+.st-levels li:first-child { border-inline-start: 0; }
+.st-levels a { display: grid; gap: 2px; padding: var(--s3) var(--s4); min-height: 2.75rem; text-decoration: none; color: var(--ink-2); }
+.st-levels .st-n { font-family: var(--font-mono); font-size: var(--t-2xs); letter-spacing: var(--caps); text-transform: uppercase; }
+.st-levels .st-name { font-family: var(--font-display); font-size: var(--t-sm); line-height: 1.2; color: var(--ink); }
+.st-levels .st-adds { font-size: var(--t-xs); line-height: 1.35; }
+.st-levels li.is-done a { color: var(--ink-3); }
+.st-levels li.is-done .st-n::after { content: " \00B7 built"; }
+.st-levels li.is-now { background: var(--paper-2); box-shadow: inset 0 3px 0 var(--ink); }
+.st-levels li.is-now .st-n::after { content: " \00B7 you are here"; }
+@media (min-width: 56.01rem) {
+  .js .st-levels { position: sticky; top: var(--top); }
+  /* The strip stays at the top of the screen. A heading that a link goes to must stop below it, not under it. */
+  .js .is-studio [id] { scroll-margin-top: 6.5rem; }
+}
+@media (max-width: 56rem) {
+  .st-levels ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .st-levels li:nth-child(3) { border-inline-start: 0; }
+  .st-levels li:nth-child(n + 3) { border-top: 1px solid var(--rule); }
+  .st-levels .st-adds { display: none; }
+}
+
+/* ---- before and after ---- */
+.st-ba { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5); max-width: none !important; margin-block: var(--s5); }
+.st-ba > div { border-top: 2px solid var(--ink); padding-top: var(--s3); min-width: 0; }
+.st-ba h3 { font-family: var(--font-mono); font-size: var(--t-2xs); letter-spacing: var(--caps); text-transform: uppercase; margin: 0 0 var(--s2); }
+.st-ba ul { margin: 0; padding-inline-start: 1.1em; font-size: var(--t-sm); }
+.st-ba pre { margin: var(--s2) 0 0; font-size: var(--t-xs); }
+@media (max-width: 44rem) { .st-ba { grid-template-columns: minmax(0, 1fr); } }
+.st-cost { max-width: none !important; }
+.st-cost th { white-space: nowrap; }
+
+/* ---- a decision ---- */
+.st-decision .drawer-body dl, .st-dl { margin: 0; display: grid; gap: 2px var(--s3); font-size: var(--t-sm); line-height: 1.45; }
+.st-decision dt, .st-dl dt { font-family: var(--font-mono); font-size: var(--t-2xs); letter-spacing: 0.04em; color: var(--ink-3); margin-top: var(--s3); }
+.st-decision dd, .st-dl dd { margin: 0; }
+.st-dl dd code, .st-dl dd .st-file { overflow-wrap: anywhere; }
+
+/* ---- a drawing with a panel ---- */
+.st-diagram { display: grid; gap: var(--s5); grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 90rem) {
+  .st-diagram { grid-template-columns: minmax(0, 1fr) 22rem; }
+  .st-panel { position: sticky; top: calc(var(--top) + 6rem); }
+}
+.st-main { min-width: 0; }
+.st-kind { font-family: var(--font-mono); font-size: var(--t-2xs); letter-spacing: var(--caps); text-transform: uppercase; color: var(--ink-3); margin: 0; }
+.st-panel .ptags { display: flex; flex-wrap: wrap; gap: var(--s2); margin: var(--s2) 0; }
+.st-table-drawer table { font-size: var(--t-xs); }
+.gv.st .st-hit { fill: none; stroke: transparent; stroke-width: 18; pointer-events: stroke; cursor: pointer; }
+.gv.st .gv-edge[tabindex] { cursor: pointer; }
+.gv.st .gv-edge[tabindex]:focus-visible { outline: none; }
+.gv.st .gv-edge[tabindex]:focus-visible path:not(.st-hit), .gv.st .gv-edge[tabindex]:hover path:not(.st-hit) { stroke: var(--focus); stroke-width: 2.6; }
+.gv.st .gv-edge.st-selected path:not(.st-hit) { stroke: var(--ink); stroke-width: 3; }
+.gv.st .gv-edge.st-selected text { fill: var(--ink); font-weight: 700; }
+.gv.st .gv-node.st-selected .shape { stroke: var(--ink); stroke-width: 3.5; }
+/* A part of a later level: faint and dashed. It is still there, and it can still be selected. */
+.gv.st .gv-node.st-later, .gv.st .gv-edge.st-later { opacity: 0.28; }
+.gv.st .gv-node.st-later .shape { stroke-dasharray: 4 3; }
+.gv.st .gv-node.st-later.st-selected, .gv.st .gv-edge.st-later.st-selected { opacity: 0.75; }
+/* A class of the ontology that the application does not build. */
+.gv.st .gv-node.st-ghost .shape { stroke-dasharray: 1 4; stroke-linecap: round; fill: transparent; }
+.gv.st .gv-node.st-ghost .lbl { fill: var(--ink-2); }
+
+/* ---- the replay ---- */
+.st-run { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1fr); }
+.st-run > * { min-width: 0; }
+.st-pick { display: grid; gap: var(--s1); font-size: var(--t-xs); width: 100%; }
+.st-select { font: inherit; font-size: var(--t-sm); min-height: 2.75rem; padding: 0 var(--s3); border: 1px solid var(--ink-2); border-radius: var(--radius); background: var(--paper); color: var(--ink); width: 100%; max-width: 44rem; }
+.st-json { margin: 0; max-height: 11rem; overflow: auto; font-size: var(--t-xs); }
+.st-predict { background: var(--paper-2); padding: var(--s3) var(--s4); border-radius: var(--radius); }
+.st-predict p { margin: 0 0 var(--s2); }
+.st-log { max-height: 20rem; overflow-y: auto; font-size: var(--t-xs); }
+.st-log .stamp { flex: none; }
+.st-log .st-break { list-style: none; font-style: italic; border-block: 1px dashed var(--rule-2); padding-block: var(--s2); margin-block: var(--s2); }
+.st-state { font-size: var(--t-xs); width: 100%; }
+.st-state caption { text-align: start; font-size: var(--t-xs); color: var(--ink-2); padding-bottom: var(--s2); }
+.st-state .st-value { overflow-wrap: anywhere; }
+.st-state tr.st-changed td { background: var(--code-tint); font-weight: 700; }
+.st-out p { margin: var(--s2) 0; }
+
+/* ---- the source explorer ---- */
+.st-explorer-body { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1fr); margin-top: var(--s3); }
+@media (min-width: 60rem) { .st-explorer-body { grid-template-columns: 16rem minmax(0, 1fr); align-items: start; } }
+.st-files { max-height: 34rem; overflow-y: auto; border: 1px solid var(--rule); padding: var(--s3); background: var(--paper); }
+@media (max-width: 59.99rem) { .st-files { max-height: 15rem; } }
+.st-files ul { list-style: none; margin: 0 0 var(--s3); padding: 0; }
+.st-files li { margin: 0; }
+.st-dir { margin: var(--s2) 0 var(--s1); font-size: var(--t-2xs); color: var(--ink-3); }
+.st-filebtn { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); width: 100%; min-height: 2rem; padding: var(--s1) var(--s2); border: 0; background: transparent; color: var(--ink); font-size: var(--t-xs); text-align: start; cursor: pointer; border-radius: var(--radius); }
+.st-filebtn:hover { background: var(--paper-2); }
+.st-filebtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.st-filebtn .mono { overflow-wrap: anywhere; }
+.st-mark { font-family: var(--font-mono); font-size: var(--t-2xs); padding: 0 0.4em; border: 1px solid currentColor; border-radius: var(--radius); flex: none; }
+.st-mod { border-style: dashed; }
+.st-viewer { min-width: 0; }
+.st-viewer pre { max-height: 34rem; overflow: auto; margin: 0; font-size: var(--t-xs); tab-size: 2; }
+.st-viewer .ptags { display: flex; flex-wrap: wrap; gap: var(--s2); margin: var(--s2) 0; }
+.st-check { display: inline-flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); min-height: 2.75rem; }
+.st-file { font-family: var(--font-mono); font-size: 0.92em; }
+@media (pointer: coarse) { .st-filebtn { min-height: 2.75rem; } }
+
+/* ---- a question ---- */
+.st-check-q { max-width: var(--measure); }
+.st-check-q .chip { white-space: normal; text-align: start; height: auto; line-height: 1.35; padding-block: var(--s2); }
+
+/* ---- tables of this part ---- */
+.st-map td:first-child, .st-map th:first-child { white-space: nowrap; font-weight: 700; }
+.st-map { font-size: var(--t-sm); }
+.st-wide { max-width: none !important; }
+.st-tree { font-size: var(--t-xs); line-height: 1.5; }
+
+@media print {
+  .st-levels { position: static; }
+  .st-files, .st-viewer pre, .st-log { max-height: none; }
+}

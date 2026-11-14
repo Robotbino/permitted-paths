@@ -1,0 +1,402 @@
+{
+  "about": "For each source file: the level that introduced it, the later levels that changed it, and its one responsibility. tests/architecture.test.ts checks this file. The course page reads it.",
+  "levels": {
+    "1": "Ordinary software",
+    "2": "Graph structure",
+    "3": "Intelligence layer",
+    "4": "Orchestration"
+  },
+  "files": {
+    "shared/money.ts": {
+      "level": 1,
+      "role": "Money as integer cents: text to cents, cents to text."
+    },
+    "shared/money.test.ts": {
+      "level": 1,
+      "role": "Proves that amounts are exact."
+    },
+    "shared/contracts.ts": {
+      "level": 1,
+      "role": "The data contracts of the web application and the server, and the check of shape.",
+      "modified": [
+        2,
+        3
+      ]
+    },
+    "shared/contracts.test.ts": {
+      "level": 1,
+      "role": "Proves each rule of shape with a FAIL case."
+    },
+    "server/main.ts": {
+      "level": 1,
+      "role": "Composition root: makes all the parts and connects them.",
+      "modified": [
+        2,
+        3,
+        4
+      ]
+    },
+    "server/config.ts": {
+      "level": 1,
+      "role": "Reads the settings from the environment.",
+      "modified": [
+        3
+      ]
+    },
+    "server/clock.ts": {
+      "level": 1,
+      "role": "Ports for time and identifiers, with fixed versions for tests."
+    },
+    "server/errors.ts": {
+      "level": 1,
+      "role": "The expected errors and the status code of each.",
+      "modified": [
+        2
+      ]
+    },
+    "server/domain/expense.ts": {
+      "level": 1,
+      "role": "The expense as pure functions: proposal, merchant key, month.",
+      "modified": [
+        3
+      ]
+    },
+    "server/domain/budget.ts": {
+      "level": 1,
+      "role": "The state of a budget from a limit and a spent amount."
+    },
+    "server/domain/budget.test.ts": {
+      "level": 1,
+      "role": "Proves the four budget states and the month edges."
+    },
+    "server/domain/expense-rules.ts": {
+      "level": 1,
+      "role": "The business rules R5 to R7 as one pure function."
+    },
+    "server/domain/expense-rules.test.ts": {
+      "level": 1,
+      "role": "Proves each business rule with PASS and FAIL."
+    },
+    "server/repositories/ports.ts": {
+      "level": 1,
+      "role": "The interfaces of the stores. Services know only these."
+    },
+    "server/repositories/memory.ts": {
+      "level": 1,
+      "role": "The stores in memory, for tests."
+    },
+    "server/repositories/sqlite.ts": {
+      "level": 1,
+      "role": "The stores in SQLite. The only SQL of the three tables."
+    },
+    "server/repositories/migrate.ts": {
+      "level": 1,
+      "role": "Applies the numbered schema files, forward only."
+    },
+    "server/repositories/seed.ts": {
+      "level": 1,
+      "role": "Fictional categories and budgets."
+    },
+    "server/repositories/migrations/001_init.sql": {
+      "level": 1,
+      "role": "Tables: categories, budgets, expenses."
+    },
+    "server/repositories/contract.test.ts": {
+      "level": 1,
+      "role": "One suite that the two store implementations must pass."
+    },
+    "server/repositories/sqlite-file.test.ts": {
+      "level": 1,
+      "role": "Proves that data stays in a file, and that the database refuses bad data."
+    },
+    "server/services/record-expense.ts": {
+      "level": 1,
+      "role": "The use case 'record an expense'. From level 2: a thin facade that runs the graph.",
+      "modified": [
+        2,
+        3,
+        4
+      ]
+    },
+    "server/services/record-expense.test.ts": {
+      "level": 1,
+      "role": "Says what 'record an expense' means, in nine cases."
+    },
+    "server/services/month-summary.ts": {
+      "level": 1,
+      "role": "The use case: show one month. It only reads."
+    },
+    "server/http/handlers.ts": {
+      "level": 1,
+      "role": "One small function for each operation of the API.",
+      "modified": [
+        2,
+        3,
+        4
+      ]
+    },
+    "server/http/server.ts": {
+      "level": 1,
+      "role": "HTTP: finds the handler, reads JSON, protects the server, maps errors.",
+      "modified": [
+        2
+      ]
+    },
+    "server/http/api.test.ts": {
+      "level": 1,
+      "role": "The whole server through real HTTP requests."
+    },
+    "web/src/main.tsx": {
+      "level": 1,
+      "role": "Starts React."
+    },
+    "web/src/App.tsx": {
+      "level": 1,
+      "role": "Owns the screen state and calls the server.",
+      "modified": [
+        3,
+        4
+      ]
+    },
+    "web/src/api.ts": {
+      "level": 1,
+      "role": "The only file of the web application that calls fetch.",
+      "modified": [
+        3,
+        4
+      ]
+    },
+    "web/src/state.ts": {
+      "level": 1,
+      "role": "The screen state and its pure reducer.",
+      "modified": [
+        3
+      ]
+    },
+    "web/src/state.test.ts": {
+      "level": 1,
+      "role": "Proves that a retry keeps the request key.",
+      "modified": [
+        3
+      ]
+    },
+    "web/src/ExpenseForm.tsx": {
+      "level": 1,
+      "role": "The form. Shows state, sends actions.",
+      "modified": [
+        3
+      ]
+    },
+    "web/src/BudgetPanel.tsx": {
+      "level": 1,
+      "role": "Shows the budgets and the last expenses."
+    },
+    "web/src/styles.css": {
+      "level": 1,
+      "role": "Mobile-first styles.",
+      "modified": [
+        3,
+        4
+      ]
+    },
+    "tests/architecture.test.ts": {
+      "level": 1,
+      "role": "Checks the boundaries between the folders and the levels.",
+      "modified": [
+        3
+      ]
+    },
+    "shared/ontology.ts": {
+      "level": 2,
+      "role": "The classes, relations, permitted values and rules R1 to R11, as data.",
+      "modified": [
+        3,
+        4
+      ]
+    },
+    "server/graph/engine.ts": {
+      "level": 2,
+      "role": "The interpreter of an execution graph. Enforces the state contract.",
+      "modified": [
+        4
+      ]
+    },
+    "server/graph/engine.test.ts": {
+      "level": 2,
+      "role": "Proves the state contract, the edge order and the step budget."
+    },
+    "server/graph/state.ts": {
+      "level": 2,
+      "role": "The typed state of the record graph and the owner of each field.",
+      "modified": [
+        3
+      ]
+    },
+    "server/graph/gates.ts": {
+      "level": 2,
+      "role": "Gate 1 (shape) and Gate 2 (sense), by name.",
+      "modified": [
+        3
+      ]
+    },
+    "server/graph/verifier.ts": {
+      "level": 2,
+      "role": "Reads the ledger again with its own queries and compares."
+    },
+    "server/graph/verifier.test.ts": {
+      "level": 2,
+      "role": "Breaks the ledger in five ways; the verifier must give FAIL."
+    },
+    "server/graph/trace.ts": {
+      "level": 2,
+      "role": "The trace of each run with checkpoints: the context graph.",
+      "modified": [
+        3
+      ]
+    },
+    "server/graph/trace.test.ts": {
+      "level": 2,
+      "role": "Proves the trace on two stores, and that it never fails an expense.",
+      "modified": [
+        3
+      ]
+    },
+    "server/graph/record-expense.graph.ts": {
+      "level": 2,
+      "role": "The execution graph: eleven nodes, their edges, three ends.",
+      "modified": [
+        3
+      ]
+    },
+    "server/graph/record-expense.paths.test.ts": {
+      "level": 2,
+      "role": "For each scenario: status, exact path, rows in the ledger.",
+      "modified": [
+        3
+      ]
+    },
+    "server/repositories/migrations/002_trace.sql": {
+      "level": 2,
+      "role": "Tables: runs, trace_events."
+    },
+    "scripts/scenarios.ts": {
+      "level": 2,
+      "role": "Named scenarios with the expected status and path.",
+      "modified": [
+        3,
+        4
+      ]
+    },
+    "scripts/record-runs.ts": {
+      "level": 2,
+      "role": "Records each scenario from the real code for the course page.",
+      "modified": [
+        3,
+        4
+      ]
+    },
+    "scripts/recordings.test.ts": {
+      "level": 2,
+      "role": "Proves that the recordings are current and repeatable."
+    },
+    "shared/contracts.suggest.ts": {
+      "level": 3,
+      "role": "The contract of \"suggest a category\": the request, the reasons, the response."
+    },
+    "server/intelligence/suggester.ts": {
+      "level": 3,
+      "role": "The port of the model: what it gets and what it can give back."
+    },
+    "server/intelligence/fake-suggester.ts": {
+      "level": 3,
+      "role": "A predictable stand-in for the model, for tests and recordings."
+    },
+    "server/intelligence/claude-suggester.ts": {
+      "level": 3,
+      "role": "The real model: one Claude API call with a structured output. The only file that imports the SDK."
+    },
+    "server/intelligence/prompts/suggest-category.md": {
+      "level": 3,
+      "role": "The prompt, as a file that a person can read and change."
+    },
+    "server/intelligence/suggestion-gate.ts": {
+      "level": 3,
+      "role": "Checks a suggestion against the permitted categories (R12)."
+    },
+    "server/intelligence/merchant-memory.ts": {
+      "level": 3,
+      "role": "What the person confirmed for each merchant. Asked before the model."
+    },
+    "server/intelligence/suggest-category.graph.ts": {
+      "level": 3,
+      "role": "The suggest graph: memory, cost control, model, gate. It cannot write the ledger.",
+      "modified": [
+        4
+      ]
+    },
+    "server/intelligence/suggest-category.paths.test.ts": {
+      "level": 3,
+      "role": "Paths of the suggest graph; a suggestion never writes; the learning loop."
+    },
+    "server/intelligence/intelligence.test.ts": {
+      "level": 3,
+      "role": "The gate, the memory and the adapter of the real model, each alone."
+    },
+    "server/repositories/migrations/003_merchant_memory.sql": {
+      "level": 3,
+      "role": "Table: merchant_memory."
+    },
+    "tests/ai-off.test.ts": {
+      "level": 3,
+      "role": "Runs level 2 again with no model, a slow model and a broken model."
+    },
+    "shared/contracts.import.ts": {
+      "level": 4,
+      "role": "The contracts of an import: lines, suggestions, the four ends, the two answers."
+    },
+    "server/import/statement-parser.ts": {
+      "level": 4,
+      "role": "Text of a statement to lines. A bad line is a value, not an exception."
+    },
+    "server/import/pool.ts": {
+      "level": 4,
+      "role": "Runs work for many items, a limited number at the same time."
+    },
+    "server/import/line-worker.ts": {
+      "level": 4,
+      "role": "The workers: one suggest sub-run or one record sub-run. And the store of checkpoints."
+    },
+    "server/import/reconciler.ts": {
+      "level": 4,
+      "role": "The independent check of an import: each line has exactly one end (R14)."
+    },
+    "server/import/import.graph.ts": {
+      "level": 4,
+      "role": "The orchestrator graph: fan-out, one budget, a wait for the person, a resume."
+    },
+    "server/import/import.test.ts": {
+      "level": 4,
+      "role": "Parser, pool, reconciler by sabotage, and the whole import in two steps."
+    },
+    "server/repositories/migrations/004_imports.sql": {
+      "level": 4,
+      "role": "Table: import_batches (the checkpoints)."
+    },
+    "web/src/ImportReview.tsx": {
+      "level": 4,
+      "role": "The review screen of an import: the person decides each line."
+    },
+    "fixtures/statement-march.csv": {
+      "level": 4,
+      "role": "A fictional statement with good lines, a bad date and money in."
+    },
+    "server/intelligence/model-budget.ts": {
+      "level": 3,
+      "role": "The model calls of one day. A call is reserved before it is made."
+    },
+    "tests/review-fixes.test.ts": {
+      "level": 4,
+      "role": "One test for each defect that the adversarial review found."
+    }
+  }
+}

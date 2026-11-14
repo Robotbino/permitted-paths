@@ -91,8 +91,8 @@
     var title = section.querySelector('h1').textContent;
     document.title = title + ' · Permitted Paths: Graph Engineering for Agents';
     if (where) {
-      // The locator: a small number ("02 / 08", "Lab", "Shelf") and the title of the part.
-      var no = /^\d$/.test(key) ? '0' + key + ' / 08' : key === 'lab' ? 'Lab' : 'Shelf';
+      // The locator: a small number ("02 / 08", "Lab", "Studio", "Shelf") and the title of the part.
+      var no = /^\d$/.test(key) ? '0' + key + ' / 08' : key === 'lab' ? 'Lab' : key === 'studio' ? 'Studio' : 'Shelf';
       GE.clear(where);
       where.appendChild(GE.h('span', { class: 'top-no' }, no));
       where.appendChild(GE.h('span', { class: 'top-title' }, title));
@@ -145,7 +145,7 @@
   function dressChapters() {
     chapters.forEach(function (c) {
       var key = c.dataset.chapter, head = c.querySelector('.ch-head'), h1 = head && head.querySelector('h1');
-      c.style.setProperty('--ch-dot', '"' + (/^\d$/.test(key) ? key : key === 'lab' ? 'L' : 'R') + '."');
+      c.style.setProperty('--ch-dot', '"' + (/^\d$/.test(key) ? key : key === 'lab' ? 'L' : key === 'studio' ? 'S' : 'R') + '."');
       if (!h1 || !/^\d$/.test(key) || head.querySelector('.ch-kicker')) return;
       var path = GE.h('span', { class: 'ch-path' });
       for (var k = 0; k <= 8; k++) path.appendChild(GE.h('i', { class: k < +key ? 'on' : k === +key ? 'now' : null }));
