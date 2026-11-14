@@ -262,6 +262,11 @@
   test('milestones: six, and the first one needs nothing that you build', function () { return eq([PH.road.length, PH.road[0].ready], [6, 'now']); });
 
   /* ---- Evidence pass (2026-11-13) ---- */
+  test('source notes: each of the nine notes has a page in notes/, and no address of a private computer', function () {
+    var notes = GE.data.notes, keys = Object.keys(notes);
+    return keys.length === 9 && /^(https:\/\/|notes\/)/.test(GE.data.noteBase) && keys.every(function (k) { return /^ge-0\d-[a-z0-9-]+\.md$/.test(notes[k].page) && notes[k].page.indexOf('ge-' + k + '-') === 0; }) &&
+      GE.data.chapters.every(function (c) { return c.note === null || !!notes[c.note]; });
+  });
   test('sources: each has a unique id and an https link', function () {
     var ids = {}, bad = [];
     GE.data.reference.sources.forEach(function (s) { if (!s[4] || ids[s[4]] || !/^https:\/\//.test(s[1])) bad.push(s[0]); ids[s[4]] = 1; });

@@ -1,19 +1,19 @@
-/* sources.js: where the content comes from. The Obsidian notes are the source of truth.
-   If the vault or the folder gets a different name, change `vault` and `noteFolder` here. */
+/* sources.js: where the content comes from. The notes are the source of truth.
+   The folder notes/ of the repository has a copy of each note. A source chip opens that copy.
+   `noteBase` is the address of the folder. To read the copies with no network, set it to 'notes/'. */
 (function (GE) {
   'use strict';
-  GE.data.vault = 'Obsidian-main';
-  GE.data.noteFolder = '2 - Learning/AI Engineering/Graph Engineering';
+  GE.data.noteBase = 'https://github.com/Robotbino/permitted-paths/blob/main/notes/';
   GE.data.notes = {
-    '00': { file: 'GE 00 — Session Guide' },
-    '01': { file: 'GE 01 — Why Agent Output Changes' },
-    '02': { file: 'GE 02 — Graph Engineering' },
-    '03': { file: 'GE 03 — Four Types of Graph' },
-    '04': { file: 'GE 04 — Ontologies' },
-    '05': { file: 'GE 05 — The Intelligence Plane' },
-    '06': { file: 'GE 06 — Worked Example — Game Store Software Factory' },
-    '07': { file: 'GE 07 — Case Study — Knowledge Graph for a Legacy Application' },
-    '08': { file: 'GE 08 — Glossary, Checklist and Exercises' }
+    '00': { file: 'GE 00 — Session Guide', page: 'ge-00-session-guide.md' },
+    '01': { file: 'GE 01 — Why Agent Output Changes', page: 'ge-01-why-agent-output-changes.md' },
+    '02': { file: 'GE 02 — Graph Engineering', page: 'ge-02-graph-engineering.md' },
+    '03': { file: 'GE 03 — Four Types of Graph', page: 'ge-03-four-types-of-graph.md' },
+    '04': { file: 'GE 04 — Ontologies', page: 'ge-04-ontologies.md' },
+    '05': { file: 'GE 05 — The Intelligence Plane', page: 'ge-05-the-intelligence-plane.md' },
+    '06': { file: 'GE 06 — Worked Example — Game Store Software Factory', page: 'ge-06-worked-example-game-store-software-factory.md' },
+    '07': { file: 'GE 07 — Case Study — Knowledge Graph for a Legacy Application', page: 'ge-07-case-study-knowledge-graph-for-a-legacy-application.md' },
+    '08': { file: 'GE 08 — Glossary, Checklist and Exercises', page: 'ge-08-glossary-checklist-and-exercises.md' }
   };
   GE.data.chapters = [
     { key: '0', title: 'The claim', note: '00' },

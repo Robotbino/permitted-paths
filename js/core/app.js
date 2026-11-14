@@ -14,8 +14,10 @@
     [].forEach.call(scope.querySelectorAll('a.src[data-n]'), function (a) {
       var note = GE.data.notes[a.dataset.n];
       if (!note) return;
-      a.href = 'obsidian://open?vault=' + encodeURIComponent(GE.data.vault) + '&file=' + encodeURIComponent(GE.data.noteFolder + '/' + note.file);
-      a.title = 'Open the source note in Obsidian: ' + note.file;
+      a.href = GE.data.noteBase + note.page;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.title = 'Open the source note: ' + note.file;
     });
   }
 

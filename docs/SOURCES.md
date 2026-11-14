@@ -1,7 +1,6 @@
 # Source mapping
 
-Every part of the course comes from one note in
-`Obsidian-main/2 - Learning/AI Engineering/Graph Engineering/`.
+Every part of the course comes from one of the author's notes. The folder [`notes/`](../notes/) has a copy of each note.
 "Added" means the item is not in the notes; the page labels each one.
 
 **Part L, "Operate it from your phone", does not come from a note.** It was added by this edition and researched on 2026-11-12 from official documents: Claude Code and Claude plan documents of Anthropic, the source and the documents of n8n 2.47.5, and the price pages of the other services. Its sources are listed on the page (part L, "Sources"), with a list of what the research could not confirm. Its ideas are mapped back to parts 2 to 7 in the section "The ideas of the course in this system". The defect, the code and the note names in its two example lifecycles are examples by this edition.

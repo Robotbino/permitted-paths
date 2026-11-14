@@ -6,6 +6,11 @@
 <title>Permitted Paths: Graph Engineering for Agents</title>
 <meta name="description" content="An interactive course in Graph Engineering: how to put structure outside a probabilistic model so that an agent system is predictable.">
 <meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Permitted Paths: Graph Engineering for Agents">
+<meta property="og:description" content="An interactive course in Graph Engineering: how to put structure outside a probabilistic model so that an agent system is predictable.">
+<meta property="og:url" content="https://robotbino.github.io/permitted-paths/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cstyle%3Epath{fill:%2315171f}@media(prefers-color-scheme:dark){path{fill:%23eef1f5}}%3C/style%3E%3Cpath d='M25 5h50l25 45-25 45H25L0 50z'/%3E%3C/svg%3E">
 <script>
   /* Set the theme before the first paint. */
   try { var t = localStorage.getItem('permitted-paths.theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
@@ -75,8 +80,8 @@
 
   <h2 id="p0-three-controls">Three controls</h2>
   <p>Three controls decrease the variation. Each part of this course uses them.</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Control</th><th>What it does</th><th>Tool</th><th>Part</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p0-three-controls">
+    <thead><tr><th scope="col">Control</th><th scope="col">What it does</th><th scope="col">Tool</th><th scope="col">Part</th></tr></thead>
     <tbody>
       <tr><td class="num">1</td><td>A smaller number of decisions for the model</td><td>Execution graph</td><td><a href="#/2">2</a></td></tr>
       <tr><td class="num">2</td><td>A smaller number of permitted results</td><td>Ontology and schema</td><td><a href="#/4">4</a></td></tr>
@@ -106,7 +111,7 @@
 
   <details class="drawer"><summary>About this course: how to read the drawings, and where the content comes from</summary>
   <div class="drawer-body">
-  <h4>How to read the drawings</h4>
+  <h3 class="h4">How to read the drawings</h3>
   <p>The quality of a line has a meaning in each drawing of this course.</p>
   <ul class="legend-list">
     <li><span class="role role-code">Code</span>: a ruled, continuous line. This part is fixed.</li>
@@ -115,8 +120,8 @@
     <li>A continuous arrow is a fixed transition. A dashed arrow is a transition that a model selects.</li>
   </ul>
 
-  <h4>Where the content comes from</h4>
-  <p>Each section has a mark such as <span class="src">GE 04 §5</span>. The mark opens the source note in Obsidian. Three more marks show the type of a statement:</p>
+  <h3 class="h4">Where the content comes from</h3>
+  <p>Each section has a mark such as <span class="src">GE 04 §5</span>. The mark opens a copy of the source note. Three more marks show the type of a statement:</p>
   <ul>
     <li><span class="prov source">From a source</span>: the note gives a talk, an article or a paper for it.</li>
     <li><span class="prov notes">Summary by the notes</span>: the notes say that it is their own summary or estimate.</li>
@@ -124,7 +129,7 @@
   </ul>
   <p class="callout note">Each note has the mark <code>verified: false</code>. This course does not make the notes more sure than they are. The numbers from talks are from demonstrations. They are not benchmarks.</p>
 
-  <h4>How sure are we?</h4>
+  <h3 class="h4">How sure are we?</h3>
   <p>A number such as [1] opens the source on the reference shelf. Some statements also have a mark that says how strong the evidence is. The mark is a word, so it does not depend on colour.</p>
   <ul>
     <li><span class="certainty">Measured</span>: a paper or a report gives a measurement. Read its limits too: one benchmark, one model, one date.</li>
@@ -135,7 +140,7 @@
   </ul>
   <p>Each drawing of an execution graph is a design: it shows what a system <em>permits</em>. It is not a measurement of a real system.</p>
 
-  <h4>Why the instruments work this way</h4>
+  <h3 class="h4">Why the instruments work this way</h3>
   <p>The design of the instruments comes from research on learning. Each item below changes what you do on the page.</p>
   <ul>
     <li><strong>Estimate first.</strong> Some instruments ask for an estimate before the explanation. A wrong estimate is expected. In experiments, people who tried to answer before they studied remembered more afterwards, even when their first answer was wrong <a class="cite" data-ref="richland">richland</a>.</li>
@@ -171,7 +176,7 @@
 
   <figure class="bench">
     <figcaption>
-      <h3 class="bench-title">Ask five times</h3>
+      <h2 class="bench-title">Ask five times</h2>
       <span class="prov sim">Simulation, added by this edition</span>
       <a class="src" data-n="01">GE 01, Try it</a>
       <p class="bench-task">The prompt is from the notes. The answers come from a fixed list with fixed probabilities, not from a real model. The course keeps your five results for part 4.</p>
@@ -191,8 +196,8 @@
 
   <h2 id="p1-an-agent-makes-many-decisions">An agent makes many decisions</h2>
   <p>In each turn of the loop, the model makes decisions. Each decision is a point where the result can change.</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Decision that the model makes</th><th>Example of an incorrect result</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p1-an-agent-makes-many-decisions">
+    <thead><tr><th scope="col">Decision that the model makes</th><th scope="col">Example of an incorrect result</th></tr></thead>
     <tbody>
       <tr><td>Which step is next</td><td>The agent writes code before it reads the repository</td></tr>
       <tr><td>Which tool to use</td><td>The agent does a search of the web, but the answer is in the database</td></tr>
@@ -220,7 +225,7 @@
 
   <p>If each step is correct with probability <code>p</code>, then <code>n</code> steps are all correct with probability <code>p^n</code>.</p>
   <div class="table-wrap"><table>
-    <thead><tr><th>Correct rate of one step</th><th class="num">5 steps</th><th class="num">10 steps</th><th class="num">20 steps</th></tr></thead>
+    <thead><tr><th scope="col">Correct rate of one step</th><th scope="col" class="num">5 steps</th><th scope="col" class="num">10 steps</th><th scope="col" class="num">20 steps</th></tr></thead>
     <tbody>
       <tr><td>99%</td><td class="num">95%</td><td class="num">90%</td><td class="num">82%</td></tr>
       <tr><td>95%</td><td class="num">77%</td><td class="num">60%</td><td class="num">36%</td></tr>
@@ -236,8 +241,8 @@
 
   <h2 id="p1-the-three-controls">The three controls</h2>
   <p>There are three ways to decrease the variation. Each control is the answer to a different question.</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Control</th><th>Question</th><th>Tool</th><th>Part</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p1-the-three-controls">
+    <thead><tr><th scope="col">Control</th><th scope="col">Question</th><th scope="col">Tool</th><th scope="col">Part</th></tr></thead>
     <tbody>
       <tr><td>1. A smaller number of decisions</td><td>Is the model necessary for this decision?</td><td>Execution graph: code selects the path</td><td><a href="#/2">2</a></td></tr>
       <tr><td>2. A smaller number of permitted results</td><td>Which results are valid?</td><td>Ontology and schema: types, values, rules</td><td><a href="#/4">4</a></td></tr>
@@ -247,8 +252,8 @@
 
   <h2 id="p1-what-deterministic-means-here">What “deterministic” means here</h2>
   <p>The word “deterministic” can cause confusion. These notes use it for the system, not for the model.</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>This stays probabilistic</th><th>This becomes fixed</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p1-what-deterministic-means-here">
+    <thead><tr><th scope="col">This stays probabilistic</th><th scope="col">This becomes fixed</th></tr></thead>
     <tbody>
       <tr><td>The words of a result</td><td>The permitted paths of the work</td></tr>
       <tr><td>The text of the code that an agent writes</td><td>The steps that must occur, and their sequence</td></tr>
@@ -297,7 +302,7 @@
 
   <figure class="bench">
     <figcaption>
-      <h3 class="bench-title">The decision ledger</h3>
+      <h2 class="bench-title">The decision ledger</h2>
       <span class="prov sim">Simulation, added by this edition</span>
       <a class="src" data-n="02">GE 02 §3</a>
       <p class="bench-task">At the start, the model holds five decisions. The four parts with a dashed outline are only sentences in a prompt. Move a decision to the structure and see what it becomes in the graph. Then do ten runs and count the paths.</p>
@@ -319,7 +324,7 @@
   <h3>Nodes</h3>
   <p>A node is not always a model call. Give each node one responsibility.</p>
   <div class="table-wrap wide"><table>
-    <thead><tr><th>Type of node</th><th>What it contains</th><th>Predictable?</th></tr></thead>
+    <thead><tr><th scope="col">Type of node</th><th scope="col">What it contains</th><th scope="col">Predictable?</th></tr></thead>
     <tbody>
       <tr><td><span class="role role-code">Fixed step</span></td><td>Code. No model.</td><td>Fully</td></tr>
       <tr><td><span class="role role-model">Model step</span></td><td>One model call with no tools</td><td>Not fully</td></tr>
@@ -341,7 +346,7 @@
 
   <h3>Edges</h3>
   <div class="table-wrap wide"><table>
-    <thead><tr><th>Type of edge</th><th>Who selects the next node</th></tr></thead>
+    <thead><tr><th scope="col">Type of edge</th><th scope="col">Who selects the next node</th></tr></thead>
     <tbody>
       <tr><td>Fixed edge</td><td>No one. Node B always comes after node A.</td></tr>
       <tr><td>Conditional edge, by code</td><td>A function reads the state and gives the name of the next node.</td></tr>
@@ -389,8 +394,8 @@
   </figure>
 
   <h2 id="p2-the-same-task-as-one-loop-and-as-a-graph">The same task as one loop and as a graph</h2>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Decision</th><th>In one loop</th><th>In the graph</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p2-the-same-task-as-one-loop-and-as-a-graph">
+    <thead><tr><th scope="col">Decision</th><th scope="col">In one loop</th><th scope="col">In the graph</th></tr></thead>
     <tbody>
       <tr><td>Which step is next</td><td>The model</td><td>Code, on the edges</td></tr>
       <tr><td>If a person must give approval</td><td>The model, if it obeys the prompt</td><td>The graph. The path goes through the person step.</td></tr>
@@ -402,8 +407,8 @@
   <p>The model keeps the last row only. Each other row is a decision that the model does not make.</p>
 
   <h2 id="p2-how-a-graph-makes-a-system-predictable">How a graph makes a system predictable</h2>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Mechanism</th><th>With one loop</th><th>With a graph</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p2-how-a-graph-makes-a-system-predictable">
+    <thead><tr><th scope="col">Mechanism</th><th scope="col">With one loop</th><th scope="col">With a graph</th></tr></thead>
     <tbody>
       <tr><td>Fixed path</td><td>The model selects the sequence of steps</td><td>Code selects the sequence</td></tr>
       <tr><td>Policy as structure</td><td>“Get approval” is a sentence in a prompt</td><td>Approval is a node. The run cannot go around it.</td></tr>
@@ -418,8 +423,8 @@
 
   <h2 id="p2-when-to-use-a-graph">When to use a graph</h2>
   <p>The default is one loop with a strict verifier. When a specific problem occurs, add a graph. One clear “yes” in the right column is sufficient.</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Question about the task</th><th>One loop is sufficient</th><th>Use a graph</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p2-when-to-use-a-graph">
+    <thead><tr><th scope="col">Question about the task</th><th scope="col">One loop is sufficient</th><th scope="col">Use a graph</th></tr></thead>
     <tbody>
       <tr><td>Can you write the task as one instruction?</td><td>Yes</td><td>No. The task goes from one role to a different role.</td></tr>
       <tr><td>Does each step use the same model and tools?</td><td>Yes</td><td>No. Some steps use a small model, some use a large model.</td></tr>
@@ -452,7 +457,7 @@
   <details class="drawer"><summary>A loop is a graph, and the four loops <span class="tag">Reference · GE 02 §4</span></summary>
     <div class="drawer-body">
       <p>A loop is a graph with a path that goes back to a node that came before. Thus Loop Engineering is one part of Graph Engineering. The LangChain article about loops shows four loops, one around the other:</p>
-      <div class="table-wrap"><table><thead><tr><th>Loop</th><th>What it does</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Loop</th><th scope="col">What it does</th></tr></thead><tbody>
         <tr><td>1. Agent loop</td><td>The model uses tools until the task is complete</td></tr>
         <tr><td>2. Verification loop</td><td>A verifier examines the result. If the result is not satisfactory, the agent tries again with feedback.</td></tr>
         <tr><td>3. Event loop</td><td>An event starts the agent. For example: a message, a schedule, a webhook.</td></tr>
@@ -463,7 +468,7 @@
   </details>
   <details class="drawer"><summary>Usual shapes <span class="tag">Reference · GE 02 §5</span></summary>
     <div class="drawer-body">
-      <div class="table-wrap"><table><thead><tr><th>Shape</th><th>Who selects the path</th><th>Use it when</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Shape</th><th scope="col">Who selects the path</th><th scope="col">Use it when</th></tr></thead><tbody>
         <tr><td>Sequential pipeline</td><td>Code</td><td>You know the steps and their sequence</td></tr>
         <tr><td>Routing</td><td>Model</td><td>Different inputs must go to different specialists</td></tr>
         <tr><td>Fan-out and gather</td><td>Code</td><td>The parts are independent and can operate at the same time</td></tr>
@@ -477,7 +482,7 @@
   <details class="drawer"><summary>The three views of a system <span class="tag">Reference · GE 02 §6</span></summary>
     <div class="drawer-body">
       <p>The survey paper (Feng et al., arXiv 2608.21156, figure 5) divides Graph Engineering into three views. Each view is a graph.</p>
-      <div class="table-wrap"><table><thead><tr><th>View</th><th>Question</th><th>What the graph contains</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">View</th><th scope="col">Question</th><th scope="col">What the graph contains</th></tr></thead><tbody>
         <tr><td>Task organization</td><td>What work is necessary?</td><td>Subtasks, their sequence, workflows</td></tr>
         <tr><td>Agent coordination</td><td>Who does the work?</td><td>What each agent can do, teams, communication</td></tr>
         <tr><td>Runtime state management</td><td>What is the condition of the system now?</td><td>Recorded states, the location of faults, recovery</td></tr>
@@ -487,7 +492,7 @@
   </details>
   <details class="drawer"><summary>Failure modes <span class="tag">Reference · GE 02 §9</span></summary>
     <div class="drawer-body">
-      <div class="table-wrap"><table><thead><tr><th>Failure</th><th>Cause</th><th>Prevention</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Failure</th><th scope="col">Cause</th><th scope="col">Prevention</th></tr></thead><tbody>
         <tr><td>Lost data, or an error at the merge</td><td>Two branches write the same field</td><td>One owner for each field, or a merge rule</td></tr>
         <tr><td>High cost</td><td>Each new worker increases the number of tokens</td><td>A budget for each node. A maximum for fan-out.</td></tr>
         <tr><td>An error goes to the next node</td><td>The next node cannot see that the input is incorrect</td><td>A verifier node that is different from the producer. One governed data specification for the nodes that read data.</td></tr>
@@ -576,7 +581,7 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
 
   <figure class="bench">
     <figcaption>
-      <h3 class="bench-title">Four lenses on one loan application</h3>
+      <h2 class="bench-title">Four lenses on one loan application</h2>
       <span class="prov sim">The entities and the run in this example are added by this edition</span>
       <a class="src" data-n="03">GE 03 §1</a>
       <p class="bench-task">Select a lens. Before you select it, try to say what the nodes are in that graph.</p>
@@ -585,8 +590,8 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
   </figure>
 
   <h2 id="p3-the-four-types">The four types</h2>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Type</th><th>Question</th><th>Nodes are</th><th>Life</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p3-the-four-types">
+    <thead><tr><th scope="col">Type</th><th scope="col">Question</th><th scope="col">Nodes are</th><th scope="col">Life</th></tr></thead>
     <tbody>
       <tr><td><strong>Execution graph</strong></td><td>What comes next?</td><td>Units of work</td><td>The design is permanent. Each run is one pass through it.</td></tr>
       <tr><td><strong>Knowledge graph</strong></td><td>What is in the domain?</td><td>Entities, for example a customer or a file</td><td>Continues across runs</td></tr>
@@ -638,7 +643,7 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
   <p class="callout note">These numbers come from a small number of demonstration runs. They are not a benchmark. The maximum on the report cycle is an addition by the notes.</p>
 
   <h3>Three gains</h3>
-  <div class="table-wrap"><table><thead><tr><th>Gain</th><th>Meaning</th></tr></thead><tbody>
+  <div class="table-wrap"><table><thead><tr><th scope="col">Gain</th><th scope="col">Meaning</th></tr></thead><tbody>
     <tr><td>Predictable</td><td>The same type of case goes on the same path</td></tr>
     <tr><td>Governable</td><td>The trace shows which rule or which model made a decision</td></tr>
     <tr><td>Portable</td><td>A different harness can load the same skill and get the same paths</td></tr>
@@ -661,7 +666,7 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
   <details class="drawer"><summary>Vectors and graphs together <span class="tag">Reference · GE 03 §6</span></summary>
     <div class="drawer-body">
       <p>A vector search finds text with almost the same meaning. A graph query goes along the relations between entities. The Neo4j article connects the two methods: a vector search finds related text; the document identifiers select a part of the graph; the model writes graph queries for that part only.</p>
-      <div class="table-wrap"><table><thead><tr><th>Method</th><th>Strong point</th><th>Weak point in the article</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Method</th><th scope="col">Strong point</th><th scope="col">Weak point in the article</th></tr></thead><tbody>
         <tr><td>Vector search</td><td>Finds related text quickly</td><td>Frequently does not find how the facts connect</td></tr>
         <tr><td>Graph that a model makes</td><td>Shows the relations between entities</td><td>Can be inconsistent and difficult to query</td></tr>
       </tbody></table></div>
@@ -689,7 +694,7 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
 
   <figure class="bench">
     <figcaption>
-      <h3 class="bench-title">Your five results and the validator</h3>
+      <h2 class="bench-title">Your five results and the validator</h2>
       <a class="src" data-n="04">GE 04 §10</a>
       <p class="bench-task">This is the validator of the notes, in JavaScript. It has a fixed list of five values. First make an estimate: how many of the five results does it reject? Your estimate can be wrong; that is part of the method.</p>
     </figcaption>
@@ -698,14 +703,14 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
 
   <h2 id="p4-definition">Definition</h2>
   <p>An ontology is a formal specification of a domain. All parts of a system share this specification. It contains four things:</p>
-  <div class="table-wrap"><table><thead><tr><th>Part</th><th>Example</th></tr></thead><tbody>
+  <div class="table-wrap"><table><thead><tr><th scope="col">Part</th><th scope="col">Example</th></tr></thead><tbody>
     <tr><td>Types of things (classes)</td><td>Customer, Order, Product, Refund</td></tr>
     <tr><td>Properties</td><td>An order has a status and a total</td></tr>
     <tr><td>Relations</td><td>A customer places an order</td></tr>
     <tr><td>Constraints and rules</td><td>An order can have only one refund</td></tr>
   </tbody></table></div>
   <p>A person and a machine can read an ontology. That is the difference between an ontology and a paragraph in a prompt.</p>
-  <div class="table-wrap"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody>
+  <div class="table-wrap"><table><thead><tr><th scope="col">Term</th><th scope="col">Meaning</th></tr></thead><tbody>
     <tr><td>Taxonomy</td><td>A tree of types. It has only the relation “is a type of”.</td></tr>
     <tr><td>Schema</td><td>The structure of data in one database or one message</td></tr>
     <tr><td>Ontology</td><td>The types, relations and rules of a domain. It is independent of one database.</td></tr>
@@ -739,8 +744,8 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
     result = the tool makes a result, with no change to data
     <span class="c"># GATE 2: does the result obey the ontology?</span>
     record the change, or send the cause back to the model</code></pre>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Gate</th><th>When</th><th>What it examines</th><th>Tool</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p4-the-two-gates">
+    <thead><tr><th scope="col">Gate</th><th scope="col">When</th><th scope="col">What it examines</th><th scope="col">Tool</th></tr></thead>
     <tbody>
       <tr><td>Gate 1: input</td><td>Before the tool operates</td><td>The shape of the call: types, ranges, necessary fields</td><td>Pydantic</td></tr>
       <tr><td>Gate 2: output</td><td>After the tool operates</td><td>The sense of the result: cardinality, roles, agreement with the state of the world</td><td>The ontology</td></tr>
@@ -763,7 +768,7 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
   <h3>Errors that the gates stop</h3>
   <p>These three errors are difficult to stop with English instructions. Each one is some lines of logic.</p>
   <div class="table-wrap wide"><table>
-    <thead><tr><th>Error</th><th>Rule</th><th>Where to do the check</th></tr></thead>
+    <thead><tr><th scope="col">Error</th><th scope="col">Rule</th><th scope="col">Where to do the check</th></tr></thead>
     <tbody>
       <tr><td>A second refund on the same order</td><td>Cardinality: an order has one refund at most</td><td>SHACL or code, at Gate 2</td></tr>
       <tr><td>A payment to a staff member, not to the customer</td><td>Role: the payee is the customer of the order</td><td>Code, at Gate 2</td></tr>
@@ -773,8 +778,8 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
 
   <h2 id="p4-where-an-ontology-decreases-the-variation">Where an ontology decreases the variation</h2>
   <p>An ontology can act at three points. Only the second and the third are constraints.</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Point</th><th>What occurs</th><th>Is it a constraint?</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p4-where-an-ontology-decreases-the-variation">
+    <thead><tr><th scope="col">Point</th><th scope="col">What occurs</th><th scope="col">Is it a constraint?</th></tr></thead>
     <tbody>
       <tr><td>Before the model call</td><td>The model sees the permitted values in its context</td><td>No. This is help for the model.</td></tr>
       <tr><td>During the model call</td><td>A schema sets the output. The model can give only a value from the list.</td><td>Yes</td></tr>
@@ -784,7 +789,7 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
   <p>When a gate rejects a result, the cost is one more model call.</p>
   <h3>Five mechanisms</h3>
   <div class="table-wrap wide"><table>
-    <thead><tr><th class="num">#</th><th>Mechanism</th><th>Effect</th></tr></thead>
+    <thead><tr><th scope="col" class="num">#</th><th scope="col">Mechanism</th><th scope="col">Effect</th></tr></thead>
     <tbody>
       <tr><td class="num">1</td><td>Closed vocabulary</td><td>A value that is not in the list does not go to the next step</td></tr>
       <tr><td class="num">2</td><td>Typed relations</td><td>A relation between two incorrect types does not go to the next step</td></tr>
@@ -828,7 +833,7 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
   </details>
   <details class="drawer"><summary>How to make an ontology: top-down and bottom-up <span class="tag">Reference · GE 04 §3</span></summary>
     <div class="drawer-body">
-      <div class="table-wrap"><table><thead><tr><th>Approach</th><th>Method</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Approach</th><th scope="col">Method</th></tr></thead><tbody>
         <tr><td>Top-down</td><td>Domain experts give the entities, properties, relations and constraints</td></tr>
         <tr><td>Bottom-up</td><td>You extract entities and relations from documents, reviews and customer conversations</td></tr>
         <tr><td>Available vocabularies</td><td>You use a public vocabulary, for example Schema.org, Dublin Core, FIBO or GoodRelations</td></tr>
@@ -839,7 +844,7 @@ result = graph.invoke({"request": "Add a refund button"})</code></pre>
   <details class="drawer"><summary>The OWL and SHACL code of the notes <span class="tag">Reference · GE 04 §4</span></summary>
     <div class="drawer-body">
       <p>This example of the notes uses three status values. The game store of <a href="#/6">part 6</a> uses five values.</p>
-      <div class="table-wrap"><table><thead><tr><th>OWL rule</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">OWL rule</th><th scope="col">Meaning</th><th scope="col">Example</th></tr></thead><tbody>
         <tr><td>Transitive property</td><td>The relation continues through a sequence</td><td>If A is an ancestor of B, and B of C, then A is an ancestor of C</td></tr>
         <tr><td>Functional property</td><td>The relation has one value at most</td><td>An order has one customer</td></tr>
         <tr><td>Disjoint classes</td><td>A thing cannot be in the two classes</td><td>A customer is not a staff member</td></tr>
@@ -976,7 +981,7 @@ def handle(model_proposal) -> None:
 
   <details class="drawer"><summary>The three planes in one table <span class="tag">The answer of the notes</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table>
-    <thead><tr><th>Plane</th><th>Responsibility</th><th>Examples</th></tr></thead>
+    <thead><tr><th scope="col">Plane</th><th scope="col">Responsibility</th><th scope="col">Examples</th></tr></thead>
     <tbody>
       <tr><td>Data plane</td><td>Does the work</td><td>The agent runtime, the model calls, the tool calls</td></tr>
       <tr><td>Control plane</td><td>Manages the agents</td><td>Identity, tool permissions, policies, orchestration, audit trail</td></tr>
@@ -994,7 +999,7 @@ def handle(model_proposal) -> None:
   <p>The intelligence plane answers four questions.</p>
   <details class="drawer"><summary>The four questions in one table <span class="tag">GE 05 §3</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table>
-    <thead><tr><th>Question</th><th>Where you can put the answer</th></tr></thead>
+    <thead><tr><th scope="col">Question</th><th scope="col">Where you can put the answer</th></tr></thead>
     <tbody>
       <tr><td>What must the agent know?</td><td>The database: an ontology and a semantic layer</td></tr>
       <tr><td>What must the agent keep in memory?</td><td>The memory manager and its storage</td></tr>
@@ -1006,8 +1011,8 @@ def handle(model_proposal) -> None:
 
   <h2 id="p5-ontology-and-semantic-layer">Ontology and semantic layer</h2>
   <p>These two parts answer different questions.</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Part</th><th>Question</th><th>Example</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p5-ontology-and-semantic-layer">
+    <thead><tr><th scope="col">Part</th><th scope="col">Question</th><th scope="col">Example</th></tr></thead>
     <tbody>
       <tr><td>Ontology</td><td>What is this thing, and what are its relations to other things?</td><td>The ontology says what a counterparty is in this domain</td></tr>
       <tr><td>Semantic layer</td><td>What is the exact meaning of this business term?</td><td>“Concentration” has one written definition in this company</td></tr>
@@ -1017,7 +1022,7 @@ def handle(model_proposal) -> None:
   <h3>The demonstration</h3>
   <p><span class="prov source">From a source</span> The talk compares two analyst agents. They get the same questions.</p>
   <div class="wide" data-lab="governed" data-keep><div class="table-wrap"><table>
-    <thead><tr><th></th><th>Naive agent</th><th>Governed agent</th></tr></thead>
+    <thead><tr><th scope="col"></th><th scope="col">Naive agent</th><th scope="col">Governed agent</th></tr></thead>
     <tbody>
       <tr><td>Has the ontology</td><td>No</td><td>Yes</td></tr>
       <tr><td>Has the semantic definitions</td><td>No</td><td>Yes</td></tr>
@@ -1045,7 +1050,7 @@ def handle(model_proposal) -> None:
   <p>A large platform is not necessary at the start. One developer can make a small intelligence plane with files. <a href="#/7">Part 7</a> shows how one developer uses this version.</p>
   <details class="drawer"><summary>The small intelligence plane in one table <span class="tag">GE 05 §10</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table>
-    <thead><tr><th>Responsibility</th><th>A small version</th></tr></thead>
+    <thead><tr><th scope="col">Responsibility</th><th scope="col">A small version</th></tr></thead>
     <tbody>
       <tr><td>Knowledge</td><td>Markdown notes with types and relations</td></tr>
       <tr><td>Ontology</td><td>A fixed list of note types, relation types and status values</td></tr>
@@ -1070,7 +1075,7 @@ def handle(model_proposal) -> None:
   <details class="drawer"><summary>Memory: four types and the four Rs <span class="tag">Reference · GE 05 §5</span></summary>
     <div class="drawer-body">
       <p>A memory system does four things. Alake gives them the name “the four Rs”: retain, reuse, recall and refine.</p>
-      <div class="table-wrap"><table><thead><tr><th>Type of memory</th><th>What it holds</th><th>Example</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Type of memory</th><th scope="col">What it holds</th><th scope="col">Example</th></tr></thead><tbody>
         <tr><td>Semantic</td><td>Facts</td><td>“A refund is possible only for a paid order”</td></tr>
         <tr><td>Episodic</td><td>What occurred</td><td>“On Monday the agent corrected defect 12 with this change”</td></tr>
         <tr><td>Procedural</td><td>How to do a task</td><td>A skill, a procedure, a graph of steps</td></tr>
@@ -1088,7 +1093,7 @@ def handle(model_proposal) -> None:
   <details class="drawer"><summary>The software factory and the three planes <span class="tag">Reference · GE 05 §9</span></summary>
     <div class="drawer-body">
       <p>A <strong>software factory</strong> uses workflows that you can do again and again to make software. Frequently, two or more agents operate in parallel. Alake says that the factory idea started with work at General Electric in 1968. <span class="certainty">Corrected</span> More exactly: in 1968, Robert Bemer at General Electric proposed that GE make a “software factory”. It was a proposal; GE did not build one <a class="cite" data-ref="cusumano">cusumano</a>.</p>
-      <div class="table-wrap"><table><thead><tr><th>Plane</th><th>In a software factory</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Plane</th><th scope="col">In a software factory</th></tr></thead><tbody>
         <tr><td>Data plane</td><td>The agents that write plans and code, and do tests and reviews</td></tr>
         <tr><td>Control plane</td><td>Who can write to which branch, which steps must have approval from a person, the audit trail</td></tr>
         <tr><td>Intelligence plane</td><td>The domain ontology, the knowledge graph of the code, the decisions, the lessons</td></tr>
@@ -1134,7 +1139,7 @@ def handle(model_proposal) -> None:
 
   <figure class="bench bench-xl">
     <figcaption>
-      <h3 class="bench-title">The factory floor</h3>
+      <h2 class="bench-title">The factory floor</h2>
       <span class="prov sim">Simulation, added by this edition. The plans of the agent are fixed for each scenario.</span>
       <a class="src" data-n="06">GE 06 §5, 6</a>
       <p class="bench-task">Select a request. Make a prediction: which node gives the first FAIL result? Then start the run and look at the state: each field has one owner. After that, remove the plan gate and do the same run again.</p>
@@ -1143,8 +1148,8 @@ def handle(model_proposal) -> None:
   </figure>
 
   <h2 id="p6-the-four-layers-of-the-design">The four layers of the design</h2>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Layer</th><th>What it is</th><th>Control</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p6-the-four-layers-of-the-design">
+    <thead><tr><th scope="col">Layer</th><th scope="col">What it is</th><th scope="col">Control</th></tr></thead>
     <tbody>
       <tr><td>1. Domain ontology</td><td>What is permitted in a game store</td><td rowspan="2">Control 2: a smaller number of permitted results</td></tr>
       <tr><td>2. Engineering knowledge graph</td><td>Requirements, rules, code, tests</td></tr>
@@ -1155,8 +1160,8 @@ def handle(model_proposal) -> None:
 
   <h2 id="p6-layer-1-the-domain-ontology">Layer 1: the domain ontology</h2>
   <p>The domain ontology gives the things in a game store: Customer, StaffMember, Order, OrderLine, Game, Payment and Refund. A customer places zero or more orders. An order contains one or more order lines, and each order line is for one game. An order is paid by one payment at most, and it is refunded by one refund at most. A refund pays one customer. These rules complete the ontology:</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>ID</th><th>Rule</th><th>Type of rule</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p6-layer-1-the-domain-ontology">
+    <thead><tr><th scope="col">ID</th><th scope="col">Rule</th><th scope="col">Type of rule</th></tr></thead>
     <tbody>
       <tr><td>R1</td><td>The status of an order is one of five values</td><td>Enumeration</td></tr>
       <tr><td>R2</td><td>An order has one refund at most</td><td>Cardinality</td></tr>
@@ -1181,8 +1186,8 @@ def handle(model_proposal) -> None:
 
   <h2 id="p6-layer-2-the-engineering-knowledge-graph">Layer 2: the engineering knowledge graph</h2>
   <p>A specification of the software work is also necessary. This second ontology has its own types and relations: a business rule is <code>specified_by</code> a requirement, <code>implemented_by</code> a code unit, <code>validated_by</code> a test, <code>decided_by</code> a decision, and <code>evidenced_by</code> a defect. The knowledge graph holds the facts. For example:</p>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Node</th><th>Relation</th><th>Node</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p6-layer-2-the-engineering-knowledge-graph">
+    <thead><tr><th scope="col">Node</th><th scope="col">Relation</th><th scope="col">Node</th></tr></thead>
     <tbody>
       <tr><td>Rule R2 “one refund at most”</td><td><code>specified_by</code></td><td>Requirement “Refunds”</td></tr>
       <tr><td>Rule R2</td><td><code>implemented_by</code></td><td><code>RefundService.createRefund</code></td></tr>
@@ -1196,7 +1201,7 @@ def handle(model_proposal) -> None:
   <p>Twelve numbered nodes do the work of a change. Four of them contain a model: nodes 1, 3, 6 and 9. Code does seven nodes, and a person does one node. Two nodes have no number. One node answers a question from the knowledge graph. The other node escalates to a person. Each cycle has a maximum number of attempts. At the maximum, the run goes to a person.</p>
   <details class="drawer"><summary>The twelve nodes in one table <span class="tag">GE 06 §5</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table>
-    <thead><tr><th class="num">#</th><th>Node</th><th>Type</th><th>One responsibility</th></tr></thead>
+    <thead><tr><th scope="col" class="num">#</th><th scope="col">Node</th><th scope="col">Type</th><th scope="col">One responsibility</th></tr></thead>
     <tbody>
       <tr><td class="num">1</td><td>Intake</td><td><span class="role role-model">Model step</span></td><td>Give the request a type: defect, feature, or question</td></tr>
       <tr><td class="num">2</td><td>Retrieve</td><td><span class="role role-code">Fixed step</span></td><td>Get the rules, the code and the tests that are related to the request</td></tr>
@@ -1217,7 +1222,7 @@ def handle(model_proposal) -> None:
   <h3>The state contract</h3>
   <details class="drawer"><summary>The state contract in one table <span class="tag">GE 06 §5</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table>
-    <thead><tr><th>Field</th><th>Type</th><th>Owner</th></tr></thead>
+    <thead><tr><th scope="col">Field</th><th scope="col">Type</th><th scope="col">Owner</th></tr></thead>
     <tbody>
       <tr><td><code>request</code></td><td>text</td><td>The caller</td></tr>
       <tr><td><code>request_type</code></td><td><code>DEFECT</code>, <code>FEATURE</code> or <code>QUESTION</code></td><td>1 Intake</td></tr>
@@ -1249,7 +1254,7 @@ def handle(model_proposal) -> None:
   <h2 id="p6-the-gates-in-operation">The gates in operation</h2>
   <details class="drawer"><summary>The three scenarios of the notes in one table <span class="tag">GE 06 §6</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table>
-    <thead><tr><th>Scenario</th><th>With one agent loop</th><th>With the factory</th></tr></thead>
+    <thead><tr><th scope="col">Scenario</th><th scope="col">With one agent loop</th><th scope="col">With the factory</th></tr></thead>
     <tbody>
       <tr><td><strong>A.</strong> “Show orders that wait for delivery.” The agent writes a plan with a new status, <code>PENDING_SHIP</code>.</td><td>The agent adds the value. Some screens show the value and some screens do not.</td><td>The plan gate finds that <code>PENDING_SHIP</code> is not in rule R1. It rejects the plan and gives the cause. The agent then writes a plan with a filter on the status <code>PAID</code>, or it asks for a change to the ontology.</td></tr>
       <tr><td><strong>B.</strong> “Add a refund button to the order page.” The agent writes an endpoint that makes a refund.</td><td>The endpoint operates. A second click makes a second refund.</td><td>Node 2 gives rule R2 and its test to the agent. If the code does not obey the rule, the test gives FAIL at the rule gate.</td></tr>
@@ -1268,8 +1273,8 @@ def handle(model_proposal) -> None:
   <p>A change to the ontology is a change request. A person gives approval, and the ontology gets a new version.</p>
 
   <h2 id="p6-what-stays-probabilistic">What stays probabilistic</h2>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>The model makes these decisions</th><th>The structure makes these decisions</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p6-what-stays-probabilistic">
+    <thead><tr><th scope="col">The model makes these decisions</th><th scope="col">The structure makes these decisions</th></tr></thead>
     <tbody>
       <tr><td>The text of the plan</td><td>The sequence of the steps</td></tr>
       <tr><td>The text of the code</td><td>Which values and types are valid</td></tr>
@@ -1335,7 +1340,7 @@ def handle(model_proposal) -> None:
   <h2 id="p7-the-ontology-of-the-notes">The ontology of the notes</h2>
   <p>Each knowledge note is one node. Each node has one type. The graph has some hundreds of nodes. Business rules are the largest group.</p>
   <details class="drawer"><summary>The node types <span class="tag">GE 07 §3.1</span></summary>
-  <div class="drawer-body"><div class="table-wrap"><table><thead><tr><th>Group</th><th>Node types</th></tr></thead><tbody>
+  <div class="drawer-body"><div class="table-wrap"><table><thead><tr><th scope="col">Group</th><th scope="col">Node types</th></tr></thead><tbody>
     <tr><td>Rules</td><td>Business rule, requirement</td></tr>
     <tr><td>Implementation</td><td>Code unit, page, entity</td></tr>
     <tr><td>Workflow</td><td>Task, role, status</td></tr>
@@ -1346,7 +1351,7 @@ def handle(model_proposal) -> None:
   <p>The graph has nine relation types. Each relation has a direction and a list of permitted target types.</p>
   <details class="drawer"><summary>The nine relation types <span class="tag">GE 07 §3.2</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table>
-    <thead><tr><th>Relation</th><th>Meaning</th><th>Most frequent use</th></tr></thead>
+    <thead><tr><th scope="col">Relation</th><th scope="col">Meaning</th><th scope="col">Most frequent use</th></tr></thead>
     <tbody>
       <tr><td><code>specified_by</code></td><td>The document that gives the rule</td><td>Business rule to requirement</td></tr>
       <tr><td><code>implemented_by</code></td><td>The code that does it</td><td>Business rule to code unit</td></tr>
@@ -1362,7 +1367,7 @@ def handle(model_proposal) -> None:
   <p>Each node has properties with a fixed list of values. A script rejects a value that is not in the list.</p>
   <details class="drawer"><summary>The status vocabularies <span class="tag">GE 07 §3.3</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table>
-    <thead><tr><th>Property</th><th>Question</th><th>Permitted values</th></tr></thead>
+    <thead><tr><th scope="col">Property</th><th scope="col">Question</th><th scope="col">Permitted values</th></tr></thead>
     <tbody>
       <tr><td><code>knowledge_class</code></td><td>Where does this claim come from?</td><td><code>AUTH</code> (an authoritative document), <code>OBS</code> (an observation of the code or the system), <code>LEARNED</code> (experience; no business owner gave approval for it)</td></tr>
       <tr><td><code>confidence</code></td><td>How sure is the claim?</td><td><code>Verified</code>, <code>Strong evidence</code>, <code>Inferred</code>, <code>Unresolved</code></td></tr>
@@ -1407,8 +1412,8 @@ def handle(model_proposal) -> None:
   <p>With a baseline, the checks stay useful: they show only what changed.</p>
 
   <h2 id="p7-the-pattern-and-the-theory">The pattern and the theory</h2>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Idea</th><th>In this case study</th><th>Enforced by</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p7-the-pattern-and-the-theory">
+    <thead><tr><th scope="col">Idea</th><th scope="col">In this case study</th><th scope="col">Enforced by</th></tr></thead>
     <tbody>
       <tr><td>Execution graph</td><td>The agent session loop of five steps</td><td>A person</td></tr>
       <tr><td>Procedural graph</td><td>The skills</td><td><span class="stamp none">An instruction</span></td></tr>
@@ -1423,8 +1428,8 @@ def handle(model_proposal) -> None:
   <p>In this small version, scripts enforce only the checks and the graph validator. A person operates the agent session loop. The skills and the access list are instructions, thus they are suggestions. The next improvement is clear from the table. Move each row with “An instruction” to code.</p>
 
   <h2 id="p7-what-the-structure-changes">What the structure changes</h2>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Without the structure</th><th>With the structure</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="p7-what-the-structure-changes">
+    <thead><tr><th scope="col">Without the structure</th><th scope="col">With the structure</th></tr></thead>
     <tbody>
       <tr><td>The agent does a search of the code for a rule</td><td>The agent starts at the rule note and goes along <code>implemented_by</code></td></tr>
       <tr><td>The agent writes a claim with no evidence as a fact</td><td>Each claim has a confidence value and a source</td></tr>
@@ -1468,7 +1473,7 @@ def handle(model_proposal) -> None:
 
   <figure class="bench">
     <figcaption>
-      <h3 class="bench-title">The capstone: what does each arrow mean?</h3>
+      <h2 class="bench-title">The capstone: what does each arrow mean?</h2>
       <a class="src" data-n="08">GE 08 §7</a>
       <p class="bench-task">Each arrow with a letter has one label. You have two attempts. Then the gate escalates and shows the worked answer.</p>
     </figcaption>
@@ -1532,8 +1537,8 @@ def handle(model_proposal) -> None:
   <p class="lede">You are away from your computer. A personal project has a defect. You want to send one message, have an agent investigate with your code and your notes, and get a tested change that you can read and approve on the phone.</p>
   <p>Parts 0 to 8 gave the ideas: an execution graph for the path, an ontology for the permitted values, gates for the checks, and a plane that keeps the knowledge. This part uses them to design a real system, with real products and real prices.</p>
   <p>Each component and each step in this part has one of four marks. They answer the question that a diagram usually hides: does this exist, or must you make it?</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Mark</th><th>Meaning</th><th>Example</th></tr></thead>
+  <div class="table-wrap"><table aria-labelledby="pl-the-question">
+    <thead><tr><th scope="col">Mark</th><th scope="col">Meaning</th><th scope="col">Example</th></tr></thead>
     <tbody>
       <tr><td><span class="ptag ptag-ready-now">Use it today</span></td><td>A product does it. Your plan or a free tier includes it.</td><td>Remote Control in the Claude app</td></tr>
       <tr><td><span class="ptag ptag-ready-configure">You configure it</span></td><td>A product does it after you install it and set values.</td><td>n8n; a Telegram bot; Tailscale Funnel</td></tr>
@@ -1547,9 +1552,9 @@ def handle(model_proposal) -> None:
   <h2 id="pl-what-your-plan-pays-for">What your plan pays for</h2>
   <p>A Claude plan and the Anthropic API are two different products with two different bills. Claude Code can use one or the other. Which one it uses depends on the credential that the process finds, not on the program that started it.</p>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>How Claude Code runs</th><th>Who pays</th><th>Condition</th><th>Source</th></tr></thead>
+    <thead><tr><th scope="col">How Claude Code runs</th><th scope="col">Who pays</th><th scope="col">Condition</th><th scope="col">Source</th></tr></thead>
     <tbody>
-      <tr><td>In the terminal or the desktop app</td><td>Your plan</td><td>The limits are shared with the Claude apps: a five-hour limit and a weekly limit on Pro and Max.</td><td><a class="src" href="https://support.claude.com/en/articles/11145838-using-claude-code-with-your-pro-or-max-plan" rel="noopener">Support</a></td></tr>
+      <tr><td>In the terminal or the desktop app</td><td>Your plan</td><td>The limits are shared with the Claude apps: a five-hour limit and a weekly limit on Pro and Max. Ultra has a weekly limit; a verified Ultra account has no five-hour limit.</td><td><a class="src" href="https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-max-or-ultra-plan" rel="noopener">Support</a></td></tr>
       <tr><td>Remote Control from the phone</td><td>Your plan</td><td>Pro, Max and Ultra. An API key cannot use it.</td><td><a class="src" href="https://code.claude.com/docs/en/remote-control" rel="noopener">Docs</a></td></tr>
       <tr><td>A cloud session</td><td>Your plan</td><td>No separate charge for the virtual machine.</td><td><a class="src" href="https://code.claude.com/docs/en/claude-code-on-the-web" rel="noopener">Docs</a></td></tr>
       <tr><td>A cloud scheduled task, also with an API trigger</td><td>Your plan</td><td>Research preview. Hourly maximums for each account and each task.</td><td><a class="src" href="https://code.claude.com/docs/en/routines" rel="noopener">Docs</a></td></tr>
@@ -1558,14 +1563,14 @@ def handle(model_proposal) -> None:
       <tr><td><code>claude -p --bare</code></td><td>The API</td><td>Bare mode does not use the plan login. The documents say that it becomes the default for <code>-p</code> in a later release, so read the release notes before you update.</td><td><a class="src" href="https://code.claude.com/docs/en/headless" rel="noopener">Docs</a></td></tr>
       <tr><td>The GitHub Action with <code>claude_code_oauth_token</code></td><td>Your plan</td><td>The token comes from <code>claude setup-token</code>, lasts one year and can only make model requests.</td><td><a class="src" href="https://code.claude.com/docs/en/github-actions" rel="noopener">Docs</a></td></tr>
       <tr><td>An Anthropic node in n8n, or any other platform that calls the model</td><td>The API</td><td>It needs an API key. Max and Ultra include monthly API credits ($100 and $200) since October 2026; Pro does not.</td><td><a class="src" href="https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers" rel="noopener">Docs</a></td></tr>
-      <tr><td>A product of another developer that signs in with your plan</td><td>Not permitted</td><td>Developers must not route requests through plan credentials for their users. An end user can sign in to the unmodified Claude Code program.</td><td><a class="src" href="https://code.claude.com/docs/en/legal-and-compliance" rel="noopener">Docs</a></td></tr>
+      <tr><td>A product of another developer that signs in with your plan</td><td>Not permitted</td><td>Developers must not send requests through plan credentials for their users. An end user can sign in to the unmodified Claude Code program.</td><td><a class="src" href="https://code.claude.com/docs/en/legal-and-compliance" rel="noopener">Docs</a></td></tr>
     </tbody>
   </table></div>
   <p>Thus the design rule for this part: <strong>the workflow engine never calls a model. It starts the unmodified Claude Code program on your computer, with your own login.</strong> That keeps the work on the bill that you have.</p>
   <div class="callout note"><span class="label">What the documents do not say</span><p>No document gives a number for how much scripted use a plan permits, and none says in so many words that a scheduler of another company may start Claude Code for you. The consumer terms restrict automated access except where Anthropic permits it; <code>claude setup-token</code> is documented “for CI pipelines and scripts”. Read this as: personal, low-volume use of your own login on your own computer is the documented case. A service that runs all day for other people is not. The enforcement text says that it can occur with no notice.</p></div>
   <details class="drawer"><summary>The five ways to connect, compared <span class="tag">which bill, which limits</span></summary>
   <div class="drawer-body"><div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Way</th><th>What it is</th><th>Bill</th><th>Restriction</th></tr></thead>
+    <thead><tr><th scope="col">Way</th><th scope="col">What it is</th><th scope="col">Bill</th><th scope="col">Restriction</th></tr></thead>
     <tbody>
       <tr><td>1. Plan use</td><td>You, in a Claude Code session, on any device</td><td>Plan</td><td>The limits of the plan</td></tr>
       <tr><td>2. API use</td><td>A program with an API key calls the model</td><td>Each token</td><td>None from the plan; the cost has no maximum unless you set one</td></tr>
@@ -1587,7 +1592,7 @@ def handle(model_proposal) -> None:
   </figure>
 
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th></th><th>A. Direct</th><th>B. With n8n</th><th>C. More autonomous</th></tr></thead>
+    <thead><tr><th scope="col"></th><th scope="col">A. Direct</th><th scope="col">B. With n8n</th><th scope="col">C. More autonomous</th></tr></thead>
     <tbody>
       <tr><td>Phone interface</td><td>Claude app; optional Telegram channel</td><td>Telegram bot</td><td>Telegram bot; GitHub mobile</td></tr>
       <tr><td>Who holds the path of the work</td><td>You, message by message</td><td>An n8n workflow</td><td>An n8n workflow and a job queue</td></tr>
@@ -1611,8 +1616,8 @@ def handle(model_proposal) -> None:
     <li>You read the result and the diff in the app. You push from there, by a message, when you are ready.</li>
   </ol>
   <p>For a repository on GitHub there is a second path: start a cloud session in the app. It clones the repository into a machine of Anthropic, works with your computer off, and pushes a branch.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Question</th><th>Answer for architecture A</th></tr></thead>
+  <div class="table-wrap"><table aria-labelledby="pl-architecture-a">
+    <thead><tr><th scope="col">Question</th><th scope="col">Answer for architecture A</th></tr></thead>
     <tbody>
       <tr><td>Must the computer be on?</td><td>For the local path, yes: on, awake, with the session process running. For a cloud session, no.</td></tr>
       <tr><td>What occurs when it goes offline?</td><td>Claude Code connects again when the computer returns. After about ten minutes with no network, the server mode ends. A stopped server session can be continued for about four hours.</td></tr>
@@ -1634,8 +1639,8 @@ def handle(model_proposal) -> None:
 
   <h3 id="pl-architecture-c">Architecture C: what improves, and what you pay for it</h3>
   <p>Architecture C moves the intake to a small server that is always on. Your computer becomes a worker that asks for the next job, so it opens no port at all. Tasks wait in a queue while the computer is off, and for a repository on GitHub the server can start a cloud session through the API trigger.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Improves over B</th><th>New responsibility</th></tr></thead>
+  <div class="table-wrap"><table aria-labelledby="pl-architecture-c">
+    <thead><tr><th scope="col">Improves over B</th><th scope="col">New responsibility</th></tr></thead>
     <tbody>
       <tr><td>The intake answers at any time</td><td>A server with a public login page that you must patch</td></tr>
       <tr><td>No public address at home</td><td>A second secret, for the worker</td></tr>
@@ -1650,7 +1655,7 @@ def handle(model_proposal) -> None:
   <h2 id="pl-the-connection-that-does-not-exist">The connection that does not exist</h2>
   <p>A diagram with an arrow from n8n to Claude Code hides the most important fact of this part. <strong>n8n has no official node for the Claude Code command line.</strong> Its Anthropic nodes call the API with an API key: a different product and a different bill. These are the real ways to make the connection:</p>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Mechanism</th><th>How it works</th><th>Status</th><th>Limit</th><th>Verdict</th></tr></thead>
+    <thead><tr><th scope="col">Mechanism</th><th scope="col">How it works</th><th scope="col">Status</th><th scope="col">Limit</th><th scope="col">Verdict</th></tr></thead>
     <tbody>
       <tr><td>HTTP bridge on localhost</td><td>The HTTP Request node calls a small program of your own. The program checks the request and starts <code>claude -p</code>.</td><td><span class="ptag ptag-ready-build">You build it</span></td><td>Your computer must be on. You maintain about 250 lines.</td><td><span class="verdict-yes">SELECTED</span></td></tr>
       <tr><td>Cloud task with an API trigger</td><td>The HTTP Request node calls <code>…/routines/&lt;id&gt;/fire</code> with a token. A cloud session starts on a GitHub repository.</td><td><span class="ptag ptag-ready-configure">You configure it</span></td><td>Research preview. Cloud only: no local files. The call returns a link to the session, not the result.</td><td><span class="verdict-later">FOR C</span></td></tr>
@@ -1673,7 +1678,7 @@ def handle(model_proposal) -> None:
     <div data-lab="phoneLife"><p class="small muted">This instrument needs JavaScript. The table below gives the same stages.</p></div>
   </figure>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Stage</th><th>Done by</th><th>Status</th><th>What makes it possible</th></tr></thead>
+    <thead><tr><th scope="col">Stage</th><th scope="col">Done by</th><th scope="col">Status</th><th scope="col">What makes it possible</th></tr></thead>
     <tbody>
       <tr><td>1. Request received</td><td>Telegram, Tailscale Funnel, n8n</td><td><span class="ptag ptag-ready-configure">You configure it</span></td><td>Telegram Trigger node; the secret header</td></tr>
       <tr><td>2. Identity validated</td><td>n8n</td><td><span class="ptag ptag-ready-configure">You configure it</span></td><td>The user id list of the trigger; an If node</td></tr>
@@ -1693,7 +1698,7 @@ def handle(model_proposal) -> None:
   <h2 id="pl-the-n8n-workflow">The n8n workflow</h2>
   <p>The workflow has 28 nodes of seven types. All are standard nodes of n8n 2.47.5. No node calls a model, and no node runs a shell command.</p>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Node</th><th>Type and version</th><th>What it does</th><th>Data that goes on</th></tr></thead>
+    <thead><tr><th scope="col">Node</th><th scope="col">Type and version</th><th scope="col">What it does</th><th scope="col">Data that goes on</th></tr></thead>
     <tbody>
       <tr><td>Telegram Trigger</td><td><code>telegramTrigger</code> 1.5</td><td>Sets the webhook of the bot with a secret token and compares the header of each call. Drops a sender that is not in <code>userIds</code>.</td><td>The Telegram update: <code>message.text</code>, <code>message.from.id</code>, <code>message.chat.id</code></td></tr>
       <tr><td>Settings</td><td><code>set</code> 3.5</td><td>Two values in one place: your user id and the address of the bridge.</td><td>The update, with <code>allowedUserId</code> and <code>bridgeUrl</code></td></tr>
@@ -2830,8 +2835,8 @@ npx n8n@2.47.5</code></pre>
 
   <h2 id="pl-the-bridge">The bridge</h2>
   <p>The bridge is one file of Node.js with no dependencies. It listens on <code>127.0.0.1</code> only. It has three addresses and no address that runs a command from the request.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Address</th><th>What it does</th></tr></thead>
+  <div class="table-wrap"><table aria-labelledby="pl-the-bridge">
+    <thead><tr><th scope="col">Address</th><th scope="col">What it does</th></tr></thead>
     <tbody>
       <tr><td><code>POST /tasks</code></td><td>Checks the request, writes the job file, answers 202, starts the agent in a queue of one.</td></tr>
       <tr><td><code>GET /tasks/&lt;id&gt;</code></td><td>Gives the status and, when it is finished, the report, the test result and the diff summary.</td></tr>
@@ -3213,7 +3218,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <h2 id="pl-three-levels-of-risk">Three levels of risk</h2>
   <p>An agent that can write code is not a safe development workflow. The workflow is safe when the dangerous actions are impossible for the agent, and not only forbidden. Each action has one of four levels.</p>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Level</th><th>Actions</th><th>Control</th><th>Enforced by</th></tr></thead>
+    <thead><tr><th scope="col">Level</th><th scope="col">Actions</th><th scope="col">Control</th><th scope="col">Enforced by</th></tr></thead>
     <tbody>
       <tr><td>Read</td><td>Answer from the notes; read the code; report a cause</td><td>No approval. The mode has no tool that writes.</td><td>The tool list of the bridge</td></tr>
       <tr><td>Change</td><td>Edit files; commit</td><td>One approval for each task. Always in a worktree on a new branch.</td><td>The approval check of the bridge; <code>--worktree</code></td></tr>
@@ -3235,7 +3240,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
 
   <h3>The complete list</h3>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Risk</th><th>Control in this design</th><th>Code or instruction?</th></tr></thead>
+    <thead><tr><th scope="col">Risk</th><th scope="col">Control in this design</th><th scope="col">Code or instruction?</th></tr></thead>
     <tbody>
       <tr><td>A stranger sends a message to the bot</td><td><code>userIds</code> of the trigger; the If node; the sender check of the bridge</td><td>Code, three times</td></tr>
       <tr><td>A false call to the webhook address</td><td>Telegram secret token, compared by the trigger with a constant-time comparison</td><td>Code</td></tr>
@@ -3269,9 +3274,9 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   </figure>
   <h3>What “free” means for each service</h3>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Service</th><th>What is free</th><th>The limit that matters</th><th>What starts a bill</th><th>Exit</th></tr></thead>
+    <thead><tr><th scope="col">Service</th><th scope="col">What is free</th><th scope="col">The limit that matters</th><th scope="col">What starts a bill</th><th scope="col">Exit</th></tr></thead>
     <tbody>
-      <tr><td>Claude plan</td><td>Nothing: Pro is $20 each month, Max $100, Ultra $200</td><td>A five-hour and a weekly limit, shared by the phone, the computer and each automated run</td><td>Usage credits at API prices, only if you switch them on</td><td>Your code and notes are files; nothing stays in the plan</td></tr>
+      <tr><td>Claude plan</td><td>Nothing: Pro is $20 each month, Max $100, Ultra $200</td><td>A five-hour and a weekly limit (Ultra: a weekly limit), shared by the phone, the computer and each automated run</td><td>Usage credits at API prices, only if you switch them on</td><td>Your code and notes are files; nothing stays in the plan</td></tr>
       <tr><td>n8n, self-hosted</td><td>The Community Edition, with no limit on runs</td><td>No sharing, no environments, no Git version control, no SSO. Licence: personal or internal use.</td><td>n8n Cloud: no free plan. Starter is €20 each month, billed for a year, for 2,500 runs.</td><td>Workflows export as JSON. The format is of n8n only.</td></tr>
       <tr><td>Telegram bot</td><td>Messages to and from a bot</td><td>4,096 characters for each message; about one message each second in a chat</td><td>Nothing at this volume</td><td>The bot is an interface only. Another chat service needs new intake nodes.</td></tr>
       <tr><td>Tailscale Personal</td><td>Six users, unlimited devices, Serve and Funnel</td><td>Non-commercial use. Funnel is in beta, on three ports, with a bandwidth limit that is not published.</td><td>A team plan: $8 for each user each month</td><td>Cloudflare Tunnel does the same job, but needs a domain on Cloudflare</td></tr>
@@ -3285,7 +3290,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <h2 id="pl-the-platforms">The platforms</h2>
   <p>The platform must do six jobs: receive a message from the phone, check it, call a program on your computer, wait, ask for approval, and keep a record. The table compares the candidates on those jobs, for one developer.</p>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Platform</th><th>Licence</th><th>Free to use</th><th>Telegram and approval</th><th>Reaches an agent on your computer</th><th>Verdict</th></tr></thead>
+    <thead><tr><th scope="col">Platform</th><th scope="col">Licence</th><th scope="col">Free to use</th><th scope="col">Telegram and approval</th><th scope="col">Reaches an agent on your computer</th><th scope="col">Verdict</th></tr></thead>
     <tbody>
       <tr><td>n8n</td><td>Sustainable Use License: source-available, not open source</td><td>Self-hosted: yes. Cloud: a trial only.</td><td>A Telegram trigger and an approval with buttons in the chat are standard nodes</td><td>Yes, on the same computer, through the HTTP Request node</td><td><span class="verdict-yes">SELECTED FOR B</span></td></tr>
       <tr><td>Activepieces</td><td>MIT for the core: open source</td><td>Self-hosted: yes. Cloud: 1,000 runs each month.</td><td>A Telegram piece; approval by a link or a form. Buttons in the chat were not confirmed.</td><td>Self-hosted: yes. The recommended setup needs PostgreSQL and Redis.</td><td><span class="verdict-later">BEST OPEN-SOURCE OPTION</span></td></tr>
@@ -3301,7 +3306,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <p><strong>Is n8n the best fit?</strong> For this task, yes, with two conditions that you must accept. Its licence permits personal use but it is not open source. And its Telegram trigger needs a public address, which a script with long polling does not. In return, n8n gives you three parts that you would write yourself: an approval step that survives a restart, a history of each run that you can open and read, and an editor where the path of the work is visible as a graph. If the public address is the condition that you do not accept, the baseline is a script of about 400 lines that joins the intake and the bridge. Pipedream is in the table as a warning: a hosted platform can end, and then the exit format decides how much work you lose.</p>
   <h3>The supporting tools</h3>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Tool</th><th>The problem that it solves</th><th>In the recommended design?</th></tr></thead>
+    <thead><tr><th scope="col">Tool</th><th scope="col">The problem that it solves</th><th scope="col">In the recommended design?</th></tr></thead>
     <tbody>
       <tr><td>Telegram bot</td><td>A chat with buttons on the phone, with no app to write</td><td><span class="verdict-yes">YES, IN B</span></td></tr>
       <tr><td>Tailscale Funnel</td><td>Telegram must reach n8n at home, over HTTPS, with no domain</td><td><span class="verdict-yes">YES, IN B</span></td></tr>
@@ -3325,7 +3330,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <p class="lede">Build architecture A this evening. Add architecture B when you have a week of experience with A and can name the task that A did not do. Leave architecture C until the computer being off is a problem that you meet each week.</p>
   <p>The recommended system has five components that you install or write, and no new subscription:</p>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Component</th><th>Product</th><th>Runs on</th><th>Status</th><th>Why this one</th></tr></thead>
+    <thead><tr><th scope="col">Component</th><th scope="col">Product</th><th scope="col">Runs on</th><th scope="col">Status</th><th scope="col">Why this one</th></tr></thead>
     <tbody>
       <tr><td>Agent</td><td>Claude Code, with Remote Control</td><td>Your computer</td><td><span class="ptag ptag-ready-now">Use it today</span></td><td>You pay for it now, and it has the phone interface, the worktrees and the permission rules</td></tr>
       <tr><td>Chat and approval</td><td>A Telegram bot</td><td>Telegram</td><td><span class="ptag ptag-ready-configure">You configure it</span></td><td>Free, with buttons, and n8n has standard nodes for it</td></tr>
@@ -3361,7 +3366,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <h2 id="pl-build-it-in-six-milestones">Build it in six milestones</h2>
   <p>Each milestone gives a capability that you can use on that day. Stop after any one of them. Milestones 1 and 2 are architecture A; milestones 3 to 6 are architecture B.</p>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>What you need</th><th>Install</th><th>Account</th><th>Runs</th><th>Must stay running</th><th>From milestone</th></tr></thead>
+    <thead><tr><th scope="col">What you need</th><th scope="col">Install</th><th scope="col">Account</th><th scope="col">Runs</th><th scope="col">Must stay running</th><th scope="col">From milestone</th></tr></thead>
     <tbody>
       <tr><td>Claude Code</td><td>You have it</td><td>Your Claude plan</td><td>Computer</td><td>A session, for the local path</td><td>1</td></tr>
       <tr><td>Claude app</td><td>On the phone</td><td>The same account</td><td>Phone</td><td>No</td><td>1</td></tr>
@@ -3377,7 +3382,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <h2 id="pl-the-ideas-of-the-course-in-this-system">The ideas of the course in this system</h2>
   <p>Each idea of parts 0 to 8 has a place in this design. The last column is the question of part 7: is it enforced by code, or is it an instruction?</p>
   <div class="table-wrap wide"><table class="ptable">
-    <thead><tr><th>Idea</th><th>In this system</th><th>Part</th><th>Enforced by</th></tr></thead>
+    <thead><tr><th scope="col">Idea</th><th scope="col">In this system</th><th scope="col">Part</th><th scope="col">Enforced by</th></tr></thead>
     <tbody>
       <tr><td>Execution graph</td><td>The n8n workflow: 28 nodes, with a fixed edge for each result</td><td><a href="#/2">2</a></td><td>n8n</td></tr>
       <tr><td>Nodes and edges</td><td>A node is one job. An If node has two edges out; the workflow decides the path, not the agent.</td><td><a href="#/2">2</a></td><td>n8n</td></tr>
@@ -3414,7 +3419,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
     <li><a href="https://code.claude.com/docs/en/authentication" rel="noopener">Authentication</a>: the sequence of credentials, <code>claude setup-token</code></li>
     <li><a href="https://code.claude.com/docs/en/legal-and-compliance" rel="noopener">Legal and compliance</a>: plan logins and products of other developers</li>
     <li><a href="https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan" rel="noopener">Use the Agent SDK with your Claude plan</a>: what <code>claude -p</code> draws from</li>
-    <li><a href="https://support.claude.com/en/articles/11145838-using-claude-code-with-your-pro-or-max-plan" rel="noopener">Using Claude Code with your plan</a>: limits</li>
+    <li><a href="https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-max-or-ultra-plan" rel="noopener">Using Claude Code with your plan</a>: limits</li>
     <li><a href="https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers" rel="noopener">API credits for subscribers</a></li>
     <li><a href="https://claude.com/pricing" rel="noopener">Plan prices</a> · <a href="https://platform.claude.com/docs/en/about-claude/pricing" rel="noopener">API prices</a></li>
     <li><a href="https://code.claude.com/docs/en/routines" rel="noopener">Cloud scheduled tasks</a>: the API trigger · <a href="https://code.claude.com/docs/en/scheduled-tasks" rel="noopener">local scheduling</a></li>
@@ -3425,21 +3430,21 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <details class="drawer"><summary>n8n and the other platforms <span class="tag">licences, prices, node source</span></summary>
   <div class="drawer-body"><ul class="small">
     <li><a href="https://github.com/n8n-io/n8n/tree/n8n@2.47.5/packages/nodes-base/nodes" rel="noopener">n8n 2.47.5 node source</a>: the node types, versions and parameters of the workflow</li>
-    <li><a href="https://raw.githubusercontent.com/n8n-io/n8n/master/LICENSE.md" rel="noopener">n8n licence</a> · <a href="https://docs.n8n.io/hosting/community-edition-features/" rel="noopener">Community Edition features</a> · <a href="https://n8n.io/pricing/" rel="noopener">n8n prices</a></li>
-    <li><a href="https://docs.n8n.io/2-0-breaking-changes/" rel="noopener">n8n 2.0 breaking changes</a> · <a href="https://docs.n8n.io/hosting/configuration/configuration-examples/webhook-url/" rel="noopener">webhook address</a> · <a href="https://docs.n8n.io/hosting/securing/overview/" rel="noopener">securing n8n</a></li>
-    <li><a href="https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.telegramtrigger/common-issues/" rel="noopener">Telegram Trigger</a> · <a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.telegram/message-operations/" rel="noopener">Telegram message operations</a> · <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.wait/" rel="noopener">Wait node</a> · <a href="https://docs.n8n.io/advanced-ai/accessing-n8n-mcp-server/" rel="noopener">n8n MCP server</a></li>
+    <li><a href="https://raw.githubusercontent.com/n8n-io/n8n/master/LICENSE.md" rel="noopener">n8n licence</a> · <a href="https://docs.n8n.io/deploy/host-n8n/community-edition-features" rel="noopener">Community Edition features</a> · <a href="https://n8n.io/pricing/" rel="noopener">n8n prices</a></li>
+    <li><a href="https://docs.n8n.io/changelog/v20-breaking-changes" rel="noopener">n8n 2.0 breaking changes</a> · <a href="https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/configuration-examples/configure-webhook-urls-with-reverse-proxy" rel="noopener">webhook address</a> · <a href="https://docs.n8n.io/deploy/host-n8n/configure-n8n/security" rel="noopener">securing n8n</a></li>
+    <li><a href="https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.telegramtrigger/common-issues/" rel="noopener">Telegram Trigger</a> · <a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.telegram/message-operations/" rel="noopener">Telegram message operations</a> · <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.wait/" rel="noopener">Wait node</a> · <a href="https://docs.n8n.io/connect/connect-to-n8n-mcp-server" rel="noopener">n8n MCP server</a></li>
     <li><a href="https://www.activepieces.com/pricing" rel="noopener">Activepieces prices</a> · <a href="https://raw.githubusercontent.com/activepieces/activepieces/main/LICENSE" rel="noopener">licence</a></li>
     <li><a href="https://nodered.org/docs/getting-started/local" rel="noopener">Node-RED</a> · <a href="https://www.windmill.dev/pricing" rel="noopener">Windmill prices</a> · <a href="https://www.windmill.dev/docs/flows/flow_approval" rel="noopener">Windmill approval</a></li>
-    <li><a href="https://www.make.com/en/pricing" rel="noopener">Make prices</a> · <a href="https://zapier.com/pricing" rel="noopener">Zapier prices</a> · <a href="https://pipedream.com/docs/pricing" rel="noopener">Pipedream: end of Workflows</a></li>
+    <li><a href="https://www.make.com/pricing" rel="noopener">Make prices</a> · <a href="https://zapier.com/pricing" rel="noopener">Zapier prices</a> · <a href="https://pipedream.com/docs/pricing" rel="noopener">Pipedream: end of Workflows</a></li>
   </ul></div></details>
   <details class="drawer"><summary>Infrastructure, prices and security <span class="tag">Telegram, Tailscale, GitHub, electricity</span></summary>
   <div class="drawer-body"><ul class="small">
     <li><a href="https://core.telegram.org/bots/api" rel="noopener">Telegram Bot API</a> · <a href="https://core.telegram.org/bots/webhooks" rel="noopener">webhooks</a> · <a href="https://core.telegram.org/bots/faq" rel="noopener">bot FAQ</a> · <a href="https://telegram.org/faq" rel="noopener">Telegram FAQ: cloud chats</a></li>
-    <li><a href="https://tailscale.com/pricing" rel="noopener">Tailscale prices</a> · <a href="https://tailscale.com/kb/1223/funnel" rel="noopener">Funnel</a> · <a href="https://tailscale.com/kb/1312/serve" rel="noopener">Serve</a></li>
-    <li><a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/" rel="noopener">Cloudflare Tunnel</a></li>
+    <li><a href="https://tailscale.com/pricing" rel="noopener">Tailscale prices</a> · <a href="https://tailscale.com/docs/features/tailscale-funnel" rel="noopener">Funnel</a> · <a href="https://tailscale.com/docs/features/tailscale-serve" rel="noopener">Serve</a></li>
+    <li><a href="https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/create-remote-tunnel/" rel="noopener">Cloudflare Tunnel</a></li>
     <li><a href="https://docs.github.com/en/get-started/learning-about-github/githubs-plans" rel="noopener">GitHub plans</a> · <a href="https://docs.github.com/en/billing/concepts/product-billing/github-actions" rel="noopener">Actions billing</a> · <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens" rel="noopener">fine-grained tokens</a> · <a href="https://docs.github.com/en/actions/reference/security/secure-use" rel="noopener">self-hosted runners</a></li>
     <li><a href="https://obsidian.md/help/cli" rel="noopener">Obsidian command line</a> · <a href="https://obsidian.md/pricing" rel="noopener">Obsidian prices</a> · <a href="https://www.sqlite.org/whentouse.html" rel="noopener">SQLite: appropriate uses</a></li>
-    <li><a href="https://docs.docker.com/desktop/setup/install/windows-install/" rel="noopener">Docker Desktop on Windows</a> · <a href="https://docs.docker.com/subscription/desktop-license/" rel="noopener">Docker licence</a></li>
+    <li><a href="https://docs.docker.com/desktop/setup/install/windows-install/" rel="noopener">Docker Desktop on Windows</a> · <a href="https://docs.docker.com/subscription-billing/desktop-license/" rel="noopener">Docker licence</a></li>
     <li><a href="https://www.hetzner.com/cloud/cost-optimized/" rel="noopener">Hetzner Cloud</a> · <a href="https://xneelo.co.za/cloud/" rel="noopener">xneelo Cloud</a> · <a href="https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm" rel="noopener">Oracle Always Free</a></li>
     <li><a href="https://www.eskom.co.za/distribution/wp-content/uploads/2026/07/Eskom-Tariff-booklet_Final.pdf" rel="noopener">Eskom tariff booklet 2026/27</a>: Homepower, R3.56 for each kWh with VAT, before fixed charges</li>
     <li><a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-zar.en.html" rel="noopener">ECB reference rates</a>: €1 = R18.43 on 11 November 2026; $1 = R16.56 as a cross rate</li>
@@ -3490,8 +3495,8 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <p class="small"><span class="prov notes">Summary by the notes</span> The analogy is from the paper (Feng et al., figure 4). The column “What you control” is a summary by the notes; for levels 2 to 6 it uses the ladder in the DataCamp guide. “If the level is absent” is from the DataCamp guide.</p>
 
   <h2 id="hard">Four difficult questions</h2>
-  <div class="table-wrap wide"><table>
-    <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+  <div class="table-wrap wide"><table aria-labelledby="hard">
+    <thead><tr><th scope="col">Question</th><th scope="col">Answer</th></tr></thead>
     <tbody>
       <tr><td>How do you do a test of a graph?</td><td>Do a test of each fixed node and each edge function as for usual code. Replace the model with a fixed result, then do a test of the full path.</td></tr>
       <tr><td>How does the ontology change?</td><td>A change to the ontology is a change request. A person gives approval, and the ontology gets a new version.</td></tr>
@@ -3502,11 +3507,11 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
 
   <h2 id="exercises">Exercises</h2>
   <p>Exercises 1 and 2 are for the session. Exercises 3 to 6 are for the days after the session.</p>
-  <details class="drawer"><summary>Exercise 1: give a color to each node <span class="tag">10 minutes</span></summary><div class="drawer-body"><p>Use a task that you gave to an agent last week. Write its steps. Give each step a type: code, model, agent or person.</p><p><strong>Result:</strong> a list of steps with a type for each step. Count the steps that code can do.</p></div></details>
+  <details class="drawer"><summary>Exercise 1: give a type to each node <span class="tag">10 minutes</span></summary><div class="drawer-body"><p>Use a task that you gave to an agent last week. Write its steps. Give each step a type: code, model, agent or person.</p><p><strong>Result:</strong> a list of steps with a type for each step. Count the steps that code can do.</p></div></details>
   <details class="drawer"><summary>Exercise 2: find the suggestions <span class="tag">10 minutes</span></summary><div class="drawer-body"><p>Open a system prompt or a skill file that you use. Identify each sentence that is a rule. For each rule, select its correct location: a node, an edge, a gate, or the prompt.</p><p><strong>Result:</strong> a table with two columns: the rule, and its correct location.</p></div></details>
   <details class="drawer"><summary>Exercise 3: a first ontology <span class="tag">45 minutes</span></summary><div class="drawer-body"><p>Use the procedure in <a href="#/4">part 4</a>. Write the ontology of a small domain that you know. A library, a cinema or a car park are good examples.</p><p><strong>Result:</strong> ten nouns, their relations, three enumerations and three rules.</p><p><strong>Check:</strong> write one invalid record for each rule. Make sure that your rule rejects the record.</p></div></details>
   <details class="drawer"><summary>Exercise 4: write the two gates <span class="tag">60 minutes</span></summary><div class="drawer-body"><p>Write a tool that changes the status of an order. Add Gate 1 with a schema. Add Gate 2 with a validator function. A real model is not necessary. Write three model proposals by hand as JSON objects.</p>
-    <div class="table-wrap"><table><thead><tr><th>Proposal</th><th>Content</th><th>Correct result</th></tr></thead><tbody>
+    <div class="table-wrap"><table><thead><tr><th scope="col">Proposal</th><th scope="col">Content</th><th scope="col">Correct result</th></tr></thead><tbody>
       <tr><td class="num">1</td><td>The amount is the text “ten”</td><td>Gate 1 rejects it</td></tr>
       <tr><td class="num">2</td><td>The new status is <code>PROBABLY_SHIPPED</code></td><td>Gate 1 accepts it. Gate 2 rejects it and gives the cause.</td></tr>
       <tr><td class="num">3</td><td>The order goes from <code>CART</code> to <code>REFUNDED</code></td><td>Gate 1 accepts it. Gate 2 rejects it and gives the cause.</td></tr>
@@ -3527,7 +3532,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/tasks -H "content-type: application/js
   <p>The notes use nine sources. For the talks, the notes use the official summary page, the description and the chapter list of each talk. They do not use a full transcript.</p>
   <div class="wide" data-lab="sources"><p class="small muted">The list of sources needs JavaScript. The source note GE 00 has the full list.</p></div>
   <h3>Source notes</h3>
-  <p>Each part of this course comes from one note in the Obsidian vault. Each link opens the note in Obsidian.</p>
+  <p>Each part of this course comes from one note. Each link opens a copy of the note.</p>
   <ul class="note-list">
     <li><a class="src" data-n="00">GE 00</a> Session Guide: part 0</li>
     <li><a class="src" data-n="01">GE 01</a> Why Agent Output Changes: part 1</li>

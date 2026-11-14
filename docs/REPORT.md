@@ -329,3 +329,43 @@ A full visual pass on the branch `redesign/journal-and-bench`. The content, the 
 Appearance pass (2026-11-12): a new cover and a new last slide (the same graph, first with three nodes lit, then fully lit), larger type, code in panels with syntax colour, a faint grid on the dark slides, and a nine-mark part indicator at the bottom right of each slide.
 
 Checked: each of the 33 slides was examined in a local render (headless Chrome, with a small page that loads `deck.json` and the slide files). That render is an approximation of the deck page. Not checked: the slides in the deck page itself, and the export to PDF or PowerPoint.
+
+## 2026-11-14: upgrade sweep of `index.html`
+
+A structural audit of the page, then the corrections that do not change the content or the appearance. Branch `chore/html-upgrade-sweep`.
+
+**Audit result.** No unclosed tag, no duplicate id, no broken internal link, no `h2` without an id, no button without a type, no input without a label. Each `data-lab` mount has a registered instrument (38 of 38) and each of the 29 scripts exists. Each of the 68 external addresses answers with HTTP 200.
+
+**Changed**
+
+- **Moved addresses.** 11 external addresses answered through a redirect (n8n, Tailscale, Cloudflare, Docker, Make and Claude support moved their pages). They now point to the new address. Two of them are also in `js/data/phone-lab.js` (three places), and were changed there.
+- **Table headers.** Each of the 199 column headers in the 64 tables has `scope="col"`.
+- **Head.** A tab icon (the gate hexagon, an inline SVG, so that no file is necessary and the request for `favicon.ico` stops), and four Open Graph tags for a link preview.
+- **Vocabulary.** "route requests" is now "send requests" (part L). "Exercise 1: give a color to each node" is now "give a type to each node", the name that the instrument got on 2026-11-13.
+
+**Checked.** `tests.html`: 92 of 92, from `file://` in headless Edge. Parts 0, 4 and L load with no console error. `python lab/tools/sync-page.py`: 5 blocks, 0 changed.
+
+**Second pass, the same day**
+
+- **Heading levels.** No part skips a level now. In parts 1, 2, 3, 4, 6 and 8 the first bench title was an `h3` before any `h2`; it is an `h2` with the same class. The four `h4` in the drawer of part 0 are `h3 class="h4"`, and `base.css` gives `.h4` the look of an `h4`. Screenshots of parts 1 and 6 before and after show no difference. This closes the heading item of the first engineering review.
+- **Table names.** 22 tables have `aria-labelledby` with the id of their section heading. A table has a name only if its nearest heading has an id and no other table uses it.
+- **Part L, limits of the Ultra plan.** The Claude support page was read on 2026-11-14. Pro and Max have a five-hour limit and a weekly limit; Ultra has a weekly limit, and a verified Ultra account has no five-hour limit. The two rows that gave both limits for each plan now say this. The other prices and limits keep the research date 2026-11-12.
+
+**Checked after the second pass.** `tests.html`: 92 of 92. Parts 0, 1, 6 and L: no console error. `sync-page.py`: 0 blocks changed.
+
+**Found and not changed**
+
+- **Tables with no name.** 42 of the 64 tables: those in drawers, those below a heading with no id, and two that share one heading. A name for each is new text.
+- **Not checked:** screen readers, Firefox, Safari, print, phone widths, and the link preview on a real service.
+
+## 2026-11-14: the source notes are in the repository; private details removed
+
+**The notes.** The folder `notes/` has a copy of each of the nine notes, `ge-00-…md` to `ge-08-…md`, and a `README.md`. In each copy the links between the notes are usual markdown links, the ten images are replaced by one line each (the line that gives the source stays), and the frontmatter gives the date with no time. The originals were read and not changed.
+
+**The source chips.** A source chip opened an `obsidian://` address in the vault of the author, thus it operated on one computer only. It now opens the copy of the note in `notes/` on GitHub, in a new tab. `js/data/sources.js` has `noteBase` and a `page` for each note in place of `vault` and `noteFolder`; `js/core/app.js` makes the link. Two sentences in `index.html` that said "in Obsidian" were changed.
+
+**Private details.** The name of the vault, the folder path in the vault and a path on the computer of the author were removed from `js/data/sources.js`, `docs/SOURCES.md` and `CLAUDE.md`. `CLAUDE.md` has a rule that prevents such details.
+
+**Checked.** `tests.html`: 93 of 93 (one new test for the note pages). Part 4: each of the nine chips has its address in `notes/`; no `obsidian://` address stays; no console error. A search of all files for a user name, a local path, the vault name and an email address finds nothing.
+
+**Limits.** The addresses of the chips operate after this branch is on `main` on GitHub. The older commits keep the removed details.

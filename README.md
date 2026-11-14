@@ -28,11 +28,12 @@ To do the tests, open [`tests.html`](tests.html) in a browser. The page shows th
 | `lab/` | The files of part L, "Operate it from your phone". Refer to [`lab/README.md`](lab/README.md). |
 | `presentation/` | The source of the slide deck that teaches the course, and exported copies. Refer to [`presentation/README.md`](presentation/README.md). |
 | `docs/` | [`REPORT.md`](docs/REPORT.md): how the course was made. [`SOURCES.md`](docs/SOURCES.md): the relation between each section and the notes. [`EVIDENCE.md`](docs/EVIDENCE.md): the status of each claim. |
+| `notes/` | A copy of each of the nine source notes. Refer to [`notes/README.md`](notes/README.md). |
 | `backups/` | Old versions of changed files, at their initial paths. The site does not load them. |
 
 ## The content
 
-The course comes from the nine notes `GE 00` to `GE 08` in the Obsidian vault of the author. The notes are the source. This project shows the content of the notes and does not change the notes.
+The course comes from the nine notes `GE 00` to `GE 08` of the author. The notes are the source. The folder [`notes/`](notes/) has a copy of each note. This project shows the content of the notes and does not change the notes.
 
 Part L is different. This edition added part L as a practical laboratory. The content of part L comes from official documents, not from the notes. The research date is 2026-11-12.
 
@@ -45,7 +46,7 @@ The browser keeps these items in `localStorage`, with the key `permitted-paths.v
 
 The page does not send these items to a different location. **New run** in the top bar removes them. If storage is not available, or if the data is damaged, the page starts a new run. Two open tabs use the same progress.
 
-A source chip, for example `GE 04 §5`, opens the note in Obsidian with an `obsidian://` link. Thus a source chip operates only on a computer that has the vault. If you change the name of the vault or of the folder, change `vault` and `noteFolder` in `js/data/sources.js`.
+A source chip, for example `GE 04 §5`, opens the copy of the note in `notes/`, in a new tab. The link goes to the page of the note on GitHub, thus a network connection is necessary for it. To read the copies with no network, set `noteBase` in `js/data/sources.js` to `notes/`. If you move the repository, change `noteBase`.
 
 ## Structure
 
@@ -70,7 +71,7 @@ js/core/
   gate.js             the checkpoint at the end of a part: PASS or FAIL, two attempts, then it escalates
   app.js              router, rail, theme, source links, delayed start of the instruments. Load this file last.
 js/data/
-  sources.js          vault name, note files, chapter list
+  sources.js          address of the notes, note files, chapter list
   graphs.js           each drawing as data: nodes, edges, reading steps
   gates.js            gate questions, answers and causes. Each question has its source section.
   reference.js        glossary, incorrect ideas, checklist, ladder, sources, recall questions

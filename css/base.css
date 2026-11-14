@@ -19,7 +19,8 @@ h1, h2 { font-family: var(--font-serif); font-weight: 400; }
 h1 { font-size: var(--t-display); line-height: 0.98; letter-spacing: -0.015em; }
 h2 { font-size: var(--t-2xl); line-height: 1.08; letter-spacing: -0.01em; margin-top: var(--s8); margin-bottom: var(--s4); }
 h3 { font-family: var(--font-display); font-weight: 500; font-size: var(--t-md); letter-spacing: -0.005em; margin-top: var(--s7); margin-bottom: var(--s3); }
-h4 { font-family: var(--font-text); font-weight: 700; font-size: var(--t-base); margin-top: var(--s5); margin-bottom: var(--s2); }
+h4, .h4 { font-family: var(--font-text); font-weight: 700; font-size: var(--t-base); margin-top: var(--s5); margin-bottom: var(--s2); }
+.h4 { letter-spacing: inherit; } /* an h3 in a drawer that has the look of an h4 */
 p, ul, ol, dl, table, pre, blockquote { margin: 0 0 var(--s4); }
 p, li { text-wrap: pretty; }
 ul, ol { padding-left: 1.4em; }
