@@ -82,7 +82,7 @@
 .st-pick { display: grid; gap: var(--s1); font-size: var(--t-xs); width: 100%; }
 .st-select { font: inherit; font-size: var(--t-sm); min-height: 2.75rem; padding: 0 var(--s3); border: 1px solid var(--ink-2); border-radius: var(--radius); background: var(--paper); color: var(--ink); width: 100%; max-width: 44rem; }
 .st-json { margin: 0; max-height: 11rem; overflow: auto; font-size: var(--t-xs); }
-.st-predict { border-inline-start: 3px solid var(--ink); padding-inline-start: var(--s4); }
+.st-predict { background: var(--paper-2); padding: var(--s3) var(--s4); border-radius: var(--radius); }
 .st-predict p { margin: 0 0 var(--s2); }
 .st-log { max-height: 20rem; overflow-y: auto; font-size: var(--t-xs); }
 .st-log .stamp { flex: none; }
