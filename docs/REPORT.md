@@ -369,3 +369,53 @@ A structural audit of the page, then the corrections that do not change the cont
 **Checked.** `tests.html`: 93 of 93 (one new test for the note pages). Part 4: each of the nine chips has its address in `notes/`; no `obsidian://` address stays; no console error. A search of all files for a user name, a local path, the vault name and an email address finds nothing.
 
 **Limits.** The addresses of the chips operate after this branch is on `main` on GitHub. The older commits keep the removed details.
+
+## 2026-11-14: part S, the practical architecture studio
+
+**What was asked.** A practical part that shows how the ideas of the course become an application: which files, which functions, which tests. With one rule: no agent architecture first. An ordinary application first, then the graph ideas, then a model, then orchestration, each on the same code.
+
+**What was added.**
+
+- **A reference application**, `examples/personal-finance/`: TypeScript, React, Node, SQLite. One vertical slice: record an expense and update the budget of the month. Fictional data. It was built in four levels, one commit and one tag for each (`studio-l1` to `studio-l4`), and the tests of a level passed before the subsequent level started.
+  - Level 1, ordinary software: shared contracts, a pure domain, repository ports with two implementations, a service, an HTTP server on `node:http`, a web application. 60 tests.
+  - Level 2, graph structure: the service became an execution graph with a typed state and owners, two named gates, an independent verifier, a trace with checkpoints. The service is now a facade; the tests of level 1 pass with no change. 102 tests.
+  - Level 3, intelligence layer: an optional category suggestion. Memory first, then a cost control, then a model behind a port, then a deterministic gate. The suggest graph gets no store that can write. 139 tests.
+  - Level 4, orchestration: the import of a statement. An orchestrator graph, a bounded pool, one model budget, a wait for the person with a stored checkpoint, a reconciler. 155 tests.
+- **Part S in the page**, between part L and the reference shelf: 19 sections, a strip that shows the level of the section on the screen, eight drawings where each box and each arrow can be selected, three replays of recorded runs, a source explorer by level, nine questions, a gate of six questions.
+- **A sync tool**, `examples/tools/sync-studio.py`, that copies the source files and the recordings into two generated data files and into eight code blocks of the page.
+
+**Decisions that differ from the first plan.**
+
+- *Level 4 is an import, not a "month review" with agents.* A design review judged the month review a contrivance: its queries take milliseconds, thus parallel workers gain nothing, and its evaluator is a deterministic gate that level 3 already has. The import of a statement has six limits of level 3 that can be named, and each mechanism of level 4 answers one of them. The month review is in the part as the example of a requirement that does not need orchestration.
+- *The spent amount of a budget is calculated, not stored.* Then one expense is one write, and the slice needs no transaction across two tables.
+- *No service worker.* The Home Screen installation does not need one, and it would show old builds during learning. The part teaches it as a postponed decision.
+- *The replays are recordings, not simulations.* The tests of the application write what the real code did in 19 scenarios. The page plays that file. A test in `tests.html` compares each drawing with the recorded graph, thus the page cannot show a node or an edge that the code does not have.
+- *The text of each component is in HTML tables, and the instrument reads them.* Thus the page with no JavaScript shows the same content, and the text exists one time.
+
+**How the existing parts were preserved.** No text, example or exercise of parts 0 to 8, part L or the shelf changed. The edits to existing files are: one stylesheet link, one rail item, four script tags, the "Next" link of part L, the "Previous" link of the shelf (all in `index.html`); two cases for the key `studio` in `js/core/app.js` (the locator and the figure prefix); one entry in `js/data/sources.js`; new tests at the end of `tests.html`. `lab/tools/sync-page.py` reports 5 blocks, 0 changed.
+
+**Found during the work.**
+
+- A test of level 4 failed on a line of the fixture with a date after the fixed clock. The import had no rule for it. The line went to the record graph as a worker and Gate 2 refused it (R5). The part uses this as its example of why the worker is the existing graph.
+- The first drawing of the record graph failed its test: it showed an edge that is only in the level 2 version of the graph. The drawing now names the two versions.
+- `README.md` named a list `LAB_NAMES` that does not exist; the list is `INSTRUMENTS`. Corrected.
+
+**Checked.**
+
+- The application: `npm run check` (type check, 155 tests, recordings current) and `npm run build`. Started with the real SQLite file, AI off: an expense recorded in the browser, the budget changed, the data stayed after a reload; a suggestion came from the memory; an import in two steps gave 2 recorded and 2 rejected with reconciliation PASS, and the second decision gave DUPLICATE. The database of the level 1 run was opened by the level 4 code, thus the three later schema files were applied to a database with data.
+- `tests.html`: 116 of 116 (93 before, 23 new).
+- Each part opened (`#/0` to `#/8`, `#/lab`, `#/studio`, `#/ref`): each instrument started, the locator and the rail are correct, the previous and next links are correct.
+- Part S: each of the 19 recordings played to its end; a box and an arrow selected in a drawing; the explorer at each level; a file link from a table opens the file; a question; the gate starts.
+- 375 px width: no sideways scroll of the page. Dark theme: checked on one drawing.
+- `python examples/tools/sync-studio.py --check`: PASS. `node lab/bridge/test/run.mjs`: PASS.
+
+**Not run, and other limits.**
+
+- **No call to the real Claude API.** The project has no key. The adapter is tested with a stand-in for the SDK client.
+- **No real iPhone.** The steps of Add to Home Screen come from documents. The layout was checked in a browser at the width of a phone.
+- Stages 2 and 3 of the deployment (a private path, a host, a sign-in) are a design. Nothing was deployed.
+- Three statements about Apple platforms are not confirmed by a current official page; the part lists them under "What this edition did not confirm".
+- The cost of one suggestion is an estimate.
+- The git tags `studio-l1` to `studio-l4` are local until they are pushed. The file links of the part go to the repository on GitHub, and work there after a push.
+- The page is now about 430 kB, and the two generated data files are about 320 kB more.
+- Some files of the application are longer than the target of 150 lines: the three graph files and the scenarios.

@@ -39,6 +39,10 @@
 <script src="js/labs/planes.js"></script>
 <script src="js/data/phone-lab.js"></script>
 <script src="js/labs/phone-lab.js"></script>
+<script src="js/data/studio.js"></script>
+<script src="js/data/studio-files.js"></script>
+<script src="js/data/studio-runs.js"></script>
+<script src="js/labs/studio.js"></script>
 <script>
 (function (GE) {
   'use strict';
@@ -49,6 +53,7 @@
     if (ok) pass++; else fail++;
     out.appendChild(GE.h('li', { class: ok ? '' : 'fail' }, (ok ? 'PASS  ' : 'FAIL  ') + name + detail));
   }
+  function eqArr(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
   function eq(a, b) { return JSON.stringify(a) === JSON.stringify(b) ? true : { got: a, expected: b }; }
   function call(a) { return { order_id: a[0], amount_cents: a[1], payee_id: a[2], new_status: a[3] }; }
   function rules(problems) { return problems.map(function (p) { return p.rule; }); }
@@ -292,6 +297,118 @@
     var btns = [].slice.call(w.querySelectorAll('button'));
     btns.filter(function (b) { return b.textContent === 'b'; })[0].click();
     return eq(w.querySelector('.feedback').textContent, 'FAIL no');
+  });
+
+  /* ---- Part S, the practical architecture studio (2026-11-14). The drawings are compared with
+          the recordings of the real application, thus the page cannot show a graph that the code does not have. ---- */
+  var ST = GE.data.studio, SR = GE.data.studioRuns, SF = GE.data.studioFiles;
+  test('studio: the two generated files come from the same run of the sync tool', function () {
+    return !!SR && !!SF && SR.hash === SF.hash && /^[0-9a-f]{16}$/.test(SR.hash);
+  });
+  Object.keys(ST.drawings).forEach(function (key) {
+    var d = ST.drawings[key];
+    if (!d.graph) return;
+    test('studio drawing "' + key + '": the same nodes and edges as the recorded graph ' + d.graph, function () {
+      var real = SR.graphs[d.graph], bad = [];
+      var mine = d.nodes.filter(function (n) { return !n.outside; });
+      var realIds = real.nodes.map(function (n) { return n.id; }).sort();
+      if (!eqArr(mine.map(function (n) { return n.id; }).sort(), realIds)) bad.push('nodes: ' + realIds.join(' '));
+      real.nodes.forEach(function (rn) {
+        var n = mine.filter(function (x) { return x.id === rn.id; })[0];
+        if (n && n.type && n.type !== rn.type) bad.push(rn.id + ' is ' + rn.type + ' in the code');
+      });
+      var myEdges = d.edges.filter(function (e) { return !e.outside; }).map(GE.edgeKey).sort();
+      // A drawing can show two versions of one graph (the record graph before and after level 3).
+      var realEdges = real.edges.concat(d.also ? SR.graphs[d.also].edges : []).map(function (e) { return e.from + '>' + e.to; }).filter(function (k, i, all) { return all.indexOf(k) === i; }).sort();
+      realEdges.forEach(function (k) { if (myEdges.indexOf(k) < 0) bad.push('the drawing has no edge ' + k); });
+      myEdges.forEach(function (k) { if (realEdges.indexOf(k) < 0) bad.push('the code has no edge ' + k); });
+      return eq(bad, []);
+    });
+  });
+  test('studio: the record graph of level 2 is the record graph with a memory, without the node remember', function () {
+    var plain = SR.graphs['record-expense'], full = SR.graphs['record-expense+memory'];
+    return eq(full.nodes.map(function (n) { return n.id; }).filter(function (id) { return id !== 'remember'; }), plain.nodes.map(function (n) { return n.id; }));
+  });
+  test('studio drawings: each node and each edge has a level (1 to 4, or 9 for "not built")', function () {
+    var bad = [];
+    Object.keys(ST.drawings).forEach(function (key) {
+      ST.drawings[key].nodes.concat(ST.drawings[key].edges).forEach(function (x) { if ([1, 2, 3, 4, 9].indexOf(x.level) < 0) bad.push(key + ':' + (x.id || GE.edgeKey(x))); });
+    });
+    return eq(bad, []);
+  });
+  test('studio replays: each scenario is in the recordings, and each step is a node and an edge of its drawing', function () {
+    var bad = [], byId = {};
+    SR.scenarios.forEach(function (sc) { byId[sc.id] = sc; });
+    Object.keys(ST.replays).forEach(function (key) {
+      var conf = ST.replays[key], d = ST.drawings[conf.drawing];
+      var ids = d.nodes.map(function (n) { return n.id; }), edges = d.edges.map(GE.edgeKey);
+      conf.scenarios.forEach(function (id) {
+        var sc = byId[id];
+        if (!sc || !sc.run) { bad.push(id + ' is not recorded'); return; }
+        (sc.first ? sc.first.run.steps : []).concat(sc.run.steps).forEach(function (st) {
+          if (ids.indexOf(st.node) < 0) bad.push(id + ': node ' + st.node);
+          if (st.edge && edges.indexOf(st.edge) < 0) bad.push(id + ': edge ' + st.edge);
+        });
+        if (conf.answer && !conf.options.some(function (o) { return o.value === conf.answer(sc); })) bad.push(id + ': no option for the answer');
+      });
+    });
+    return eq(bad, []);
+  });
+  test('studio recordings: 19 scenarios; each one that ends at respond is PASS, at reject is FAIL, at escalate is ESCALATED', function () {
+    var want = { respond: 'PASS', reject: 'FAIL', escalate: 'ESCALATED' };
+    var bad = SR.scenarios.filter(function (sc) { return want[sc.run.path[sc.run.path.length - 1]] !== sc.run.result; }).map(function (sc) { return sc.id; });
+    return eq([SR.scenarios.length, bad], [19, []]);
+  });
+  test('studio recordings: a suggestion never adds a row to the ledger or to the memory (R13)', function () {
+    return eq(SR.scenarios.filter(function (sc) { return sc.endpoint === '/api/expenses/suggest' && (sc.rows_after !== 0 || sc.memory_rows_added !== 0); }).map(function (sc) { return sc.id; }), []);
+  });
+  test('studio recordings: each node wrote only the fields that it owns', function () {
+    var bad = [];
+    SR.scenarios.forEach(function (sc) {
+      var owners = {};
+      SR.graphs[sc.run.graph].nodes.forEach(function (n) { n.owns.forEach(function (f) { owners[f] = n.id; }); });
+      (sc.first ? sc.first.run.steps : []).concat(sc.run.steps).forEach(function (st) {
+        Object.keys(st.writes).forEach(function (f) { if (owners[f] !== st.node) bad.push(sc.id + ': ' + st.node + ' wrote ' + f); });
+      });
+    });
+    return eq(bad, []);
+  });
+  test('studio files: each has a level, a role and text; no file has a key or a path of a computer', function () {
+    var names = Object.keys(SF.files);
+    var bad = names.filter(function (n) { var f = SF.files[n]; return [1, 2, 3, 4].indexOf(f.level) < 0 || !f.role || !f.text || /sk-ant-|[A-Za-z]:\\Users|\/Users\/|\/home\/[a-z]/.test(f.text); });
+    return eq([names.length > 60, bad], [true, []]);
+  });
+  test('studio files: no file of a level imports a file of a later level (the same rule as the architecture test)', function () {
+    var bad = [];
+    Object.keys(SF.files).forEach(function (name) {
+      var f = SF.files[name], reached = Math.max.apply(null, [f.level].concat(f.modified));
+      if (!/\.tsx?$/.test(name) || /\.test\.ts$/.test(name) || name.indexOf('tests/') === 0) return;
+      (f.text.match(/from '(\.[^']+)'/g) || []).forEach(function (m) {
+        var parts = (name.slice(0, name.lastIndexOf('/')) + '/' + m.slice(6, -1)).split('/'), out = [];
+        parts.forEach(function (p) { if (p === '..') out.pop(); else if (p !== '.') out.push(p); });
+        var target = SF.files[out.join('/')];
+        if (target && target.level > reached) bad.push(name + ' imports ' + out.join('/'));
+      });
+    });
+    return eq(bad, []);
+  });
+  test('studio checks: each question has exactly one correct answer, and a cause for each answer', function () {
+    var bad = Object.keys(ST.checks).filter(function (k) {
+      var o = ST.checks[k].options;
+      return o.filter(function (x) { return x.correct; }).length !== 1 || o.some(function (x) { return !x.why || !x.text; });
+    });
+    return eq([Object.keys(ST.checks).length, bad], [9, []]);
+  });
+  test('studio: the replay instrument plays a recording to its end and shows the HTTP answer', function () {
+    GE.trace = GE.trace || { lab: function () {} };
+    var el = document.createElement('div'); el.dataset.replay = 'record'; document.body.appendChild(el);
+    GE.labs.studioRun(el, 'studio');
+    var buttons = el.querySelectorAll('.controls .btn');
+    var disabledFirst = buttons[0].disabled;
+    el.querySelector('.st-predict .seg button').click();
+    var text = el.querySelector('.st-state').textContent;
+    el.remove();
+    return eq([disabledFirst, buttons[0].disabled, /run_0001/.test(text), /gate1_problems/.test(text)], [true, false, true, true]);
   });
 
   var summary = document.getElementById('summary');

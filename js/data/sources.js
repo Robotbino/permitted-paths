@@ -26,6 +26,7 @@
     { key: '7', title: 'A small real one', note: '07' },
     { key: '8', title: 'Give it back', note: '08' },
     { key: 'lab', title: 'Operate it from your phone', note: null }, // the practical laboratory: added by this edition, not from a note
+    { key: 'studio', title: 'From concepts to a working application', note: null }, // the practical architecture studio: added by this edition, not from a note
     { key: 'ref', title: 'Reference shelf', note: '08' }
   ];
 })(window.GE);

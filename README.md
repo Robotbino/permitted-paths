@@ -2,7 +2,7 @@
 
 This repository contains an interactive course. The course shows how to move decisions from a model to a system. Its subjects are nodes, edges, state and gates.
 
-The course has nine parts, a practical laboratory and approximately twenty instruments. All of it is HTML, CSS and JavaScript.
+The course has nine parts, a practical laboratory, a practical architecture studio and approximately twenty-five instruments. The course is HTML, CSS and JavaScript. The studio has a small TypeScript application in `examples/personal-finance/`.
 
 ## Start
 
@@ -26,6 +26,7 @@ To do the tests, open [`tests.html`](tests.html) in a browser. The page shows th
 | `tests.html` | Tests for the engines and the data. They operate in the browser. |
 | `css/`, `js/`, `assets/` | The files that `index.html` loads: styles, scripts and fonts |
 | `lab/` | The files of part L, "Operate it from your phone". Refer to [`lab/README.md`](lab/README.md). |
+| `examples/` | The reference application of part S, "Practical Architecture Studio", and the tool that copies it into the page. Refer to [`examples/personal-finance/README.md`](examples/personal-finance/README.md). |
 | `presentation/` | The source of the slide deck that teaches the course, and exported copies. Refer to [`presentation/README.md`](presentation/README.md). |
 | `docs/` | [`REPORT.md`](docs/REPORT.md): how the course was made. [`SOURCES.md`](docs/SOURCES.md): the relation between each section and the notes. [`EVIDENCE.md`](docs/EVIDENCE.md): the status of each claim. |
 | `notes/` | A copy of each of the nine source notes. Refer to [`notes/README.md`](notes/README.md). |
@@ -123,7 +124,7 @@ Change `index.html`. Write short sentences in simplified English. Obey the vocab
 1. Put a mount point in `index.html`: `<div data-lab="myLab">text for a browser with no JavaScript</div>`. Usually, put it in a `<figure class="bench">`.
 2. Register the instrument in a file in `js/labs/`: `GE.labs.myLab = function (el, chapterKey) { … }`. Make the DOM with `GE.h`.
 3. After the learner uses the instrument, call `GE.trace.lab('myLab', chapterKey)`. Then the instrument shows in the trace.
-4. Add the name of the instrument to `LAB_NAMES` in `js/labs/capstone.js`.
+4. If the capstone must count the instrument, add its name to `INSTRUMENTS` in `js/labs/capstone.js`. The instruments of part L and part S are not in that list.
 5. Add the `<script>` tag to `index.html`, before `js/core/app.js`.
 
 ### Add a gate question
@@ -154,6 +155,8 @@ Add these three items:
 - a `<section class="chapter" data-chapter="9">` with an `<h1>`
 - a rail item in `<nav class="rail">`
 - an entry in `GE.data.chapters`
+
+For a part whose key is not a digit (as `lab` and `studio`), also add the key in two locations of `js/core/app.js`: the locator of the top bar and the figure prefix `--ch-dot`.
 
 ### Change the colours and the type
 
@@ -238,3 +241,44 @@ When the search opens for the first time, it makes an index from the page. The i
 A search word must be at the start of a word in the index. The search does not use small words, for example "to" and "the". Text that only an instrument makes is not in the index.
 
 To put a new section in the search, give its `h2` an `id`.
+
+## Part S: the practical architecture studio
+
+Part S shows how the ideas of the course become the files of an application. It is one more `<section class="chapter is-lab is-studio" data-chapter="studio">`, between part L and the reference shelf. Its content is not from the notes. The research date of its product facts is 2026-11-14.
+
+```
+examples/personal-finance/   the reference application: TypeScript, React, Node, SQLite. It has its own README.
+examples/tools/sync-studio.py  copies the source files and the recordings into the page
+css/studio.css               styles of part S. It uses only the tokens of tokens.css.
+js/data/studio.js            the eight drawings, the replays, the questions, and the gate of part S
+js/data/studio-files.js      GENERATED: each source file with its level and its role
+js/data/studio-runs.js       GENERATED: what the real code did in 19 scenarios
+js/labs/studio.js            the instruments: studioLevels, studioDiagram, studioRun, studioExplorer, studioCheck
+```
+
+The application has four levels, and each level is a git tag: `studio-l1` to `studio-l4`. The page shows the same four levels.
+
+### Change the reference application
+
+1. Change the files in `examples/personal-finance/`.
+2. In that folder, run `npm run check`. It does the type check, the tests and the check of the recordings. If a recording changed on purpose, run `npm run record-runs` first.
+3. If you added a file, add it to `levels.json` with its level and its role. A test fails if you do not.
+4. From the root, run `python examples/tools/sync-studio.py`. It writes the two generated files and the code blocks of the page.
+5. Open `tests.html`.
+
+`python examples/tools/sync-studio.py --check` writes nothing and gives FAIL if a generated file is not current. The tool refuses a file that contains a key or a path of a computer.
+
+### Change a drawing of part S
+
+Change `GE.data.studio.drawings` in `js/data/studio.js`.
+
+- A node and an edge have a `level` (1 to 4). The lens of the drawing makes a later level faint. The level 9 is for a class of the ontology that is not built.
+- A drawing with `graph` is the drawing of a real execution graph. `tests.html` compares its nodes and edges with the recording. A node with `outside: true` is not part of that graph.
+- The text of each component is not in the data file. It is in the table that is inside the mount of the drawing in `index.html`: a row with `data-node="<id>"` or `data-edge="<from>><to>"`. The instrument reads the table, and a browser with no JavaScript shows the table.
+
+### Rules of part S
+
+- No instrument of part S is a simulation. `studioRun` plays a recording of the real code. Where a scenario has a model, the model is a stand-in, and the page says so.
+- Each product fact has a source link. A statement that reads more into a document than the document says has the mark "The reading of this edition".
+- The part says what was not run: a call to the real model, and a real iPhone.
+- A file name in the text is a link with `data-st-file`. With JavaScript it opens the file in the explorer of the page.
