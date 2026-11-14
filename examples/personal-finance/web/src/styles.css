@@ -1,0 +1,52 @@
+/* Mobile first: one column that fills a phone. A wide screen gets two columns. */
+:root {
+  color-scheme: light dark;
+  --paper: light-dark(#f4f1ea, #101917);
+  --card: light-dark(#fffdf8, #18241f);
+  --ink: light-dark(#1b2421, #e9e6dd);
+  --muted: light-dark(#5d6661, #9aa39d);
+  --rule: light-dark(#d9d3c5, #2c3a35);
+  --accent: light-dark(#16302b, #9fd3c0);
+  --on-accent: light-dark(#fffdf8, #0d1513);
+  --near: light-dark(#a86a00, #e0a03a);
+  --over: light-dark(#a3271d, #f08a7e);
+  --ok: light-dark(#1f6b4f, #7fd0ad);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+main { max-width: 60rem; margin: 0 auto; padding: 1rem 1rem calc(2rem + env(safe-area-inset-bottom)); display: grid; gap: 1rem; }
+h1 { font-size: 1.5rem; margin: 0.5rem 0 0; }
+h2 { font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+h3 { font-size: 0.95rem; margin: 1.25rem 0 0.5rem; }
+main > p { margin: 0; }
+.muted { color: var(--muted); font-weight: 400; font-size: 0.9rem; }
+.card { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 1rem; }
+label { display: grid; gap: 0.25rem; margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--muted); }
+input, select, button { font: inherit; min-height: 2.75rem; border-radius: 8px; }
+input, select { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+input[aria-invalid='true'] { border-color: var(--over); }
+button { width: 100%; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 600; cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: default; }
+button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); margin-top: 0.5rem; }
+:focus-visible { outline: 3px solid var(--near); outline-offset: 2px; }
+.problems { margin: 0.75rem 0 0; padding: 0.75rem 0.75rem 0.75rem 1.75rem; border-left: 3px solid var(--over); background: color-mix(in srgb, var(--over) 8%, transparent); }
+.problems.ask { border-color: var(--near); background: color-mix(in srgb, var(--near) 10%, transparent); }
+.ok { color: var(--ok); margin: 0.75rem 0 0; }
+ul.budgets, ul.recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+ul.recent { gap: 0.35rem; font-size: 0.9rem; }
+.row { display: flex; justify-content: space-between; gap: 1rem; }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bar { height: 0.5rem; background: var(--rule); border-radius: 99px; overflow: hidden; margin: 0.25rem 0; }
+.fill { height: 100%; background: var(--ok); }
+.fill.near { background: var(--near); }
+.fill.over { background: var(--over); }
+.state { font-size: 0.8rem; color: var(--muted); }
+.state.near { color: var(--near); }
+.state.over { color: var(--over); font-weight: 600; }
+li.changed { animation: changed 1.2s ease-out; }
+@keyframes changed { from { background: color-mix(in srgb, var(--ok) 25%, transparent); } to { background: transparent; } }
+@media (min-width: 48rem) {
+  main { grid-template-columns: 1fr 1fr; align-items: start; }
+  main > h1, main > p { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { li.changed { animation: none; } }

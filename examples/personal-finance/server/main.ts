@@ -1,0 +1,32 @@
+// The composition root. This is the only file that knows all the parts.
+// It reads the settings, opens the database, makes the stores and starts the server.
+// Each other file gets its dependencies as arguments, thus a test can give different ones.
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { randomIds, systemClock } from './clock.ts';
+import { readConfig } from './config.ts';
+import { periodOf } from './domain/expense.ts';
+import type { App } from './http/handlers.ts';
+import { createHttpServer } from './http/server.ts';
+import { seed } from './repositories/seed.ts';
+import { openDatabase, sqliteStores } from './repositories/sqlite.ts';
+
+const config = readConfig();
+const db = openDatabase(config.dbFile);
+const stores = sqliteStores(db);
+seed(stores, periodOf(systemClock.today()));
+
+const app: App = { stores, clock: systemClock, ids: randomIds };
+
+const webDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'web', 'dist');
+const server = createHttpServer(app, { webDir });
+
+server.listen(config.port, config.host, () => {
+  console.log('Personal finance: http://' + config.host + ':' + config.port + '  (data: ' + config.dbFile + ')');
+});
+
+process.on('SIGINT', () => {
+  server.close();
+  db.close();
+  process.exit(0);
+});
