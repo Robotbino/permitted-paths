@@ -152,8 +152,15 @@
     function open() {
       if (!index) index = build();
       if (!dlg.open) dlg.showModal();
+      fitToKeyboard();
       input.select(); render();
     }
+    // On a phone the keyboard covers the lower part of the screen. Keep the box above it.
+    function fitToKeyboard() {
+      var vv = window.visualViewport;
+      if (vv) dlg.style.setProperty('--vvh', vv.height + 'px');
+    }
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', function () { if (dlg.open) fitToKeyboard(); });
     var btn = document.getElementById('search-open');
     if (btn) { btn.hidden = false; btn.addEventListener('click', open); }
     document.addEventListener('keydown', function (ev) {

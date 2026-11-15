@@ -260,4 +260,11 @@ a.src:hover { border-color: var(--ink); color: var(--ink); }
 .sr-title { font-weight: 700; }
 .sr-text { font-size: var(--t-sm); color: var(--ink-2); }
 .search-results mark { background: color-mix(in oklch, var(--ink) 14%, transparent); color: inherit; border-radius: 2px; box-shadow: 0 1.5px 0 var(--ink); }
-@media (max-width: 40rem) { .search-kbd { display: none; } .search-dialog { margin-top: var(--s3); max-height: calc(100vh - 2rem); } }
+.search-head input::-webkit-search-cancel-button { display: none; }
+@media (max-width: 40rem) {
+  .search-kbd { display: none; }
+  /* A phone: the box sits at the top and ends above the keyboard (--vvh is set by search.js). */
+  .search-dialog { width: calc(100vw - 1rem); margin: 0.5rem auto auto; max-height: calc(var(--vvh, 100dvh) - 1rem); }
+  .search-head input { font-size: max(1rem, var(--t-lg)); }
+  .search-results li { padding: var(--s3); }
+}

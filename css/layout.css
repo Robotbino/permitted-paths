@@ -166,6 +166,36 @@ main { padding-left: var(--rail); }
   .ch-next a span { font-size: var(--t-md); }
   html { scroll-padding-top: 7.5rem; }
 }
+/* With script, a narrow screen gets a Parts button. The rail is then a sheet under the top bar,
+   with the full title of each part. Without script, the row of numbers above stays. */
+#rail-toggle { display: none; }
+@media (max-width: 56rem) {
+  .js .top .top-tools #rail-toggle { display: inline-flex; gap: var(--s2); color: var(--ink); font-weight: 600; }
+  .js #rail-toggle::before { content: ""; width: 0.95rem; height: 0.7rem; flex: none; background: linear-gradient(currentColor 0 0) top / 100% 1.5px no-repeat, linear-gradient(currentColor 0 0) center / 100% 1.5px no-repeat, linear-gradient(currentColor 0 0) bottom / 100% 1.5px no-repeat; }
+  .js .rail {
+    position: fixed; inset: var(--top) 0 0 0; width: auto; height: auto; z-index: 44;
+    border: 0; overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: auto;
+    visibility: hidden; opacity: 0; translate: 0 -0.5rem;
+    transition: opacity var(--d-state) var(--ease-out), translate var(--d-state) var(--ease-out), visibility 0s linear var(--d-state);
+  }
+  .js .rail.open { visibility: visible; opacity: 1; translate: 0 0; transition-delay: 0s; }
+  .js .rail ol { flex-direction: column; width: auto; min-width: 0; max-height: none; height: auto; padding: var(--s4) var(--gutter) var(--s7); gap: 0; justify-content: flex-start; }
+  .js .rail ol::before, .js .rail ol::after { left: calc(var(--gutter) + 0.875rem - 0.5px); right: auto; top: calc(var(--s4) + 1.5rem); bottom: calc(var(--s7) + 1.5rem); width: 1px; height: auto; margin: 0; }
+  .js .rail ol::after { left: calc(var(--gutter) + 0.875rem - 1px); width: 2px; transform-origin: top; transform: scaleY(var(--progress, 0)); }
+  .js .rail a { width: 100%; min-height: 3rem; justify-content: flex-start; gap: var(--s4); padding: var(--s1) 0; }
+  .js .rail-label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; opacity: 1; white-space: normal; font-size: 1rem; }
+  .js .rail li[data-gate]::after { left: 1.25rem; top: 0.4rem; }
+  .js.rail-open, .js.rail-open body { overflow: hidden; }
+  html.js { scroll-padding-top: calc(var(--top) + 1rem); }
+}
+@media (max-width: 40rem) {
+  .js .top .top-tools #rail-toggle { padding: 0 var(--s3); }
+  /* The mark only: the name stays for a screen reader. The tools need the width. */
+  .js .wordmark { font-size: 0; flex: none; }
+  .js .top .top-tools { margin-left: auto; }
+}
+@media (max-width: 23rem) { .js #rail-toggle::before { display: none; } }
+
 /* A phone: the two tools at the end are a mark only. The word stays for a screen reader. */
 @media (max-width: 40rem) {
   .top .top-tools #theme-toggle, .top .top-tools #new-run { font-size: 0; gap: 0; min-width: 2.75rem; padding: 0; }

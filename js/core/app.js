@@ -207,6 +207,25 @@
     });
   }
 
+  /* ---- Parts menu: on a narrow screen the rail is a sheet that this button opens. ---- */
+  function initRailMenu() {
+    var btn = document.getElementById('rail-toggle'), rail = document.getElementById('rail');
+    if (!btn || !rail) return;
+    btn.hidden = false;
+    function set(open) {
+      rail.classList.toggle('open', open);
+      root.classList.toggle('rail-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Parts';
+      if (open) { var cur = rail.querySelector('[aria-current]') || rail.querySelector('a'); if (cur) cur.focus({ preventScroll: true }); }
+    }
+    btn.addEventListener('click', function () { set(!rail.classList.contains('open')); });
+    rail.addEventListener('click', function (ev) { if (ev.target.closest('a')) set(false); });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && rail.classList.contains('open')) { set(false); btn.focus(); } });
+    window.addEventListener('hashchange', function () { set(false); });
+    window.matchMedia('(min-width: 56.01rem)').addEventListener('change', function (m) { if (m.matches) set(false); });
+  }
+
   /* ---- Start ---- */
   root.classList.add('js');
   try { dressChapters(); } catch (err) { console.error('The openers of the parts did not start.', err); }
@@ -214,6 +233,7 @@
   try { linkSources(document); } catch (err) { console.error('The source links did not start.', err); }
   initTheme();
   initReset();
+  initRailMenu();
   try { GE.searchBox = GE.search(); } catch (err) { console.error('The search did not start.', err); }
   GE.store.onChange(paintRail);
   window.addEventListener('beforeprint', function () { if (!root.classList.contains('print-one')) chapters.forEach(startLabs); });
