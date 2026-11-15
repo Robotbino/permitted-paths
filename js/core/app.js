@@ -36,7 +36,7 @@
       // The table of sources is made when the reference shelf first opens. Open it, then go to the row.
       a.addEventListener('click', function (ev) {
         ev.preventDefault();
-        location.hash = '#/ref';
+        GE.go('#/ref');
         setTimeout(function () {
           var row = document.getElementById('ref-' + a.dataset.ref);
           if (row) { row.scrollIntoView({ block: 'center' }); row.focus({ preventScroll: true }); }
@@ -69,9 +69,33 @@
     });
   }
 
-  /* ---- Router ---- */
+  /* ---- Router ----
+     The router keeps its own address (here). A viewer in a phone app (WhatsApp, Mail, Files)
+     can block a change of location.hash, so a link in the page calls GE.go and never needs it.
+     The address bar follows when the browser permits it. */
+  var here = location.hash;
+  GE.here = function () { return here; };
+  GE.go = function (hash) {
+    if (!hash || hash.charAt(0) !== '#') return;
+    if (hash === here) { var t = hash.length > 1 && document.getElementById(hash.slice(1)); if (t) t.scrollIntoView(); return; }
+    here = hash;
+    try { history.pushState(null, '', hash); } catch (err) { /* the viewer does not permit it: the page still changes */ }
+    onRoute(true);
+    root.dispatchEvent(new CustomEvent('ge:route'));
+  };
+  // Every link inside the page goes through the router, not through the browser.
+  document.addEventListener('click', function (ev) {
+    if (ev.defaultPrevented || ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+    var a = ev.target.closest && ev.target.closest('a[href^="#"]');
+    if (!a || a.target === '_blank') return;
+    var hash = a.getAttribute('href');
+    if (hash === '#') return;
+    ev.preventDefault();
+    GE.go(hash);
+  });
+  function fromBrowser() { if (location.hash !== here) { here = location.hash; onRoute(true); root.dispatchEvent(new CustomEvent('ge:route')); } }
   function keyFromHash() {
-    var m = /^#\/([\w-]+)/.exec(location.hash);
+    var m = /^#\/([\w-]+)/.exec(here);
     var key = m ? m[1] : null;
     if (key && chapters.some(function (c) { return c.dataset.chapter === key; })) return key;
     return null;
@@ -109,7 +133,7 @@
     var key = keyFromHash();
     if (!key) {
       // A link to an element inside a chapter (for example a glossary term): open its chapter.
-      var target = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
+      var target = here.length > 1 && document.getElementById(here.slice(1));
       var owner = target && target.closest('.chapter');
       if (owner) {
         show(owner.dataset.chapter, false); target.scrollIntoView();
@@ -202,7 +226,7 @@
     btn.addEventListener('click', function () {
       if (!window.confirm('Start a new run? This removes your answers, your gate results and your trace from this browser.')) return;
       GE.store.reset();
-      location.hash = '#/0';
+      try { location.hash = '#/0'; } catch (err) {}
       location.reload();
     });
   }
@@ -222,7 +246,7 @@
     btn.addEventListener('click', function () { set(!rail.classList.contains('open')); });
     rail.addEventListener('click', function (ev) { if (ev.target.closest('a')) set(false); });
     document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && rail.classList.contains('open')) { set(false); btn.focus(); } });
-    window.addEventListener('hashchange', function () { set(false); });
+    root.addEventListener('ge:route', function () { set(false); });
     window.matchMedia('(min-width: 56.01rem)').addEventListener('change', function (m) { if (m.matches) set(false); });
   }
 
@@ -237,7 +261,8 @@
   try { GE.searchBox = GE.search(); } catch (err) { console.error('The search did not start.', err); }
   GE.store.onChange(paintRail);
   window.addEventListener('beforeprint', function () { if (!root.classList.contains('print-one')) chapters.forEach(startLabs); });
-  window.addEventListener('hashchange', function () { onRoute(true); });
+  window.addEventListener('hashchange', fromBrowser);
+  window.addEventListener('popstate', fromBrowser);
   // Continue where the learner stopped, if the address has no chapter.
   if (!location.hash) {
     var last = GE.store.get('last', '0');

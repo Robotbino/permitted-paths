@@ -350,7 +350,7 @@
         level = TOP; seg.set(String(TOP), true);
         if (isTest(path)) { showTests = true; tests.checked = true; }
         // The explorer is in this part. Go to its section, then show the file.
-        if (location.hash !== '#ps-explorer') location.hash = '#ps-explorer';
+        if (GE.here() !== '#ps-explorer') GE.go('#ps-explorer');
         current = path;
         paintList(); // the level or the tests can have changed
         show(path, true);

@@ -15,6 +15,7 @@ Static course site (Graph Engineering). Repo: `git@github.com:Robotbino/permitte
 - Changed a file in `lab/`: `python lab/tools/sync-page.py`
 - Changed the bridge: `node lab/bridge/test/run.mjs`
 - Changed a file in `examples/personal-finance/`: `npm run check` in that folder, then `python examples/tools/sync-studio.py` from the root. New file: add it to `levels.json`.
+- One file for a phone (WhatsApp, Mail): `python tools/single-file.py` writes `dist/permitted-paths.html` (not committed).
 - Run `tests.html` (preview server "site", open `/tests.html`; `window.__tests` = `{pass, fail}`).
 - Update `docs/REPORT.md` for notable changes.
 

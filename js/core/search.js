@@ -123,8 +123,7 @@
     }
     function go(e) {
       dlg.close();
-      if (location.hash === e.href) { var t = document.getElementById(e.href.slice(1)); if (t) t.scrollIntoView(); }
-      else location.hash = e.href;
+      GE.go(e.href);
     }
     function render() {
       var q = input.value.trim(), words = wordsOf(q);

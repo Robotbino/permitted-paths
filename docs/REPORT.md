@@ -483,3 +483,7 @@ A structural audit of the page, then the corrections that do not change the cont
 ## Phone navigation and search (2026-11-15)
 
 On a phone the rail was a row of bare numbers. Parts L, S and R were off the screen, and the Reference link was hidden. Now a **Parts** button in the top bar opens the rail as a sheet with the full title of each part. A tap on a part, Escape, or a change of the address closes it. Without script, the row of numbers stays. On a phone the top bar shows the mark only, so that the four tools fit at 320px. The search box sits at the top of a phone screen and ends above the keyboard (`visualViewport`), so the results are not under the keyboard. The sticky header of the factory now uses the new offset. Checked: iPhone 13 and iPhone SE emulation, no sideways overflow in any part, `tests.html` 139 PASS, 0 FAIL.
+
+## The course as one file, in a phone viewer (2026-11-15)
+
+A viewer inside a phone app (WhatsApp, Mail, Files) can block a change of the address, so a tap on a part did nothing. Now the router keeps its own address: each link inside the page calls `GE.go`, which opens the part with or without a change of the address. The address bar and the back button follow when the browser permits it. `tools/single-file.py` writes `dist/permitted-paths.html`: the page with all stylesheets, scripts and fonts inside, and no other file. Checked with the change of the address blocked: the Parts menu, the next and back links and search open the correct part. `tests.html` 139 PASS, 0 FAIL.
