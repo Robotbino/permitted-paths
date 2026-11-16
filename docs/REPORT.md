@@ -487,3 +487,23 @@ On a phone the rail was a row of bare numbers. Parts L, S and R were off the scr
 ## The course as one file, in a phone viewer (2026-11-15)
 
 A viewer inside a phone app (WhatsApp, Mail, Files) can block a change of the address, so a tap on a part did nothing. Now the router keeps its own address: each link inside the page calls `GE.go`, which opens the part with or without a change of the address. The address bar and the back button follow when the browser permits it. `tools/single-file.py` writes `dist/permitted-paths.html`: the page with all stylesheets, scripts and fonts inside, and no other file. Checked with the change of the address blocked: the Parts menu, the next and back links and search open the correct part. `tests.html` 139 PASS, 0 FAIL.
+
+## The markup of the page, checked and repaired (2026-11-15)
+
+**What was asked.** Make `index.html` better in all areas. An audit came first: the ids, the links inside the page, the sequence of the headings, the tables, the head, the layout at 375 px in each of the twelve parts. The audit found no id that occurs two times, no link with no target, no heading out of sequence, and no part that is wider than a phone screen. It found these defects, and each is repaired.
+
+- *A link to a later part showed part 0 first.* While the scripts load, the page had no router, so all the parts were on the screen and the address `#/studio` started at the top of part 0. A small script in the head now hides the other parts from the first paint. After the last script, `app.js` has the control. If the scripts do not start, all the parts show, as before.
+- *55 of the 104 tables had no name.* A screen reader said "table" and no more. Each table now has `aria-labelledby` (its `h2`) or `aria-label`.
+- *147 header cells had no `scope`.* Each header cell of a table head now has `scope="col"`.
+- *A table or a code block that scrolls sideways was not a Tab stop* in a browser that does not make it one. `app.js` now gives the stop only to a block that is too wide for the window, so a wide window has almost no new stops. At 375 px, part S gets 45.
+- *Part S used straight quotation marks* (306, and 55 apostrophes); the other parts use “ ” and ’. Part S now agrees. Code, `kbd` and attributes did not change.
+- *The head* now has the colour of the browser bar for each theme (`theme-color`; the Blueprint and Paper button changes it), the canonical address, `og:site_name` and a card type.
+- *With no JavaScript* the start page now says what the reader gets: all the parts on one page, each instrument as text, no saved progress.
+
+**Checked.** `tests.html`: 139 of 139. The console: no message in the twelve parts, at 375 px and at 1024 px. `python lab/tools/sync-page.py`: 5 blocks, 0 changed. `python tools/single-file.py`: the file is made. `sync-studio.py --check` was not run to its end: esbuild is not installed on this computer.
+
+**Not done.**
+
+- The tables that an instrument makes (the ledger, the two-gate bench, the factory, the cost calculator, the pipeline, the list of sources) have no name and no `scope`. They are in `js/labs/`.
+- The page has no image for a link preview (`og:image`). A chat application shows the title and the description only.
+- Each visit loads the source files and the recordings of part S (about 1.1 MB before compression), also when the reader opens only part 0.

@@ -200,6 +200,11 @@
     var dark = theme ? theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
     var btn = document.getElementById('theme-toggle');
     if (btn) { btn.dataset.dark = String(dark); btn.textContent = dark ? 'Paper' : 'Blueprint'; btn.setAttribute('aria-label', dark ? 'Use the light paper theme' : 'Use the dark blueprint theme'); }
+    // The browser bar of a phone: a selected theme uses its own colour, not the colour of the system theme.
+    var bars = [].slice.call(document.querySelectorAll('meta[name="theme-color"][data-scheme]'));
+    bars.forEach(function (m) { if (!m.dataset.own) m.dataset.own = m.content; });
+    var pick = bars.filter(function (m) { return m.dataset.scheme === theme; })[0];
+    bars.forEach(function (m) { m.content = pick ? pick.dataset.own : m.dataset.own; });
   }
   function initTheme() {
     var theme = null;
@@ -250,6 +255,27 @@
     window.matchMedia('(min-width: 56.01rem)').addEventListener('change', function (m) { if (m.matches) set(false); });
   }
 
+  /* ---- Tables and code that scroll sideways: the keyboard can reach them only if they are a Tab stop.
+     Only a block that is too wide gets the stop, so a wide window has no more stops than before. ---- */
+  function markScrollers() {
+    var section = document.querySelector('.chapter.is-current');
+    if (!section) return;
+    [].forEach.call(section.querySelectorAll('.table-wrap, pre'), function (el) {
+      var wide = el.scrollWidth > el.clientWidth + 1;
+      if (wide && !el.hasAttribute('tabindex')) { el.setAttribute('tabindex', '0'); el.setAttribute('data-scrolls', ''); }
+      else if (!wide && el.hasAttribute('data-scrolls')) { el.removeAttribute('tabindex'); el.removeAttribute('data-scrolls'); }
+    });
+  }
+  function initScrollers() {
+    var wait = 0;
+    function soon() { clearTimeout(wait); wait = setTimeout(markScrollers, 150); }
+    root.addEventListener('ge:route', soon);
+    window.addEventListener('resize', soon);
+    // A drawer that opens shows new tables.
+    document.addEventListener('toggle', soon, true);
+    soon();
+  }
+
   /* ---- Start ---- */
   root.classList.add('js');
   try { dressChapters(); } catch (err) { console.error('The openers of the parts did not start.', err); }
@@ -258,6 +284,7 @@
   initTheme();
   initReset();
   initRailMenu();
+  initScrollers();
   try { GE.searchBox = GE.search(); } catch (err) { console.error('The search did not start.', err); }
   GE.store.onChange(paintRail);
   window.addEventListener('beforeprint', function () { if (!root.classList.contains('print-one')) chapters.forEach(startLabs); });
